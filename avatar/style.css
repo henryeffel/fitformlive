@@ -1,0 +1,286 @@
+:root {
+  --bg: #020817;
+  --card: #020617;
+  --card-soft: #020617;
+  --accent: #38bdf8;
+  --accent-soft: rgba(56, 189, 248, 0.1);
+  --text: #e5e7eb;
+  --muted: #9ca3af;
+  --danger: #f97373;
+  --good: #22c55e;
+  --border: #1f2937;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "Pretendard", -apple-system, BlinkMacSystemFont, system-ui,
+    sans-serif;
+  background: radial-gradient(circle at top, #020617, #000);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+}
+
+.page {
+  width: 100%;
+  max-width: 1200px;
+  padding: 32px 16px 64px;
+}
+
+header {
+  margin-bottom: 24px;
+}
+
+.title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.title-row span.emoji {
+  font-size: 32px;
+}
+
+h1 {
+  font-size: 32px;
+  margin: 0;
+  font-weight: 700;
+}
+
+.subtitle {
+  color: var(--muted);
+  font-size: 15px;
+}
+
+main {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.video-shell {
+  background: radial-gradient(circle at top left, #020617, #020617 40%);
+  border-radius: 24px;
+  border: 1px solid var(--border);
+  padding: 16px 16px 24px;
+  box-shadow: 0 40px 80px rgba(0, 0, 0, 0.8);
+}
+
+.video-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  gap: 8px;
+}
+
+.video-toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pill {
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  font-size: 11px;
+  color: var(--muted);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pill-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: #22c55e;
+}
+
+/*  디자인 수정: exercise-select와 character-select가 같은 스타일을 갖도록 함 ⭐️ */
+.exercise-select,
+.character-select {
+  background-color: #020617; /* 어두운 배경 */
+  border-radius: 999px;
+  border: 1px solid var(--border); /* 테두리 */
+  padding: 0; /* 내부 select에 맞춤 */
+  color: var(--text); /* 텍스트 색상 */
+  font-size: 13px;
+  position: relative; /* 화살표 포지셔닝용 */
+}
+
+.exercise-select select,
+.character-select select {
+  background: transparent;
+  border: none;
+  color: inherit; /* 부모 요소의 텍스트 색상 상속 */
+  font: inherit;
+  outline: none;
+  padding: 6px 28px 6px 10px; /* 오른쪽 화살표 공간 확보 */
+  /* select 박스 기본 스타일 완전 제거 */
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  cursor: pointer;
+}
+
+/*  드롭다운 화살표 아이콘  */
+.exercise-select::after,
+.character-select::after {
+  content: "▼";
+  font-size: 10px;
+  color: var(--muted);
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none; /* 클릭 방해하지 않도록 */
+}
+
+
+.video-wrapper {
+  position: relative;
+  border-radius: 18px;
+  overflow: hidden;
+  background: #020617;
+  border: 1px solid #020617;
+  aspect-ratio: 16 / 9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+video,
+canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scaleX(-1); /* 셀카처럼 좌우 반전 */
+}
+
+/* ⭐️ avatar-container는 기본적으로 숨김 (CSS로 제어) ⭐️ */
+#avatar-container {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  visibility: hidden; /* 기본값은 숨김 */
+}
+
+canvas {
+  pointer-events: none; /* 2D 캔버스는 클릭 안 되게 */
+}
+
+.hud-card {
+  position: absolute;
+  left: 24px;
+  bottom: 24px;
+  background: rgba(15, 23, 42, 0.96);
+  border-radius: 18px;
+  padding: 16px 18px 14px;
+  min-width: 220px;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  backdrop-filter: blur(16px);
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.7);
+  z-index: 10; /* 3D 캔버스 위에 오도록 */
+}
+
+.hud-title {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.hud-row {
+  display: flex;
+  gap: 12px;
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+
+.hud-row strong {
+  color: var(--text);
+  font-weight: 600;
+  margin-left: 2px;
+}
+
+.status-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  margin-bottom: 10px;
+}
+
+.status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: #4b5563;
+}
+
+.status-dot.good {
+  background: var(--good);
+}
+
+.status-dot.bad {
+  background: var(--danger);
+}
+
+.status-text {
+  color: var(--muted);
+}
+
+.status-text strong {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 7px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.4);
+  background: linear-gradient(135deg, #0ea5e9, #22c55e);
+  color: white;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  outline: none;
+}
+
+.btn.secondary {
+  background: rgba(15, 23, 42, 0.9);
+  border-color: rgba(148, 163, 184, 0.5);
+  color: var(--text);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+@media (max-width: 768px) {
+  .page {
+    padding-inline: 12px;
+  }
+  h1 {
+    font-size: 24px;
+  }
+  .hud-card {
+    left: 14px;
+    bottom: 14px;
+  }
+}

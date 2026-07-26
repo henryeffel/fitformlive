@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <title>MyPT Azure – On-device Pose Demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/modern-normalize/2.0.0/modern-normalize.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <link rel="stylesheet" href="style.css" />
+
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.16.0/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/pose-detection"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/loaders/GLTFLoader.js"></script>
+  </head>
+
+  <body>
+    <div class="page">
+      <header>
+        <div class="title-row">
+          <span class="emoji">🏋️‍♂️</span>
+          <h1>MyPT Azure – On-device Pose Demo</h1>
+        </div>
+        <p class="subtitle">
+          브라우저에서 <strong>MoveNet</strong>으로 팔 굽혀펴기(팔 컬) / 스쿼트 동작을
+          실시간으로 인식합니다.
+        </p>
+      </header>
+
+      <main>
+        <section class="video-shell">
+          <div class="video-toolbar">
+            <div class="video-toolbar-left">
+              <div class="pill">
+                <span class="pill-dot"></span>
+                <span id="model-label">MoveNet Lightning · On-device</span>
+              </div>
+
+              <div class="exercise-select">
+                <select id="exercise-select">
+                  <option value="right_curl">Right Arm Curl</option>
+                  <option value="left_curl">Left Arm Curl</option>
+                  <option value="squat">Squat</option>
+                  <option value="lunge_right">Right Lunge</option>
+                  <option value="shoulder_press">Shoulder Press</option>
+                  <option value="side_raise_right">Right Side Raise</option>
+                </select>
+              </div>
+
+              <div class="character-select">
+                <select id="character-select">
+                  <option value="none">본인 모습 (Video)</option>
+                  <option value="basic">기본형 아바타</option>
+                  <option value="muscle">근육질 코치</option>
+                  <option value="cute">귀여운 캐릭터</option>
+                </select>
+              </div>
+              
+            </div>
+
+            <div style="display: flex; gap: 8px; align-items: center;">
+              <button id="toggle-overlay" class="btn secondary">포즈선 끄기</button>
+              <button id="toggle-camera" class="btn">카메라 시작</button>
+            </div>
+          </div>
+
+          <div class="video-wrapper">
+            <video id="video" playsinline></video>
+            <canvas id="canvas"></canvas>
+
+            <div id="avatar-container"></div>
+
+            <div class="hud-card">
+              <div class="hud-title" id="hud-exercise">Right Arm Curl</div>
+
+              <div class="hud-row">
+                <div>Reps:<strong id="hud-reps">0</strong></div>
+                <div>Angle:<strong id="hud-angle">0°</strong></div>
+                <div>FPS:<strong id="hud-fps">0</strong></div>
+              </div>
+
+              <div class="status-row">
+                <div id="status-dot" class="status-dot"></div>
+                <div class="status-text">
+                  상태: <strong id="status-label">-</strong>
+                  <span id="status-detail" style="margin-left: 4px; color: var(--muted);"></span>
+                </div>
+              </div>
+
+              <button id="reset-btn" class="btn secondary">카운트 초기화</button>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script src="main.js?v=8"></script>
+  </body>
+</html>

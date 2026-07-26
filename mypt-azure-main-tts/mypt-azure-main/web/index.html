@@ -1,0 +1,1452 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <title>MyPT Azure – On-device Pose Demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/modern-normalize/2.0.0/modern-normalize.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      :root {
+        --bg: #020817;
+        --card: #020617;
+        --card-soft: #020617;
+        --accent: #38bdf8;
+        --accent-soft: rgba(56, 189, 248, 0.1);
+        --text: #e5e7eb;
+        --muted: #9ca3af;
+        --danger: #f97373;
+        --good: #22c55e;
+        --border: #1f2937;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: "Pretendard", -apple-system, BlinkMacSystemFont, system-ui,
+          sans-serif;
+        background: radial-gradient(circle at top, #020617, #000);
+        color: var(--text);
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+      }
+
+      .page {
+        width: 100%;
+        /* 화면을 넓게 쓰기 위해 max-width 증가 */
+        max-width: 1600px; 
+        padding: 32px 16px 64px;
+      }
+
+      header {
+        margin-bottom: 24px;
+      }
+
+      .title-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 4px;
+      }
+
+      .title-row span.emoji {
+        font-size: 32px;
+      }
+
+      h1 {
+        font-size: 32px;
+        margin: 0;
+        font-weight: 700;
+      }
+
+      .subtitle {
+        color: var(--muted);
+        font-size: 15px;
+      }
+
+      main {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+
+      .container-split {
+        display: flex;
+        gap: 20px;
+        justify-content: center;
+        flex-wrap: wrap; /* 화면 좁으면 아래로 내려감 */
+      }
+
+      .video-shell {
+        flex: 1;
+        min-width: 320px; /* 너무 작아지지 않게 */
+        background: radial-gradient(circle at top left, #020617, #020617 40%);
+        border-radius: 24px;
+        border: 1px solid var(--border);
+        padding: 16px 16px 24px;
+        box-shadow: 0 40px 80px rgba(0, 0, 0, 0.8);
+      }
+
+      .video-toolbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      .video-toolbar-left {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      .pill {
+        padding: 4px 10px;
+        border-radius: 999px;
+        border: 1px solid rgba(148, 163, 184, 0.3);
+        font-size: 11px;
+        color: var(--muted);
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .pill-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 999px;
+        background: #22c55e;
+      }
+
+      .exercise-select {
+        background: #020617;
+        border-radius: 999px;
+        border: 1px solid var(--border);
+        padding: 6px 10px;
+        color: var(--text);
+        font-size: 13px;
+      }
+
+      .exercise-select select {
+        background: transparent;
+        border: none;
+        color: inherit;
+        font: inherit;
+        outline: none;
+      }
+
+      .control-group {
+        display: flex;
+        align-items: center;
+        background: #020617;
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        padding: 4px 10px;
+        font-size: 13px;
+        color: var(--muted);
+        gap: 4px;
+      }
+      
+      .control-group input {
+        background: transparent;
+        border: none;
+        color: white;
+        width: 60px; 
+        text-align: center;
+        font-weight: bold;
+        border-bottom: 1px solid #38bdf8;
+        outline: none;
+      }
+      .control-group span {
+        color: var(--text);
+      }
+
+      .video-wrapper {
+        position: relative;
+        border-radius: 18px;
+        overflow: hidden;
+        background: #020617;
+        border: 1px solid #020617;
+        aspect-ratio: 16 / 9;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      video,
+      canvas {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transform: scaleX(-1);
+      }
+
+      /* ★ [CSS 수정] 참고 영상이 잘리지 않고 전체가 다 보이도록 설정 */
+      #ref-video {
+        transform: none; 
+        object-fit: contain; /* <-- 이 줄이 추가되었습니다! */
+        background: black; /* 여백을 검은색으로 */
+      }
+
+      canvas {
+        pointer-events: none;
+      }
+
+      /* 중앙 상단 대형 카운터 스타일 */
+      .big-counter {
+        position: absolute;
+        top: 10%;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 6rem;
+        font-weight: 800;
+        color: rgba(255, 255, 255, 0.95);
+        text-shadow: 0 8px 24px rgba(0, 0, 0, 0.8);
+        pointer-events: none;
+        z-index: 10;
+        display: flex;
+        align-items: baseline;
+        gap: 10px;
+      }
+      
+      .big-counter .target-small {
+        font-size: 2.5rem;
+        color: var(--muted);
+        font-weight: 600;
+      }
+
+      .hud-card {
+        position: absolute;
+        left: 24px;
+        bottom: 24px;
+        background: rgba(15, 23, 42, 0.96);
+        border-radius: 18px;
+        padding: 16px 18px 14px;
+        min-width: 220px;
+        border: 1px solid rgba(148, 163, 184, 0.25);
+        backdrop-filter: blur(16px);
+        box-shadow: 0 14px 40px rgba(0, 0, 0, 0.7);
+        z-index: 20; 
+      }
+
+      .hud-title {
+        font-size: 15px;
+        font-weight: 600;
+        margin-bottom: 4px;
+      }
+
+      .hud-row {
+        display: flex;
+        gap: 12px;
+        font-size: 13px;
+        color: var(--muted);
+        margin-bottom: 4px;
+      }
+
+      .hud-row strong {
+        color: var(--text);
+        font-weight: 600;
+        margin-left: 2px;
+      }
+
+      .status-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+        margin-bottom: 10px;
+      }
+
+      .status-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 999px;
+        background: #4b5563;
+      }
+
+      .status-dot.good {
+        background: var(--good);
+      }
+
+      .status-dot.bad {
+        background: var(--danger);
+      }
+
+      .status-text {
+        color: var(--muted);
+      }
+
+      .status-text strong {
+        color: var(--text);
+        font-weight: 600;
+      }
+
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 7px 14px;
+        border-radius: 999px;
+        border: 1px solid rgba(148, 163, 184, 0.4);
+        background: linear-gradient(135deg, #0ea5e9, #22c55e);
+        color: white;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        outline: none;
+      }
+
+      .btn.secondary {
+        background: rgba(15, 23, 42, 0.9);
+        border-color: rgba(148, 163, 184, 0.5);
+        color: var(--text);
+      }
+
+      .btn:disabled {
+        opacity: 0.5;
+        cursor: default;
+      }
+
+      /* 운동 완료 모달 스타일 */
+      .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.75);
+        backdrop-filter: blur(8px);
+        z-index: 9999;
+        display: none; /* 기본적으로 숨김 */
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }
+
+      .modal-overlay.active {
+        display: flex;
+        opacity: 1;
+      }
+
+      .modal-card {
+        background: #0f172a;
+        border: 1px solid var(--border);
+        border-radius: 24px;
+        padding: 40px;
+        text-align: center;
+        width: 90%;
+        max-width: 400px;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
+        transform: scale(0.9);
+        transition: transform 0.3s ease;
+      }
+
+      .modal-overlay.active .modal-card {
+        transform: scale(1);
+      }
+
+      .modal-icon {
+        font-size: 48px;
+        margin-bottom: 16px;
+        display: block;
+      }
+
+      .modal-title {
+        font-size: 24px;
+        font-weight: 700;
+        color: white;
+        margin: 0 0 8px 0;
+      }
+
+      .modal-desc {
+        color: var(--muted);
+        font-size: 14px;
+        margin-bottom: 32px;
+      }
+
+      .stat-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+        margin-bottom: 32px;
+      }
+
+      .stat-item {
+        background: rgba(30, 41, 59, 0.5);
+        padding: 16px;
+        border-radius: 16px;
+      }
+
+      .stat-label {
+        font-size: 12px;
+        color: var(--muted);
+        margin-bottom: 4px;
+        display: block;
+      }
+
+      .stat-value {
+        font-size: 20px;
+        font-weight: 700;
+        color: #38bdf8;
+      }
+      
+      .stat-value.accent {
+        color: #22c55e;
+      }
+
+      .modal-close-btn {
+        width: 100%;
+        padding: 12px;
+        font-size: 15px;
+      }
+
+      @media (max-width: 768px) {
+        .page {
+          padding-inline: 12px;
+        }
+        h1 {
+          font-size: 24px;
+        }
+        .hud-card {
+          left: 14px;
+          bottom: 14px;
+        }
+        .big-counter {
+            font-size: 4rem;
+        }
+        .big-counter .target-small {
+            font-size: 1.5rem;
+        }
+      }
+    </style>
+
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.16.0/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/pose-detection"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose"></script>
+    <script src="https://cdn.jsdelivr.net/npm/microsoft-cognitiveservices-speech-sdk@latest/distrib/browser/microsoft.cognitiveservices.speech.sdk.bundle-min.js"></script>
+  </head>
+
+  <body>
+    <div class="page">
+      <header>
+        <div class="title-row">
+          <span class="emoji">🏋️‍♂️</span>
+          <h1>MyPT Azure – On-device Pose Demo</h1>
+        </div>
+        <p class="subtitle">
+          브라우저에서 <strong>MoveNet</strong>으로 팔 굽혀펴기(팔 컬) / 스쿼트 동작을
+          실시간으로 인식합니다.
+        </p>
+      </header>
+
+      <main>
+        <div class="container-split">
+            
+            <section class="video-shell">
+              <div class="video-toolbar">
+                <div class="video-toolbar-left">
+                  <div class="pill">
+                    <span class="pill-dot"></span>
+                    <span id="model-label">MoveNet Lightning · On-device</span>
+                  </div>
+
+                  <div class="exercise-select">
+                    <select id="exercise-select">
+                      <option value="right_curl">Right Arm Curl</option>
+                      <option value="left_curl">Left Arm Curl</option>
+                      <option value="squat">Squat</option>
+                      <option value="lunge_right">Right Lunge</option>
+                      <option value="shoulder_press">Shoulder Press</option>
+                      <option value="side_raise_right">Right Side Raise</option>
+                    </select>
+                  </div>
+
+                  <div class="control-group">
+                    <span>목표:</span>
+                    <input type="number" id="target-reps-input" value="15" min="1">
+                    <span>회</span>
+                  </div>
+                  <div class="control-group">
+                    <span>휴식:</span>
+                    <input type="number" id="rest-time-input" value="30" min="5">
+                    <span>초</span>
+                  </div>
+
+                </div>
+
+                <div style="display: flex; gap: 8px; align-items: center;">
+                  <button id="toggle-overlay" class="btn secondary">포즈선 끄기</button>
+                  <button id="toggle-camera" class="btn">카메라 시작</button>
+                </div>
+              </div>
+
+              <div class="video-wrapper">
+                <video id="video" playsinline></video>
+                <canvas id="canvas"></canvas>
+
+                <div class="big-counter" id="big-counter">
+                    <span id="big-reps-display">0</span>
+                    <span class="target-small">/ <span id="big-target-display">15</span></span>
+                </div>
+
+                <div class="hud-card">
+                  <div class="hud-title" id="hud-exercise">Right Arm Curl</div>
+
+                  <div class="hud-row">
+                    <div>Reps:<strong id="hud-reps">0</strong> / <span id="hud-target">15</span></div>
+                    <div>Angle:<strong id="hud-angle">0°</strong></div>
+                    <div>FPS:<strong id="hud-fps">0</strong></div>
+                  </div>
+
+                  <div class="status-row">
+                    <div id="status-dot" class="status-dot"></div>
+                    <div class="status-text">
+                      상태: <strong id="status-label">-</strong>
+                      <span id="status-detail" style="margin-left: 4px; color: var(--muted);"></span>
+                    </div>
+                  </div>
+
+                  <button id="reset-btn" class="btn secondary">카운트 초기화</button>
+                </div>
+              </div>
+            </section>
+
+            <section class="video-shell">
+                <div class="video-toolbar">
+                    <div class="pill">
+                        <span class="pill-dot" style="background: #38bdf8;"></span>
+                        <span>Reference Video</span>
+                    </div>
+                </div>
+                <div class="video-wrapper">
+                    <video id="ref-video" src="" loop muted playsinline autoplay></video>
+                    
+                    <div class="hud-card" style="left: 20px; bottom: 20px; min-width: auto;">
+                        <div class="hud-title">Guide</div>
+                        <div class="status-text" id="ref-video-label">Right Arm Curl</div>
+                    </div>
+                </div>
+            </section>
+
+        </div> </main>
+    </div>
+
+    <div id="summary-modal" class="modal-overlay">
+      <div class="modal-card">
+        <span class="modal-icon">🎉</span>
+        <h2 class="modal-title">운동 완료!</h2>
+        <p class="modal-desc">고생하셨습니다. 오늘의 운동 기록입니다.</p>
+        
+        <div class="stat-grid">
+          <div class="stat-item">
+            <span class="stat-label">총 소요 시간</span>
+            <span class="stat-value" id="summary-time">00:00</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">성공 횟수 (Total)</span>
+            <span class="stat-value accent" id="summary-reps">0회</span>
+          </div>
+          <div class="stat-item" style="grid-column: span 2;">
+            <span class="stat-label">Perfect 자세 비율</span>
+            <span class="stat-value" id="summary-accuracy" style="color: #facc15;">0%</span>
+          </div>
+        </div>
+
+        <button class="btn modal-close-btn" id="modal-close-btn">확인</button>
+      </div>
+    </div>
+
+    <script>
+        // --------------------------
+        // 0. TTS 및 딜레이 함수 설정
+        // --------------------------
+        let isSpeaking = false; 
+        
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        function speakText(text) {
+            if (isSpeaking && text.length > 2) return; 
+
+            // ★★★ [중요] 여기에 Azure Speech 리소스 키와 지역을 입력하세요. ★★★
+            const speechConfig = SpeechSDK.SpeechConfig.fromSubscription("여기에_복사한_키_붙여넣기", "koreacentral");
+            
+            speechConfig.speechSynthesisVoiceName = "ko-KR-InJoonNeural"; 
+
+            const audioConfig = SpeechSDK.AudioConfig.fromDefaultSpeakerOutput();
+            const synthesizer = new SpeechSDK.SpeechSynthesizer(speechConfig, audioConfig);
+
+            isSpeaking = true;
+
+            synthesizer.speakTextAsync(
+                text,
+                result => {
+                    if (result.reason === SpeechSDK.ResultReason.SynthesizingAudioCompleted) {
+                        // console.log("음성 재생 성공");
+                    }
+                    isSpeaking = false;
+                    synthesizer.close();
+                },
+                error => {
+                    console.error(error);
+                    isSpeaking = false;
+                    synthesizer.close();
+                }
+            );
+        }
+
+        // --------------------------
+        // 1. 기본 상태 & 상수
+        // --------------------------
+        const videoEl = document.getElementById("video");
+        const canvasEl = document.getElementById("canvas");
+        const ctx = canvasEl.getContext("2d");
+
+        const hudExercise = document.getElementById("hud-exercise");
+        const hudReps = document.getElementById("hud-reps");
+        const hudTarget = document.getElementById("hud-target");
+        const hudAngle = document.getElementById("hud-angle");
+        const hudFps = document.getElementById("hud-fps");
+        const statusDot = document.getElementById("status-dot");
+        const statusLabel = document.getElementById("status-label");
+        const statusDetail = document.getElementById("status-detail");
+        const toggleCameraBtn = document.getElementById("toggle-camera");
+        const toggleOverlayBtn = document.getElementById("toggle-overlay");
+        const resetBtn = document.getElementById("reset-btn");
+        const exerciseSelect = document.getElementById("exercise-select");
+        
+        const targetRepsInput = document.getElementById("target-reps-input");
+        const restTimeInput = document.getElementById("rest-time-input");
+        
+        // 대형 카운터 요소
+        const bigRepsDisplay = document.getElementById("big-reps-display");
+        const bigTargetDisplay = document.getElementById("big-target-display");
+
+        // 모달 관련 요소
+        const summaryModal = document.getElementById("summary-modal");
+        const modalCloseBtn = document.getElementById("modal-close-btn");
+        const summaryTime = document.getElementById("summary-time");
+        const summaryReps = document.getElementById("summary-reps");
+        const summaryAccuracy = document.getElementById("summary-accuracy");
+
+        // 참고 영상 엘리먼트
+        const refVideoEl = document.getElementById("ref-video");
+        const refVideoLabel = document.getElementById("ref-video-label");
+
+        // 운동별 참고 영상 매핑
+        const VIDEO_MAP = {
+            right_curl: "right_arm_curl2.mp4",  
+            left_curl: "",    
+            squat: "squat_3.mp4",        
+            lunge_right: "pushup_3.mp4", 
+            shoulder_press: "shoulder_press.mp4",
+            side_raise_right: "plank_1.mp4"
+        };
+
+        const KEY = {
+            nose: 0,
+            leftEye: 1,
+            rightEye: 2,
+            leftEar: 3,
+            rightEar: 4,
+            leftShoulder: 5,
+            rightShoulder: 6,
+            leftElbow: 7,
+            rightElbow: 8,
+            leftWrist: 9,
+            rightWrist: 10,
+            leftHip: 11,
+            rightHip: 12,
+            leftKnee: 13,
+            rightKnee: 14,
+            leftAnkle: 15,
+            rightAnkle: 16,
+        };
+
+        // --------------------------
+        // 2. 운동 설정
+        // --------------------------
+        const EXERCISES = {
+            right_curl: {
+                name: "Right Arm Curl",
+                angleJoints: [KEY.rightShoulder, KEY.rightElbow, KEY.rightWrist],
+                thresholds: { up: 155, down: 60 },
+                start: {
+                    hint: "오른팔을 옆으로 내려 완전히 편 상태로 덤벨을 들고 서세요.",
+                    check(angle) {
+                        return angle > 150;
+                    },
+                },
+                feedback(angle) {
+                    if (angle > 150) {
+                        return {
+                            label: "Ready",
+                            detail: "팔을 완전히 편 상태에서 시작합니다.",
+                            good: false,
+                        };
+                    }
+                    if (angle < 70) {
+                        return {
+                            label: "Curl",
+                            detail: "수축 구간입니다. 상완이 흔들리지 않게 천천히 내려가세요.",
+                            good: true,
+                        };
+                    }
+                    return {
+                        label: "Moving",
+                        detail: "좋아요, 일정한 속도로 올렸다 내리세요.",
+                        good: true,
+                    };
+                },
+            },
+            left_curl: {
+                name: "Left Arm Curl",
+                angleJoints: [KEY.leftShoulder, KEY.leftElbow, KEY.leftWrist],
+                thresholds: { up: 155, down: 60 },
+                start: {
+                    hint: "왼팔을 옆으로 내려 완전히 편 상태로 덤벨을 들고 서세요.",
+                    check(angle) {
+                        return angle > 150;
+                    },
+                },
+                feedback(angle) {
+                    if (angle > 150) {
+                        return {
+                            label: "Ready",
+                            detail: "왼팔을 완전히 편 상태에서 시작합니다.",
+                            good: false,
+                        };
+                    }
+                    if (angle < 70) {
+                        return {
+                            label: "Curl",
+                            detail: "왼팔 수축 구간입니다. 어깨는 고정하세요.",
+                            good: true,
+                        };
+                    }
+                    return {
+                        label: "Moving",
+                        detail: "좋아요, 리듬을 일정하게 유지하세요.",
+                        good: true,
+                    };
+                },
+            },
+            squat: {
+                name: "Squat",
+                angleJoints: [KEY.leftHip, KEY.leftKnee, KEY.leftAnkle],
+                thresholds: { up: 165, down: 100 },
+                start: {
+                    hint: "발을 어깨너비로 벌리고 상체를 세운 상태로 똑바로 서세요.",
+                    check(angle) {
+                        return angle > 165;
+                    },
+                },
+                feedback(angle) {
+                    if (angle > 170) {
+                        return {
+                            label: "Stand",
+                            detail: "완전히 서 있는 상태입니다. 준비가 되면 천천히 내려가세요.",
+                            good: false,
+                        };
+                    }
+                    if (angle < 90) {
+                        return {
+                            label: "Too Low",
+                            detail: "너무 낮아요. 허리/무릎 부담에 주의하세요.",
+                            good: false,
+                        };
+                    }
+                    if (angle >= 90 && angle <= 110) {
+                        return {
+                            label: "Good Depth",
+                            detail: "좋은 깊이입니다. 가슴은 펴고 코어를 조이세요.",
+                            good: true,
+                        };
+                    }
+                    return {
+                        label: "Half Squat",
+                        detail: "조금 더 내려가면 좋아요.",
+                        good: false,
+                    };
+                },
+            },
+            lunge_right: {
+                name: "Right Lunge",
+                angleJoints: [KEY.rightHip, KEY.rightKnee, KEY.rightAnkle],
+                thresholds: { up: 165, down: 95 },
+                start: {
+                    hint: "오른발을 앞으로 내딛고 상체를 세운 상태로 준비하세요.",
+                    check(angle) {
+                        return angle > 165;
+                    },
+                },
+                feedback(angle) {
+                    if (angle > 170) {
+                        return {
+                            label: "Stand",
+                            detail: "상체를 세우고 중심을 잡은 뒤 천천히 내려가세요.",
+                            good: false,
+                        };
+                    }
+                    if (angle < 85) {
+                        return {
+                            label: "Too Low",
+                            detail: "너무 깊습니다. 앞무릎이 발끝을 넘지 않게!",
+                            good: false,
+                        };
+                    }
+                    if (angle >= 90 && angle <= 110) {
+                        return {
+                            label: "Good Lunge",
+                            detail: "좋아요. 상체는 세우고 코어를 긴장하세요.",
+                            good: true,
+                        };
+                    }
+                    return {
+                        label: "Shallow",
+                        detail: "조금 더 내려가면 좋아요.",
+                        good: false,
+                    };
+                },
+            },
+            shoulder_press: {
+                name: "Shoulder Press",
+                angleJoints: [KEY.rightShoulder, KEY.rightElbow, KEY.rightWrist],
+                thresholds: { up: 160, down: 90 },
+                start: {
+                    hint: "덤벨을 귀 옆 정도 높이로 들고, 팔꿈치가 몸 앞에 오도록 유지하세요.",
+                    check(angle) {
+                        return angle >= 90 && angle <= 130;
+                    },
+                },
+                feedback(angle) {
+                    if (angle > 155) {
+                        return {
+                            label: "Lockout",
+                            detail: "팔을 완전히 잠그지 말고 살짝 굽혀 주세요.",
+                            good: false,
+                        };
+                    }
+                    if (angle < 90) {
+                        return {
+                            label: "Bottom",
+                            detail: "어깨 아래로 너무 내리지 않게 주의!",
+                            good: false,
+                        };
+                    }
+                    return {
+                        label: "Pressing",
+                        detail: "천천히 위로 밀어 올리며 코어를 조이세요.",
+                        good: true,
+                    };
+                },
+            },
+            side_raise_right: {
+                name: "Right Side Raise",
+                angleJoints: [KEY.rightElbow, KEY.rightShoulder, KEY.rightHip],
+                thresholds: { up: 165, down: 80 },
+                start: {
+                    hint: "오른팔을 몸 옆에 자연스럽게 두고 서세요.",
+                    check(angle) {
+                        return angle > 160;
+                    },
+                },
+                feedback(angle) {
+                    if (angle > 165) {
+                        return {
+                            label: "Down",
+                            detail: "팔을 몸 옆에 두고 준비하세요.",
+                            good: false,
+                        };
+                    }
+                    if (angle < 80) {
+                        return {
+                            label: "Too High",
+                            detail: "어깨 높이까지만 올려 주세요.",
+                            good: false,
+                        };
+                    }
+                    if (angle >= 80 && angle <= 110) {
+                        return {
+                            label: "Good",
+                            detail: "좋은 높이입니다. 팔꿈치를 살짝 굽혀 주세요.",
+                            good: true,
+                        };
+                    }
+                    return {
+                        label: "Raising",
+                        detail: "어깨 높이까지 천천히 올리세요.",
+                        good: true,
+                    };
+                },
+            },
+        };
+
+        const state = {
+            currentKey: "right_curl",
+            reps: 0,
+            stage: "up",
+            lastAngle: 0,
+            fps: 0,
+            lastFrameTime: performance.now(),
+            running: false,
+            detector: null,
+            animationId: null,
+            stream: null,
+            showSkeleton: true,
+            workoutStarted: false,
+            startStableFrames: 0,
+            isCountingDown: false,
+            countdownValue: 0,
+            
+            // 세트 설정값 및 휴식 상태
+            targetReps: 15,
+            restTime: 30,
+            isResting: false,
+            setCount: 1,
+
+            // TTS 딜레이 제어용 상태
+            badPostureStartTime: 0,
+
+            // 리포트용 통계 변수
+            workoutStartTime: 0, 
+            totalSessionReps: 0, 
+            totalFrames: 0,      
+            goodFrames: 0        
+        };
+
+        // 운동 시작 전 5초 카운트다운 함수
+        async function runCountdownSequence() {
+            state.isCountingDown = true;
+            
+            const exerciseName = EXERCISES[state.currentKey].name;
+            speakText(exerciseName + " 운동을 시작합니다. 준비하세요.");
+            
+            await sleep(5000); 
+
+            for (let i = 5; i > 0; i--) {
+                state.countdownValue = i;
+                speakText(String(i)); 
+                await sleep(1000);
+            }
+
+            state.countdownValue = 0;
+            state.isCountingDown = false;
+            state.workoutStarted = true;
+            speakText("시작!");
+        }
+
+        // 세트 완료 후 휴식 시간 카운트다운 함수
+        async function startRestSequence() {
+            state.isResting = true;
+            
+            speakText(`${state.setCount}세트 종료. ${state.restTime}초간 휴식합니다.`);
+            
+            // 휴식 시간 카운트
+            for (let i = state.restTime; i > 0; i--) {
+                if (!state.running || !state.isResting) break;
+
+                state.countdownValue = i;
+                
+                if (i <= 5) {
+                    speakText(String(i));
+                }
+                await sleep(1000);
+            }
+
+            // 휴식 종료 로직
+            if (state.isResting) { 
+                state.isResting = false;
+                state.countdownValue = 0;
+                state.reps = 0; // 렙수 초기화
+                state.setCount++; // 다음 세트로 증가
+                state.stage = "up";
+                
+                speakText("휴식 종료. 다음 세트를 시작하세요!");
+            }
+        }
+
+        // --------------------------
+        // 3. 도우미 & 스켈레톤
+        // --------------------------
+        function toVec2(kp) {
+            return [kp.x, kp.y];
+        }
+
+        function angleBetween(a, b, c) {
+            const ab = [a[0] - b[0], a[1] - b[1]];
+            const cb = [c[0] - b[0], c[1] - b[1]];
+            const dot = ab[0] * cb[0] + ab[1] * cb[1];
+            const magAB = Math.hypot(ab[0], ab[1]);
+            const magCB = Math.hypot(cb[0], cb[1]);
+            const cosine = dot / (magAB * magCB + 1e-6);
+            const rad = Math.acos(Math.min(Math.max(cosine, -1), 1));
+            return (rad * 180) / Math.PI;
+        }
+
+        const SKELETON_CONNECTIONS = [
+            [KEY.leftShoulder, KEY.rightShoulder],
+            [KEY.leftShoulder, KEY.leftElbow],
+            [KEY.leftElbow, KEY.leftWrist],
+            [KEY.rightShoulder, KEY.rightElbow],
+            [KEY.rightElbow, KEY.rightWrist],
+            [KEY.leftShoulder, KEY.leftHip],
+            [KEY.rightShoulder, KEY.rightHip],
+            [KEY.leftHip, KEY.leftKnee],
+            [KEY.leftKnee, KEY.leftAnkle],
+            [KEY.rightHip, KEY.rightKnee],
+            [KEY.rightKnee, KEY.rightAnkle],
+        ];
+
+        // MoveNet이 주는 픽셀 좌표를 캔버스 좌표로 매핑
+        function projectToCanvas(kp) {
+            const nx = kp.x / videoEl.videoWidth;
+            const ny = kp.y / videoEl.videoHeight;
+            return {
+                x: nx * canvasEl.width,
+                y: ny * canvasEl.height,
+            };
+        }
+
+        function drawSkeleton(keypoints) {
+            ctx.clearRect(0, 0, canvasEl.width, canvasEl.height);
+
+            if (!state.showSkeleton) {
+                return;
+            }
+
+            keypoints.forEach((kp) => {
+                if (!kp) return;
+                if (kp.score < 0.3) return;
+
+                const { x, y } = projectToCanvas(kp);
+                ctx.beginPath();
+                ctx.arc(x, y, 4, 0, 2 * Math.PI);
+                ctx.fillStyle = "#38bdf8";
+                ctx.fill();
+            });
+
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = "rgba(56, 189, 248, 0.9)";
+            SKELETON_CONNECTIONS.forEach(([i, j]) => {
+                const kp1 = keypoints[i];
+                const kp2 = keypoints[j];
+                if (!kp1 || !kp2) return;
+                if (kp1.score < 0.3 || kp2.score < 0.3) return;
+
+                const p1 = projectToCanvas(kp1);
+                const p2 = projectToCanvas(kp2);
+
+                ctx.beginPath();
+                ctx.moveTo(p1.x, p1.y);
+                ctx.lineTo(p2.x, p2.y);
+                ctx.stroke();
+            });
+        }
+        
+        function drawCountdown() {
+            if (state.countdownValue > 0) {
+                ctx.save();
+                
+                const cx = canvasEl.width / 2;
+                const cy = canvasEl.height / 2;
+                ctx.translate(cx, cy);
+                
+                ctx.scale(-1, 1);
+
+                ctx.font = "bold 150px Pretendard";
+                ctx.fillStyle = "#38bdf8";
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
+                
+                ctx.lineWidth = 5;
+                ctx.strokeStyle = "black";
+                ctx.strokeText(state.countdownValue, 0, 0);
+                
+                ctx.fillText(state.countdownValue, 0, 0);
+
+                if (state.isResting) {
+                    ctx.font = "bold 40px Pretendard";
+                    ctx.fillStyle = "white";
+                    ctx.fillText("REST TIME", 0, 80);
+                }
+
+                ctx.restore();
+            }
+        }
+
+        // 포즈선 토글 버튼
+        toggleOverlayBtn.addEventListener("click", () => {
+            state.showSkeleton = !state.showSkeleton;
+            toggleOverlayBtn.textContent = state.showSkeleton ? "포즈선 끄기" : "포즈선 켜기";
+            if (!state.showSkeleton) {
+                ctx.clearRect(0, 0, canvasEl.width, canvasEl.height);
+            }
+        });
+
+        function updateHUD(angle, feedback) {
+            hudReps.textContent = state.reps;
+            hudTarget.textContent = state.targetReps;
+            hudAngle.textContent = `${Math.round(angle)}°`;
+            hudFps.textContent = state.fps.toFixed(0);
+            statusLabel.textContent = feedback.label;
+            statusDetail.textContent = feedback.detail;
+            statusDot.classList.remove("good", "bad");
+            if (feedback.good) statusDot.classList.add("good");
+            else statusDot.classList.add("bad");
+
+            // 대형 카운터 텍스트 업데이트
+            bigRepsDisplay.textContent = state.reps;
+            bigTargetDisplay.textContent = state.targetReps;
+        }
+
+        function resetCounter() {
+            state.reps = 0;
+            state.stage = "up";
+            state.lastAngle = 0;
+            state.workoutStarted = false;
+            state.startStableFrames = 0;
+            state.isCountingDown = false;
+            state.isResting = false; 
+            state.countdownValue = 0;
+            
+            // TTS 타이머 초기화
+            state.badPostureStartTime = 0;
+
+            // 리포트용 통계 초기화
+            state.workoutStartTime = 0; 
+            state.totalSessionReps = 0;
+            state.totalFrames = 0;
+            state.goodFrames = 0;
+
+            statusLabel.textContent = "-";
+            statusDetail.textContent = "";
+            statusDot.classList.remove("good", "bad");
+
+            hudReps.textContent = "0";
+            hudAngle.textContent = "0°";
+            
+            bigRepsDisplay.textContent = "0";
+        }
+
+        // --------------------------
+        // 4. 카운팅 & MoveNet
+        // --------------------------
+        function updateRepsForExercise(ex, angle) {
+            if (state.isResting) return;
+
+            const { up, down } = ex.thresholds;
+            if (angle > up) {
+                state.stage = "up";
+            }
+            if (angle < down && state.stage === "up") {
+                state.stage = "down";
+                state.reps += 1;
+                state.totalSessionReps += 1; // 전체 누적 횟수 증가
+                
+                // 목표 횟수 도달 시
+                if (state.reps >= state.targetReps) {
+                    startRestSequence();
+                } else {
+                    if (state.reps > 0 && state.reps % 10 === 0) {
+                        speakText(state.reps + "회");
+                    }
+                }
+            }
+        }
+
+        async function createDetector() {
+            const model = poseDetection.SupportedModels.MoveNet;
+            const detectorConfig = {
+                modelType: poseDetection.movenet.modelType.SINGLEPOSE_LIGHTNING,
+            };
+            return poseDetection.createDetector(model, detectorConfig);
+        }
+
+        // --------------------------
+        // 5. 메인 루프
+        // --------------------------
+        async function renderLoop() {
+            if (!state.detector || !state.running) return;
+
+            const now = performance.now();
+            const dt = now - state.lastFrameTime;
+            state.lastFrameTime = now;
+            state.fps = 1000 / dt;
+
+            const poses = await state.detector.estimatePoses(videoEl, {
+                maxPoses: 1,
+                flipHorizontal: true,
+            });
+
+            if (poses.length > 0) {
+                const kp = poses[0].keypoints;
+                const ex = EXERCISES[state.currentKey];
+                const [ia, ib, ic] = ex.angleJoints;
+
+                const a = toVec2(kp[ia]);
+                const b = toVec2(kp[ib]);
+                const c = toVec2(kp[ic]);
+
+                const angle = angleBetween(a, b, c);
+                state.lastAngle = angle;
+                
+                drawSkeleton(kp);
+
+                if (state.isCountingDown || state.isResting) {
+                    drawCountdown();
+                    
+                    let statusMsg = state.isResting ? `Resting (Set ${state.setCount})` : "Getting Ready";
+                    let detailMsg = state.isResting ? "다음 세트를 위해 휴식 중..." : "준비하세요...";
+                    
+                    updateHUD(angle, { 
+                        label: statusMsg, 
+                        detail: detailMsg, 
+                        good: true 
+                    });
+                    
+                } else if (!state.workoutStarted) {
+                    let ok = false;
+                    if (ex.start && typeof ex.start.check === "function") {
+                        ok = ex.start.check(angle, kp);
+                    } else {
+                        ok = angle > ex.thresholds.up - 5;
+                    }
+
+                    if (ok) state.startStableFrames += 1;
+                    else state.startStableFrames = 0;
+
+                    if (state.startStableFrames >= 8) {
+                        state.startStableFrames = 0;
+                        runCountdownSequence();
+                    }
+
+                    const fb = {
+                        label: ok ? "Hold start position" : "Set start position",
+                        detail: ex.start?.hint || "준비자세를 맞춰 주세요. (정면을 보고 화면 중앙에 서세요.)",
+                        good: ok,
+                    };
+                    updateHUD(angle, fb);
+                } else {
+                    updateRepsForExercise(ex, angle);
+                    const fb = ex.feedback(angle);
+                    updateHUD(angle, fb);
+
+                    // 정확도 계산을 위한 프레임 수집
+                    state.totalFrames++;
+                    if (fb.good) {
+                        state.goodFrames++;
+                    }
+
+                    // TTS 코칭 로직
+                    if (!fb.good) {
+                        if (state.badPostureStartTime === 0) {
+                            state.badPostureStartTime = performance.now();
+                        } else {
+                            const elapsed = performance.now() - state.badPostureStartTime;
+                            if (elapsed > 3000) { 
+                                speakText(fb.detail);
+                                state.badPostureStartTime = 0; 
+                            }
+                        }
+                    } else {
+                        state.badPostureStartTime = 0;
+                    }
+                }
+            } else {
+                ctx.clearRect(0, 0, canvasEl.width, canvasEl.height);
+                statusLabel.textContent = "No pose";
+                statusDetail.textContent =
+                    "사람이 화면 안에 있도록 위치를 조정하세요.";
+                statusDot.classList.remove("good", "bad");
+            }
+
+            state.animationId = requestAnimationFrame(renderLoop);
+        }
+
+        // --------------------------
+        // 6. 카메라 시작/정지 & 리포트 함수
+        // --------------------------
+        
+        // 요약 리포트 계산 및 표시 함수
+        function showSummary() {
+            // 운동 시작한 적이 없으면 리포트 안 띄움
+            if (state.workoutStartTime === 0) return;
+
+            const endTime = Date.now();
+            const durationMs = endTime - state.workoutStartTime;
+            
+            // 시간 포맷팅 (MM:SS)
+            const totalSeconds = Math.floor(durationMs / 1000);
+            const m = Math.floor(totalSeconds / 60);
+            const s = totalSeconds % 60;
+            const timeStr = `${m}분 ${s}초`;
+
+            // 정확도 계산
+            let accuracy = 0;
+            if (state.totalFrames > 0) {
+                accuracy = Math.round((state.goodFrames / state.totalFrames) * 100);
+            }
+
+            // DOM 업데이트
+            summaryTime.textContent = timeStr;
+            summaryReps.textContent = `${state.totalSessionReps}회`;
+            summaryAccuracy.textContent = `${accuracy}%`;
+
+            // 모달 표시
+            summaryModal.classList.add("active");
+        }
+
+        // 모달 닫기 버튼
+        modalCloseBtn.addEventListener("click", () => {
+            summaryModal.classList.remove("active");
+        });
+
+        async function startCamera() {
+            if (state.running) return;
+            try {
+                toggleCameraBtn.disabled = true;
+                toggleCameraBtn.textContent = "카메라 준비 중...";
+
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    video: { width: 1280, height: 720 },
+                    audio: false,
+                });
+                state.stream = stream;
+                videoEl.srcObject = stream;
+
+                await videoEl.play();
+
+                canvasEl.width = videoEl.videoWidth;
+                canvasEl.height = videoEl.videoHeight;
+
+                if (!state.detector) {
+                    state.detector = await createDetector();
+                }
+
+                state.running = true;
+                state.lastFrameTime = performance.now();
+                toggleCameraBtn.textContent = "카메라 정지";
+                toggleCameraBtn.disabled = false;
+                
+                state.targetReps = parseInt(targetRepsInput.value) || 15;
+                state.restTime = parseInt(restTimeInput.value) || 30;
+                
+                // 운동 시작 시간 기록
+                state.workoutStartTime = Date.now();
+
+                // 시작 시 영상 설정
+                updateRefVideo(state.currentKey);
+
+                renderLoop();
+            } catch (err) {
+                console.error(err);
+                alert("카메라 접근 중 오류가 발생했습니다. 브라우저 권한을 확인하세요.");
+                toggleCameraBtn.textContent = "카메라 시작";
+                toggleCameraBtn.disabled = false;
+            }
+        }
+
+        function stopCamera() {
+            // 카메라 끌 때 리포트 보여주기 (운동을 조금이라도 했으면)
+            if (state.workoutStarted) {
+                showSummary();
+            }
+
+            state.running = false;
+            if (state.animationId) cancelAnimationFrame(state.animationId);
+            if (state.stream) {
+                state.stream.getTracks().forEach((t) => t.stop());
+                state.stream = null;
+            }
+            ctx.clearRect(0, 0, canvasEl.width, canvasEl.height);
+            toggleCameraBtn.textContent = "카메라 시작";
+            
+            // 초기화 로직
+            resetCounter();
+            state.setCount = 1; 
+        }
+
+        // 참고 영상 업데이트 함수
+        function updateRefVideo(key) {
+            const videoFile = VIDEO_MAP[key];
+            if (videoFile) {
+                refVideoEl.src = videoFile;
+                refVideoEl.play().catch(e => console.log("Autoplay blocked", e));
+            } else {
+                refVideoEl.src = ""; // 비디오 없음
+            }
+            refVideoLabel.textContent = EXERCISES[key].name;
+        }
+
+        // --------------------------
+        // 7. 이벤트 바인딩
+        // --------------------------
+        toggleCameraBtn.addEventListener("click", () => {
+            if (!state.running) startCamera();
+            else stopCamera();
+        });
+
+        resetBtn.addEventListener("click", () => {
+            // 리셋 버튼 누를 때도 리포트 보여주기
+            if (state.workoutStarted) {
+                showSummary();
+            }
+            
+            resetCounter();
+            state.setCount = 1; 
+        });
+
+        exerciseSelect.addEventListener("change", (e) => {
+            const key = e.target.value;
+            state.currentKey = key;
+            resetCounter();
+            state.setCount = 1; 
+
+            const ex = EXERCISES[key];
+            hudExercise.textContent = ex.name;
+            statusLabel.textContent = "Set start position";
+            statusDetail.textContent =
+                ex.start?.hint || "준비자세를 맞춰 주세요.";
+            
+            // 운동 바뀔 때 영상도 교체
+            updateRefVideo(key);
+        });
+        
+        targetRepsInput.addEventListener("change", (e) => {
+            state.targetReps = parseInt(e.target.value);
+            hudTarget.textContent = state.targetReps;
+            bigTargetDisplay.textContent = state.targetReps;
+        });
+        restTimeInput.addEventListener("change", (e) => {
+            state.restTime = parseInt(e.target.value);
+        });
+
+        // 초기 HUD
+        hudExercise.textContent = EXERCISES[state.currentKey].name;
+        hudTarget.textContent = state.targetReps;
+        
+        // 초기 영상 설정
+        updateRefVideo(state.currentKey);
+
+    </script>
+  </body>
+</html>
