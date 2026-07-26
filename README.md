@@ -1,4 +1,4 @@
-# FitForm-Live-Project
+# FitForm Live
 Microsoft AI School Cohort 8, First Team Project(20251111 ~ 20251121)
 
 ## 📌 Summary
@@ -8,8 +8,8 @@ Microsoft AI School Cohort 8, First Team Project(20251111 ~ 20251121)
     -   🚧 The Reality Beginners Face : Most beginners struggle to learn proper exercise form. 
     -   📣 Pain Points : Injury Risk, Lack of Feedback, Financial Burden, Lack of Motivation
 -   🚀 **How** we solved it
-    -   🛠️ Unified pipeline that combines **OpenCV VideoCapture**, **Pose Estimation Model**, and **Azure**.
-    -   🖼️ Provide Real-Time Pose Analysis, Immediate Form Feedback, Personalized Coaching.
+    -   🛠️ Browser-based pipeline combining webcam input, **MoveNet pose estimation**, and joint-angle analysis.
+    -   🖼️ Real-time pose visualization, repetition counting, and immediate form feedback.
 
 ## 👀 How does it work?
 
@@ -19,11 +19,9 @@ Microsoft AI School Cohort 8, First Team Project(20251111 ~ 20251121)
 
 <img src="./images/pipeline.png" style="width: 100%; height: auto;" />
 <p>
-  <img alt="Python" src="https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=Python&logoColor=white" />
-  <img alt="YOLOv8" src="https://img.shields.io/badge/YOLOv8-111F68?style=for-the-badge&logo=yolo&logoColor=white" />
-  <img alt="OpenCV" src="https://img.shields.io/badge/OpenCV-5C3EE8?style=for-the-badge&logo=opencv&logoColor=white" />
-  <img alt="Azure" src="https://img.shields.io/badge/Azure-0089D6?style=for-the-badge&logoColor=white" />
-  <img alt="Gradio" src="https://img.shields.io/badge/Gradio-F97316?style=for-the-badge&logo=gradio&logoColor=white" />
+  <img alt="JavaScript" src="https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black" />
+  <img alt="TensorFlow.js" src="https://img.shields.io/badge/TensorFlow.js-FF6F00?style=for-the-badge&logo=tensorflow&logoColor=white" />
+  <img alt="MoveNet" src="https://img.shields.io/badge/MoveNet-Pose%20Estimation-111F68?style=for-the-badge" />
 </p>
 
 ## 🧑🏻‍💻 Developers
@@ -59,18 +57,18 @@ Microsoft AI School Cohort 8, First Team Project(20251111 ~ 20251121)
       </td>
       <td align="center" style="min-width: 220px;">
         <div>Pose Model ML</div>
-        <div>Classification Model Test</div>
+        <div>Pose Model Evaluation</div>
         <div>Regression Model Test</div>
       </td>
       <td align="center" style="min-width: 220px;">
         <div>Pose Model ML</div>
-        <div>Avatar Model</div>
+        <div>Pose Visualization</div>
         <div>Code integration</div>
       </td>
       <td align="center" style="min-width: 220px;">
         <div>Pose Model ML</div>
-        <div>Azure Neural TTS</div>
-        <div>Azure Web App</div>
+        <div>Pose Feedback</div>
+        <div>Web App</div>
           </td>
       <td align="center" style="min-width: 220px;">
         <div>Demo video</div>

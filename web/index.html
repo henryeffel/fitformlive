@@ -2,7 +2,7 @@
 <html lang="ko">
   <head>
     <meta charset="UTF-8" />
-    <title>MyPT Azure – On-device Pose Demo</title>
+    <title>FitForm Live – Real-time Pose Analysis</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <!-- 폰트 & 기본 스타일 -->
     <link
@@ -448,23 +448,10 @@
       }
     </style>
 
-    <!-- Import Map for Module Resolution -->
-    <script type="importmap">
-    {
-      "imports": {
-        "three": "https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.module.js",
-        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.158.0/examples/jsm/"
-      }
-    }
-    </script>
-
     <!-- TensorFlow.js + MoveNet -->
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.16.0/dist/tf.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/pose-detection"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose"></script>
-  
-      <!-- Azure Speech SDK for TTS -->
-    <script src="https://aka.ms/csspeech/jsbrowserpackageraw"></script>
   </head>
 
   <body>
@@ -480,7 +467,6 @@
       </header>
       <nav id="top-menu" class="top-menu">
         <button class="btn secondary" id="menu-training">트레이닝 모드</button>
-        <button class="btn secondary" id="menu-avatar">아바타 모드</button>
         <button class="btn secondary" id="menu-challenge">도전 모드</button>
         <button class="btn secondary" id="menu-dev">개발자 도구</button>
       </nav>
@@ -501,12 +487,6 @@
                     <span id="current-exercise-name">Right Arm Curl</span>
                   </div>
                   <button id="open-exercise-picker" class="btn secondary" style="margin-left: 8px;">수행 동작 선택</button>
-                  <div class="character-select" id="avatar-style-wrapper" style="display:none; margin-left:8px; position:relative;">
-                    <select id="avatar-style-select">
-                      <option value="basic">남성</option>
-                      <option value="cute">여성</option>
-                    </select>
-                  </div>
                 </div>
 
                 <div style="display: flex; gap: 8px; align-items: center;">
@@ -540,19 +520,6 @@
                 <div id="exercise-picker-overlay">
                   <div id="exercise-picker-panel" class="exercise-picker-panel">
                     <!-- JS에서 운동 카드가 렌더링됩니다. -->
-                  </div>
-                </div>
-
-                <div
-                  id="avatar-container"
-                  style="position:absolute; inset:0; width:100%; height:100%; background:#0f172a; border-radius:12px; overflow:hidden; display:none;"
-                >
-                  <!-- Three.js avatar canvas will be injected here in Avatar mode -->
-                  <div
-                    id="avatar-warning"
-                    style="position:absolute; inset:0; display:none; align-items:center; justify-content:center; font-size:18px; color:#e5e7eb; background:rgba(15,23,42,0.6); text-align:center; padding:16px;"
-                  >
-                    전신이 화면에 모두 들어오도록<br />카메라와 충분한 거리를 두어주세요.
                   </div>
                 </div>
 
@@ -596,21 +563,12 @@
 
         </div>
 
-        <div id="avatar-view" style="display:none; width:100%; max-width:1200px; margin-top:20px;">
-          <div style="padding:16px; background:rgba(15,23,42,0.9); border-radius:16px; border:1px solid rgba(148,163,184,0.3);">
-            <h2 style="margin:0 0 8px;">3D 아바타 모드</h2>
-            <p style="color:#9ca3af; font-size:14px; margin:0;">
-              나의 운동 동작을 그대로 따라하는 3D 아바타! 게임처럼 즐기면서 자세를 점검해보세요.
-            </p>
-          </div>
-        </div>
-
         <!-- 개발자 도구 뷰 -->
         <div id="dev-view" style="display:none; width:100%; max-width:1200px; margin-top:20px;">
           <div style="padding:16px; background:rgba(15,23,42,0.9); border-radius:16px; border:1px solid rgba(148,163,184,0.3);">
             <h2 style="margin:0 0 12px;">개발자 도구</h2>
             <p style="color:#9ca3af; font-size:14px; margin:0 0 12px;">
-              (Coming Soon for pro user) 정확한 운동 자세의 좌표를 ML 기반으로 분류, 시각화하고, 모델 성능을 분석하는 도구들이 여기에 표시됩니다.
+              실시간 관절 좌표, 운동 판정 상태 및 영상처리 성능 지표를 확인하는 도구가 여기에 표시됩니다.
             </p>
             <pre id="dev-log" style="max-height:260px; overflow:auto; font-size:12px; background:#020617; padding:10px; border-radius:8px; border:1px solid rgba(31,41,55,0.9);"></pre>
           </div>
@@ -618,21 +576,7 @@
       </main>
     </div>
 
-    <script type="module">
-      import * as THREE from "three";
-      import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
-
-      const AVATAR_MODELS = {
-        basic: "models/basic.glb",
-        cute: "models/cute.glb",
-      };
-
-      let avatarScene = null;
-      let avatarCamera = null;
-      let avatarRenderer = null;
-      let avatarModel = null;
-      let avatarBoneMap = null;
-
+    <script>
       // --------------------------
       // 1. 기본 상태 & 상수
       // --------------------------
@@ -658,418 +602,9 @@
       const exercisePickerOverlay = document.getElementById("exercise-picker-overlay");
       const exercisePickerPanel = document.getElementById("exercise-picker-panel");
       const openExercisePickerBtn = document.getElementById("open-exercise-picker");
-      const avatarStyleWrapper = document.getElementById("avatar-style-wrapper");
-      const avatarStyleSelect = document.getElementById("avatar-style-select");
-      const avatarWarningEl = document.getElementById("avatar-warning");
-
-      const avatarCameraBtn = document.getElementById("avatar-camera-btn");
-
-      // 🔊 Azure Speech TTS 상태
-      let ttsEnabled = true;
-      let isSpeaking = false;
-      let speechConfig = null;
-      let audioConfig = null;
-      let synthesizer = null;
-      let pendingText = null;
-      let speechInitPromise = null; // initSpeech가 한 번만 실행되도록 보장
-
-      // 🔊 숫자 카운트용 TTS 캐시 (지연 최소화)
-      let cacheSynthesizer = null; // 오디오 데이터를 받아오기 위한 TTS 인스턴스
-      const ttsCache = {}; // { repNumber: HTMLAudioElement }
-      let ttsReady = false;
-      let countdownAudio = null; // "5초 후에 시작합니다" 전용 오디오 캐시
-      const avatarTtsCache = {}; // 아바타 모드 문장용 TTS 캐시
-
-      async function initSpeech() {
-        if (!window.SpeechSDK) {
-          console.warn("SpeechSDK가 아직 로드되지 않았습니다.");
-          return;
-        }
-        if (speechConfig && audioConfig && synthesizer) {
-          return;
-        }
-        try {
-          const res = await fetch("/api/getspeechtoken");
-          if (!res.ok) {
-            console.error("Failed to fetch speech token:", res.status);
-            return;
-          }
-
-          // 로컬 Live Server에서 404 HTML을 돌려줄 때 JSON 파싱 에러가 나지 않도록 보호
-          const raw = await res.text();
-          let data;
-          try {
-            data = JSON.parse(raw);
-          } catch (e) {
-            console.warn(
-              "/api/getspeechtoken 응답이 JSON이 아닙니다. (아마 로컬 환경) TTS 초기화를 건너뜁니다."
-            );
-            return;
-          }
-
-          if (!data.token || !data.region) {
-            console.error("Speech token response invalid:", data);
-            return;
-          }
-
-          speechConfig = SpeechSDK.SpeechConfig.fromAuthorizationToken(
-            data.token,
-            data.region
-          );
-          // 한국어 음성
-          speechConfig.speechSynthesisVoiceName = "ko-KR-SunHiNeural";
-
-          // mp3 출력
-          if (SpeechSDK.SpeechSynthesisOutputFormat) {
-            speechConfig.speechSynthesisOutputFormat =
-              SpeechSDK.SpeechSynthesisOutputFormat.Audio16Khz32KBitRateMonoMp3;
-          }
-
-          audioConfig = SpeechSDK.AudioConfig.fromDefaultSpeakerOutput();
-
-          // 문장 안내용
-          synthesizer = new SpeechSDK.SpeechSynthesizer(
-            speechConfig,
-            audioConfig
-          );
-
-          // 숫자 TTS 캐시용 (오디오 데이터만 받음)
-          cacheSynthesizer = new SpeechSDK.SpeechSynthesizer(
-            speechConfig,
-            null
-          );
-          ttsReady = true;
-
-          console.log("Speech TTS initialized.");
-
-          // "5초 후에 시작합니다." & 1~5 숫자 미리 캐시
-          preloadCountdownAudio();
-          preloadNumberRange(1, 5);
-          // 아바타 모드 전용 문장도 미리 캐시
-          preloadAvatarPhrases();
-
-          // 초기화 끝났고 대기 문장이 있으면 재생
-          if (pendingText) {
-            const textToSpeak = pendingText;
-            pendingText = null;
-            internalSpeak(textToSpeak);
-          }
-        } catch (err) {
-          console.error("initSpeech() 중 오류:", err);
-        }
-      }
-
-      function initSpeechOnce() {
-        if (speechInitPromise) return speechInitPromise;
-        speechInitPromise = initSpeech();
-        return speechInitPromise;
-      }
-
-      function speakText(text) {
-        if (!ttsEnabled) return;
-        if (!text || text.length === 0) return;
-        if (!window.SpeechSDK) {
-          console.warn("SpeechSDK is not loaded yet.");
-          return;
-        }
-
-        // 아직 초기화가 안 됐으면 일단 큐에 넣고 init
-        if (!ttsReady || !speechConfig || !audioConfig || !synthesizer) {
-          if (!speechInitPromise) {
-            initSpeechOnce();
-          }
-          pendingText = text;
-          console.warn("Speech synthesizer not ready yet, queued:", text);
-          return;
-        }
-
-        pendingText = text;
-
-        if (isSpeaking) {
-          synthesizer.stopSpeakingAsync(
-            function () {
-              isSpeaking = false;
-              const next = pendingText;
-              pendingText = null;
-              if (next) internalSpeak(next);
-            },
-            function (err) {
-              console.error("TTS stop error:", err);
-              isSpeaking = false;
-              const next = pendingText;
-              pendingText = null;
-              if (next) internalSpeak(next);
-            }
-          );
-        } else {
-          const next = pendingText;
-          pendingText = null;
-          internalSpeak(next);
-        }
-      }
-
-      function internalSpeak(text) {
-        if (!text || !synthesizer) return;
-
-        try {
-          isSpeaking = true;
-          synthesizer.speakTextAsync(
-            text,
-            function (result) {
-              isSpeaking = false;
-              if (result.reason === SpeechSDK.ResultReason.Canceled) {
-                const cancellation =
-                  SpeechSDK.CancellationDetails.fromResult(result);
-                console.warn(
-                  "TTS canceled:",
-                  cancellation.reason,
-                  cancellation.errorDetails
-                );
-              }
-            },
-            function (err) {
-              console.error("TTS error:", err);
-              isSpeaking = false;
-            }
-          );
-        } catch (err) {
-          console.error("TTS exception:", err);
-          isSpeaking = false;
-        }
-      }
-
-      // ====== 카운트 한글 단어 (1~50 대응) ======
-      const KOREAN_UNITS = [
-        "",
-        "하나",
-        "둘",
-        "셋",
-        "넷",
-        "다섯",
-        "여섯",
-        "일곱",
-        "여덟",
-        "아홉",
-      ];
-
-      const KOREAN_TENS = ["", "열", "스물", "서른", "마흔", "쉰"];
-
-      function getKoreanCountWord(n) {
-        if (n >= 1 && n <= 50) {
-          const tens = Math.floor(n / 10);
-          const unit = n % 10;
-
-          if (tens === 0) {
-            return KOREAN_UNITS[unit];
-          }
-          if (unit === 0) {
-            return KOREAN_TENS[tens];
-          }
-          return KOREAN_TENS[tens] + KOREAN_UNITS[unit];
-        }
-        return String(n);
-      }
-
-      // ====== 숫자 TTS 캐시 및 재생 ======
-      function preloadSingleNumber(n) {
-        if (!ttsReady || !cacheSynthesizer) return;
-        if (ttsCache[n]) return;
-
-        const word = getKoreanCountWord(n) + "!";
-
-        cacheSynthesizer.speakTextAsync(
-          word,
-          function (result) {
-            if (
-              result.reason ===
-              SpeechSDK.ResultReason.SynthesizingAudioCompleted
-            ) {
-              const audioData = result.audioData;
-              if (audioData) {
-                try {
-                  const blob = new Blob([audioData], { type: "audio/mpeg" });
-                  const url = URL.createObjectURL(blob);
-                  const audio = new Audio(url);
-                  ttsCache[n] = audio;
-                } catch (e) {
-                  console.warn("Failed to build audio blob for rep", n, e);
-                }
-              }
-            } else if (result.reason === SpeechSDK.ResultReason.Canceled) {
-              const cancellation =
-                SpeechSDK.CancellationDetails.fromResult(result);
-              console.warn(
-                "Preload TTS canceled:",
-                cancellation.reason,
-                cancellation.errorDetails
-              );
-            }
-          },
-          function (err) {
-            console.error("Preload TTS error:", err);
-          }
-        );
-      }
-
-      function preloadNumberRange(start, end) {
-        for (let n = start; n <= end; n++) {
-          preloadSingleNumber(n);
-        }
-      }
-
-      // "5초 후에 시작합니다." 문장을 미리 오디오로 캐시
-      function preloadCountdownAudio() {
-        if (!ttsReady || !cacheSynthesizer) return;
-        if (countdownAudio) return;
-
-        const text = "5초 후에 시작합니다.";
-
-        cacheSynthesizer.speakTextAsync(
-          text,
-          function (result) {
-            if (
-              result.reason ===
-              SpeechSDK.ResultReason.SynthesizingAudioCompleted
-            ) {
-              const audioData = result.audioData;
-              if (audioData) {
-                try {
-                  const blob = new Blob([audioData], { type: "audio/mpeg" });
-                  const url = URL.createObjectURL(blob);
-                  const audio = new Audio(url);
-                  countdownAudio = audio;
-                } catch (e) {
-                  console.warn("Failed to build countdown audio blob", e);
-                }
-              }
-            } else if (result.reason === SpeechSDK.ResultReason.Canceled) {
-              const cancellation =
-                SpeechSDK.CancellationDetails.fromResult(result);
-              console.warn(
-                "Preload countdown TTS canceled:",
-                cancellation.reason,
-                cancellation.errorDetails
-              );
-            }
-          },
-          function (err) {
-            console.error("Preload countdown TTS error:", err);
-          }
-        );
-      }
-
-      // 아바타 모드 전용 문장 TTS 캐시
-      function preloadAvatarPhrase(key, text) {
-        if (!ttsReady || !cacheSynthesizer) return;
-        if (avatarTtsCache[key]) return;
-
-        cacheSynthesizer.speakTextAsync(
-          text,
-          function (result) {
-            if (
-              result.reason ===
-              SpeechSDK.ResultReason.SynthesizingAudioCompleted
-            ) {
-              const audioData = result.audioData;
-              if (audioData) {
-                try {
-                  const blob = new Blob([audioData], { type: "audio/mpeg" });
-                  const url = URL.createObjectURL(blob);
-                  const audio = new Audio(url);
-                  avatarTtsCache[key] = audio;
-                } catch (e) {
-                  console.warn(
-                    "Failed to build avatar phrase audio blob for key:",
-                    key,
-                    e
-                  );
-                }
-              }
-            } else if (result.reason === SpeechSDK.ResultReason.Canceled) {
-              const cancellation =
-                SpeechSDK.CancellationDetails.fromResult(result);
-              console.warn(
-                "Preload avatar phrase TTS canceled for key:",
-                key,
-                cancellation.reason,
-                cancellation.errorDetails
-              );
-            }
-          },
-          function (err) {
-            console.error("Preload avatar phrase TTS error for key:", key, err);
-          }
-        );
-      }
-
-      function preloadAvatarPhrases() {
-        preloadAvatarPhrase(
-          "avatar_start_warning",
-          "아바타 모드에서는 전신이 화면에 모두 들어와야 합니다. 카메라와 충분한 거리를 두어주세요."
-        );
-        preloadAvatarPhrase(
-          "avatar_fullbody_ready",
-          "전신이 인식되었습니다. 운동을 시작합니다."
-        );
-        preloadAvatarPhrase(
-          "avatar_resume",
-          "전신이 다시 인식되었습니다. 운동을 계속합니다."
-        );
-        preloadAvatarPhrase(
-          "avatar_lost",
-          "전신이 인식되지 않습니다. 카메라와 충분한 거리를 벌려주십시오."
-        );
-      }
-
-      function playAvatarPhrase(key, fallbackText) {
-        const audio = avatarTtsCache[key];
-        if (audio) {
-          try {
-            audio.currentTime = 0;
-            audio.play();
-            return;
-          } catch (e) {
-            console.warn(
-              "Avatar cached audio play error for key:",
-              key,
-              "fallback to live TTS:",
-              e
-            );
-          }
-        }
-        // 캐시가 없거나 재생에 실패하면 일반 TTS로 대체
-        if (fallbackText) {
-          speakText(fallbackText);
-        }
-      }
-
-      function playCountTTS(rep) {
-        const cached = ttsCache[rep];
-        if (cached) {
-          try {
-            cached.currentTime = 0;
-            cached.play();
-          } catch (e) {
-            console.warn(
-              "Cached audio play error, fallback to live TTS:",
-              e
-            );
-            const word = getKoreanCountWord(rep);
-            speakText(word + "!");
-          }
-        } else {
-          const word = getKoreanCountWord(rep);
-          speakText(word + "!");
-          if (rep >= 1 && rep < 50) {
-            preloadSingleNumber(rep + 1);
-          }
-          return;
-        }
-
-        if (rep >= 1 && rep < 50) {
-          preloadSingleNumber(rep + 1);
-        }
-      }
+      // 음성 기능은 프로젝트 핵심 범위에서 제외했습니다.
+      function speakText() {}
+      function playCountTTS() {}
 
       function handleRepCounted(rep) {
         if (repOverlayEl) {
@@ -1505,17 +1040,10 @@
         repOverlayTimer: null,
         totalFrames: 0,
         goodFrames: 0,
-        isAvatarMode: false,
         // Challenge mode state
         challengeActive: false,
         challengeEndTime: 0,
         challengeDurationMinutes: null,
-
-        // Full-body / avatar control
-        fullBodyDetected: false,
-        lastFullBodyTime: performance.now(),
-        workoutPausedForNoBody: false,
-        waitingForFullBodyStart: false,
         countdownTimerId: null,
       };
       // --------------------------
@@ -1568,96 +1096,6 @@
         const cosine = dot / (magAB * magCB + 1e-6);
         const rad = Math.acos(Math.min(Math.max(cosine, -1), 1));
         return (rad * 180) / Math.PI;
-      }
-
-      function isFullBodyVisible(keypoints) {
-        if (!keypoints || keypoints.length < 17) return false;
-        const requiredIndices = [
-          KEY.leftShoulder,
-          KEY.rightShoulder,
-          KEY.leftHip,
-          KEY.rightHip,
-          KEY.leftKnee,
-          KEY.rightKnee,
-          KEY.leftAnkle,
-          KEY.rightAnkle,
-        ];
-        for (const idx of requiredIndices) {
-          const kp = keypoints[idx];
-          if (!kp || kp.score == null || kp.score < 0.4) {
-            return false;
-          }
-        }
-        return true;
-      }
-
-      function handleFullBodyState(keypoints) {
-        // 이 로직은 아바타 모드에서만 사용
-        if (state.currentMode !== "avatar") {
-          if (avatarWarningEl) avatarWarningEl.style.display = "none";
-          state.fullBodyDetected = false;
-          state.workoutPausedForNoBody = false;
-          state.waitingForFullBodyStart = false;
-          return;
-        }
-
-        const now = performance.now();
-        const visible = isFullBodyVisible(keypoints);
-
-        if (visible) {
-          state.fullBodyDetected = true;
-          state.lastFullBodyTime = now;
-          if (avatarWarningEl) avatarWarningEl.style.display = "none";
-
-          // 시작 전에 전신 인식을 기다리는 상태였다면 → 카운트다운 시작
-          if (state.waitingForFullBodyStart) {
-            state.waitingForFullBodyStart = false;
-            state.workoutPausedForNoBody = false;
-            playAvatarPhrase(
-              "avatar_fullbody_ready",
-              "전신이 인식되었습니다. 운동을 시작합니다."
-            );
-            startCountdownAndWorkout();
-            return;
-          }
-
-          // 운동 중 일시정지 상태였다면 → 재개
-          if (
-            state.workoutPausedForNoBody &&
-            state.workoutStarted &&
-            !state.countdownActive
-          ) {
-            state.workoutPausedForNoBody = false;
-            playAvatarPhrase(
-              "avatar_resume",
-              "전신이 다시 인식되었습니다. 운동을 계속합니다."
-            );
-          }
-        } else {
-          if (avatarWarningEl) {
-            avatarWarningEl.style.display = "flex";
-          }
-
-          // 시작 전에는 안내만 유지
-          if (state.waitingForFullBodyStart) {
-            state.fullBodyDetected = false;
-            return;
-          }
-
-          // 운동 중이라면 일정 시간 후 일시정지
-          if (state.workoutStarted && !state.countdownActive) {
-            const elapsed = now - state.lastFullBodyTime;
-            if (!state.workoutPausedForNoBody && elapsed > 1500) {
-              state.workoutPausedForNoBody = true;
-              playAvatarPhrase(
-                "avatar_lost",
-                "전신이 인식되지 않습니다. 카메라와 충분한 거리를 벌려주십시오."
-              );
-            }
-          }
-
-          state.fullBodyDetected = false;
-        }
       }
 
       const SKELETON_CONNECTIONS = [
@@ -1845,9 +1283,6 @@
         if (poses.length > 0) {
           const kp = poses[0].keypoints;
 
-          // 아바타 모드에서 전신 인식 상태 업데이트
-          handleFullBodyState(kp);
-
           const ex = EXERCISES[state.currentKey];
           const [ia, ib, ic] = ex.angleJoints;
 
@@ -1857,11 +1292,6 @@
 
           const angle = angleBetween(a, b, c);
           state.lastAngle = angle;
-
-          // 아바타 모드에서는 전신이 인식된 경우에만 아바타를 움직임
-          if (state.isAvatarMode && state.fullBodyDetected) {
-            updateAvatarFromPose(kp);
-          }
 
           if (!state.workoutStarted) {
             let ok = false;
@@ -1883,15 +1313,6 @@
               good: ok,
             };
             updateHUD(angle, fb);
-          } else if (state.currentMode === "avatar" && state.workoutPausedForNoBody) {
-            // 아바타 모드에서 전신 인식이 안 되면 운동을 일시 중지하고 경고 표시
-            const fb = {
-              label: "전신 인식 안 됨",
-              detail: "카메라와 충분한 거리를 두어 전신이 모두 보이게 서주세요.",
-              good: false,
-            };
-            drawSkeleton(kp);
-            updateHUD(angle, fb);
           } else {
             updateRepsForExercise(ex, angle);
             const fb = ex.feedback(angle);
@@ -1910,9 +1331,6 @@
           statusDetail.textContent =
             "사람이 화면 안에 있도록 위치를 조정하세요.";
           statusDot.classList.remove("good", "bad");
-
-          // 포즈가 전혀 인식되지 않을 때도 전신 인식 상태 처리
-          handleFullBodyState(null);
         }
 
         updateChallengeTimer();
@@ -1927,11 +1345,6 @@
         try {
           toggleCameraBtn.disabled = true;
           toggleCameraBtn.textContent = "카메라 준비 중...";
-          if (avatarCameraBtn) {
-            avatarCameraBtn.disabled = true;
-            avatarCameraBtn.textContent = "카메라 준비 중...";
-          }
-
           const stream = await navigator.mediaDevices.getUserMedia({
             video: { width: 1280, height: 720 },
             audio: false,
@@ -1952,10 +1365,6 @@
           state.lastFrameTime = performance.now();
           toggleCameraBtn.textContent = "카메라 정지";
           toggleCameraBtn.disabled = false;
-          if (avatarCameraBtn) {
-            avatarCameraBtn.textContent = "카메라 정지";
-            avatarCameraBtn.disabled = false;
-          }
           renderLoop();
 
           speakText(
@@ -1966,10 +1375,6 @@
           alert("카메라 접근 중 오류가 발생했습니다. 브라우저 권한을 확인하세요.");
           toggleCameraBtn.textContent = "카메라 시작";
           toggleCameraBtn.disabled = false;
-          if (avatarCameraBtn) {
-            avatarCameraBtn.textContent = "카메라 시작";
-            avatarCameraBtn.disabled = false;
-          }
         }
       }
 
@@ -1983,10 +1388,6 @@
         ctx.clearRect(0, 0, canvasEl.width, canvasEl.height);
         toggleCameraBtn.textContent = "카메라 시작";
         toggleCameraBtn.disabled = false;
-        if (avatarCameraBtn) {
-          avatarCameraBtn.textContent = "카메라 시작";
-          avatarCameraBtn.disabled = false;
-        }
       }
 
       // --------------------------
@@ -2090,9 +1491,6 @@
         state.countdownActive = false;
         state.startStableFrames = 0;
         // 아바타 모드 전신 인식/일시정지 상태도 초기화
-        state.waitingForFullBodyStart = false;
-        state.workoutPausedForNoBody = false;
-        state.fullBodyDetected = false;
 
         if (countdownEl) {
           countdownEl.style.opacity = 0;
@@ -2127,61 +1525,16 @@
         else stopCamera();
       });
 
-      if (avatarCameraBtn) {
-        avatarCameraBtn.addEventListener("click", () => {
-          if (!state.running) startCamera();
-          else stopCamera();
-        });
-      }
-
       resetBtn.addEventListener("click", () => {
         resetCounter();
       });
 
       startWorkoutBtn.addEventListener("click", () => {
-        // 이미 어떤 형태로든 "진행 중" (카운트다운, 실제 운동, 전신 대기, 전신 미인식 일시정지)이면 → 정지 처리
-        if (
-          state.workoutStarted ||
-          state.countdownActive ||
-          state.waitingForFullBodyStart ||
-          state.workoutPausedForNoBody
-        ) {
+        if (state.workoutStarted || state.countdownActive) {
           stopWorkout(false);
           return;
         }
 
-        // 여기까지 오면 "완전히 멈춘 상태"에서 새로 시작하는 것
-
-        // 아바타 모드: 먼저 전신 인식을 강제하고, 전신이 잡히면 5초 카운트 후 시작
-        if (state.currentMode === "avatar") {
-          state.waitingForFullBodyStart = true;
-          state.workoutPausedForNoBody = false;
-          state.fullBodyDetected = false;
-
-          statusLabel.textContent = "전신 인식 대기";
-          statusDetail.textContent =
-            "카메라와 충분한 거리를 두어 전신이 모두 보이게 서주세요.";
-
-          if (avatarWarningEl) {
-            avatarWarningEl.style.display = "flex";
-          }
-
-          if (startWorkoutBtn) {
-            // 아바타 모드에서도 사용자가 '시작'을 눌렀다는 피드백을 주기 위해 즉시 '운동 정지'로 변경
-            startWorkoutBtn.textContent = "운동 정지";
-          }
-
-          // 전신 인식 안내 TTS (미리 캐시된 오디오 우선 사용)
-          playAvatarPhrase(
-            "avatar_start_warning",
-            "아바타 모드에서는 전신이 화면에 모두 들어와야 합니다. 카메라와 충분한 거리를 두어주세요."
-          );
-
-          // 실제 카운트다운은 handleFullBodyState에서 전신 인식 확인 후 startCountdownAndWorkout() 호출
-          return;
-        }
-
-        // 일반 트레이닝 / 도전 모드: 기존 로직 유지 (즉시 5초 카운트 후 시작)
         startCountdownAndWorkout();
       });
 
@@ -2201,8 +1554,6 @@
 
       hudExercise.textContent = EXERCISES[state.currentKey].name;
       updateCurrentExerciseLabel();
-
-      initSpeechOnce();
 
       // --------------------------
       // 8. 요약 오버레이
@@ -2272,159 +1623,52 @@
       }
 
       // ===========================
-      // 메뉴 & 아바타 모드
+      // 메뉴 전환
       // ===========================
       const trainingView = document.getElementById("training-view");
-      const avatarView = document.getElementById("avatar-view");
       const challengeView = document.getElementById("challenge-view");
       const devView = document.getElementById("dev-view");
-
       const menuTrainingBtn = document.getElementById("menu-training");
-      const menuAvatarBtn = document.getElementById("menu-avatar");
       const menuChallengeBtn = document.getElementById("menu-challenge");
       const menuDevBtn = document.getElementById("menu-dev");
 
-      const allViews = [trainingView, avatarView, challengeView, devView];
-
       function showView(targetView) {
-        // 공용 카메라/훈련 영역은 항상 표시
         if (trainingView) {
-          trainingView.style.display = "block";
+          trainingView.style.display = targetView === devView ? "none" : "block";
         }
-
-        // 나머지 보조 뷰만 선택적으로 표시
-        [avatarView, challengeView, devView].forEach((v) => {
-          if (!v) return;
-          v.style.display = v === targetView ? "block" : "none";
+        [challengeView, devView].forEach((view) => {
+          if (view) view.style.display = view === targetView ? "block" : "none";
         });
       }
 
       const menuButtons = document.querySelectorAll("#top-menu .btn.secondary");
-      function setActiveMenu(btn) {
-        menuButtons.forEach((b) => {
-          if (!b) return;
-          b.classList.toggle("active", b === btn);
-        });
+      function setActiveMenu(button) {
+        menuButtons.forEach((item) => item.classList.toggle("active", item === button));
       }
 
       menuTrainingBtn.addEventListener("click", () => {
         showView(trainingView);
         state.currentMode = "training";
+        state.challengeActive = false;
         setActiveMenu(menuTrainingBtn);
-        if (avatarStyleWrapper) {
-          avatarStyleWrapper.style.display = "none";
-        }
-        state.isAvatarMode = false;
-        state.showSkeleton = true;
-        if (toggleOverlayBtn) {
-          toggleOverlayBtn.style.display = "inline-flex";
-          toggleOverlayBtn.textContent = "포즈선 끄기";
-        }
-        const avatarContainer = document.getElementById("avatar-container");
-        if (avatarContainer) {
-          avatarContainer.style.display = "none";
-        }
-        const cameraLayer = document.getElementById("camera-layer");
-        if (cameraLayer) {
-          cameraLayer.style.display = "block";
-        }
-        if (state.running) {
-          ctx.clearRect(0, 0, canvasEl.width, canvasEl.height);
-        }
         if (startWorkoutBtn) startWorkoutBtn.textContent = "운동 시작";
-        state.challengeActive = false;
-        state.challengeDurationMinutes = null;
-        const remainingElT = document.getElementById("challenge-remaining");
-        if (remainingElT) remainingElT.textContent = "-";
-      });
-
-      menuAvatarBtn.addEventListener("click", () => {
-        showView(avatarView);
-        state.currentMode = "avatar";
-        setActiveMenu(menuAvatarBtn);
-        if (avatarStyleWrapper) {
-          avatarStyleWrapper.style.display = "block";
-        }
-        state.isAvatarMode = true;
-        state.showSkeleton = false;
-        if (toggleOverlayBtn) {
-          // 아바타 모드에서는 포즈선 토글 버튼 숨김
-          toggleOverlayBtn.style.display = "none";
-        }
-        const avatarContainer = document.getElementById("avatar-container");
-        if (avatarContainer) {
-          avatarContainer.style.display = "block";
-          document.getElementById("camera-layer").style.display = "none";
-          avatarContainer.style.borderRadius = "18px";
-          avatarContainer.style.inset = "0";
-          avatarContainer.style.width = "100%";
-          avatarContainer.style.height = "100%";
-        }
-        if (avatarWarningEl) {
-          avatarWarningEl.style.display = "flex";
-        }
-        state.fullBodyDetected = false;
-        state.workoutPausedForNoBody = false;
-        state.waitingForFullBodyStart = false;
-        ctx.clearRect(0, 0, canvasEl.width, canvasEl.height);
-        if (startWorkoutBtn) startWorkoutBtn.textContent = "운동 시작";
-        state.challengeActive = false;
-        state.challengeDurationMinutes = null;
-        const remainingElA = document.getElementById("challenge-remaining");
-        if (remainingElA) remainingElA.textContent = "-";
-        if (!window.avatarInitialized) {
-          initAvatarMode();
-          window.avatarInitialized = true;
-        }
       });
 
       menuChallengeBtn.addEventListener("click", () => {
         showView(challengeView);
         state.currentMode = "challenge";
-        setActiveMenu(menuChallengeBtn);
-        if (avatarStyleWrapper) {
-          avatarStyleWrapper.style.display = "none";
-        }
-        state.isAvatarMode = false;
-        if (toggleOverlayBtn) {
-          toggleOverlayBtn.style.display = "inline-flex";
-          toggleOverlayBtn.textContent = "포즈선 끄기";
-        }
-  // Hide avatar container if visible
-        // Hide avatar container if visible
-        const avatarContainer = document.getElementById("avatar-container");
-        if (avatarContainer) {
-          avatarContainer.style.display = "none";
-        }
-        // Show camera layer again
-        const cameraLayer = document.getElementById("camera-layer");
-        if (cameraLayer) {
-          cameraLayer.style.display = "block";
-        }
-        if (startWorkoutBtn) startWorkoutBtn.textContent = "도전 시작";
         state.challengeActive = false;
-        const remainingElC = document.getElementById("challenge-remaining");
-        if (remainingElC) remainingElC.textContent = "-";
+        setActiveMenu(menuChallengeBtn);
+        if (startWorkoutBtn) startWorkoutBtn.textContent = "도전 시작";
       });
 
       menuDevBtn.addEventListener("click", () => {
         showView(devView);
-        // 개발자 도구에서는 운동 포즈 인식 영역(트레이닝 뷰)을 숨김
-        if (trainingView) {
-          trainingView.style.display = "none";
-        }
         state.currentMode = "dev";
-        setActiveMenu(menuDevBtn);
-        if (avatarStyleWrapper) {
-          avatarStyleWrapper.style.display = "none";
-        }
-        state.isAvatarMode = false;
-        if (startWorkoutBtn) startWorkoutBtn.textContent = "운동 시작";
         state.challengeActive = false;
-        state.challengeDurationMinutes = null;
-        const remainingElD = document.getElementById("challenge-remaining");
-        if (remainingElD) remainingElD.textContent = "-";
+        setActiveMenu(menuDevBtn);
       });
+
       // ===========================
       // Challenge timer buttons event binding
       // ===========================
@@ -2458,254 +1702,6 @@
       showView(trainingView);
       setActiveMenu(menuTrainingBtn);
 
-      // ===========================
-      // 아바타 초기화 & 업데이트
-      // ===========================
-      function initAvatarMode() {
-        const container = document.getElementById("avatar-container");
-        if (!container) return;
-
-        avatarScene = new THREE.Scene();
-
-        const aspect = container.clientWidth / container.clientHeight || 1;
-        avatarCamera = new THREE.PerspectiveCamera(75, aspect, 0.1, 1000);
-        avatarCamera.position.z = 800;
-        avatarCamera.position.y = 500;
-
-        avatarRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-        avatarRenderer.setSize(container.clientWidth, container.clientHeight);
-        avatarRenderer.setPixelRatio(window.devicePixelRatio || 1);
-        container.appendChild(avatarRenderer.domElement);
-
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
-        avatarScene.add(ambientLight);
-        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-        directionalLight.position.set(1, 1, 1);
-        avatarScene.add(directionalLight);
-
-        loadAvatarModel("basic");
-        animateAvatar();
-      }
-
-      function animateAvatar() {
-        requestAnimationFrame(animateAvatar);
-        if (avatarRenderer && avatarScene && avatarCamera) {
-          avatarRenderer.render(avatarScene, avatarCamera);
-        }
-      }
-
-      function loadAvatarModel(name) {
-        const url = AVATAR_MODELS[name] || AVATAR_MODELS.basic;
-        const loader = new GLTFLoader();
-
-        if (avatarModel && avatarScene) {
-          avatarScene.remove(avatarModel);
-          avatarModel = null;
-          avatarBoneMap = null;
-        }
-
-        loader.load(
-          url,
-          (gltf) => {
-            avatarModel = gltf.scene;
-
-            const boneMap = {};
-            avatarModel.traverse((obj) => {
-              if (obj.isBone) {
-                boneMap[obj.name] = obj;
-              }
-            });
-            avatarBoneMap = boneMap;
-            console.log("Avatar bone map:", avatarBoneMap);
-
-            // 원본 바운딩박스로 크기/중심 계산
-            const box = new THREE.Box3().setFromObject(avatarModel);
-            const size = box.getSize(new THREE.Vector3());
-            const center = box.getCenter(new THREE.Vector3());
-
-            // 수평(x, z)으로는 중앙 정렬, 발바닥이 y=0 근처에 오도록 이동
-            avatarModel.position.x -= center.x;
-            avatarModel.position.z -= center.z;
-            avatarModel.position.y -= box.min.y;
-
-            // 아바타 전체 키를 일정하게 맞추기 위한 스케일 (대략 1.7m 정도)
-            const desiredHeight = 1.7;
-            const scale = desiredHeight / (size.y || 1);
-            if (isFinite(scale) && scale > 0) {
-              avatarModel.scale.set(scale, scale, scale);
-            } else {
-              avatarModel.scale.set(1, 1, 1);
-            }
-
-            avatarScene.add(avatarModel);
-
-            // 카메라를 아바타 전체가 화면 안에 여유 있게 들어오도록 배치
-            if (avatarCamera) {
-              const newBox = new THREE.Box3().setFromObject(avatarModel);
-              const newSize = newBox.getSize(new THREE.Vector3());
-              const newCenter = newBox.getCenter(new THREE.Vector3());
-
-              // 세로/가로 크기 중 더 큰 쪽을 기준으로 거리 계산
-              const maxDim = Math.max(newSize.y, newSize.x);
-              const fovRad = (avatarCamera.fov * Math.PI) / 180;
-
-              // 화면에 꽉 차게 보이는 거리보다 더 멀리 떨어뜨려서 전체가 보이도록 함
-              let distance = (maxDim / 2) / Math.tan(fovRad / 2);
-              distance *= 10.0; // 기존보다 더 멀리 (줌 아웃)
-
-              // 카메라를 캐릭터 정중앙 약간 위쪽을 바라보도록 설정
-              const targetY = newCenter.y + newSize.y * 0.05;
-              avatarCamera.position.set(newCenter.x, targetY + newSize.y * 2, distance);
-              avatarCamera.lookAt(newCenter.x, targetY + newSize.y * 2, newCenter.z);
-            }
-          },
-          undefined,
-          (error) => {
-            console.error("Avatar GLB 로딩 실패:", error);
-          }
-        );
-      }
-
-      function updateAvatarFromPose(keypoints) {
-        if (!avatarModel || !keypoints || keypoints.length < 17) return;
-
-        const MIN_CONFIDENCE = 0.3;
-
-        function isConfident(kp) {
-          return kp && kp.score >= MIN_CONFIDENCE;
-        }
-
-        function findBone(name) {
-          if (!avatarModel) return null;
-          if (avatarBoneMap && avatarBoneMap[name]) {
-            return avatarBoneMap[name];
-          }
-          let found = null;
-          avatarModel.traverse((child) => {
-            if (
-              child.name === name ||
-              child.name.toLowerCase() === name.toLowerCase()
-            ) {
-              found = child;
-            }
-          });
-          if (found && avatarBoneMap) {
-            avatarBoneMap[name] = found;
-          }
-          return found;
-        }
-
-        function computeDirection(from, to) {
-          if (!isConfident(from) || !isConfident(to)) return null;
-          const dx = to.x - from.x;
-          const dy = -(to.y - from.y);
-          const dz = 0;
-          const len = Math.sqrt(dx * dx + dy * dy + dz * dz);
-          if (len < 0.001) return null;
-          return { x: dx / len, y: dy / len, z: dz / len };
-        }
-
-        function rotateBone(boneName, dir) {
-          if (!dir) return;
-          const bone = findBone(boneName);
-          if (!bone) return;
-
-          const targetPos = new THREE.Vector3(
-            bone.position.x + dir.x,
-            bone.position.y + dir.y,
-            bone.position.z + dir.z
-          );
-          bone.lookAt(targetPos);
-        }
-
-        const rShoulder = keypoints[6];
-        const rElbow = keypoints[8];
-        const rWrist = keypoints[10];
-
-        const rUpperDir = computeDirection(rShoulder, rElbow);
-        const rLowerDir = computeDirection(rElbow, rWrist);
-
-        rotateBone("mixamorigRightArm", rUpperDir);
-        rotateBone("mixamorigRightForeArm", rLowerDir);
-
-        const lShoulder = keypoints[5];
-        const lElbow = keypoints[7];
-        const lWrist = keypoints[9];
-
-        const lUpperDir = computeDirection(lShoulder, lElbow);
-        const lLowerDir = computeDirection(lElbow, lWrist);
-
-        rotateBone("mixamorigLeftArm", lUpperDir);
-        rotateBone("mixamorigLeftForeArm", lLowerDir);
-
-        const rHip = keypoints[12];
-        const rKnee = keypoints[14];
-        const rAnkle = keypoints[16];
-
-        const rThighDir = computeDirection(rHip, rKnee);
-        const rCalfDir = computeDirection(rKnee, rAnkle);
-
-        rotateBone("mixamorigRightUpLeg", rThighDir);
-        rotateBone("mixamorigRightLeg", rCalfDir);
-
-        const lHip = keypoints[11];
-        const lKnee = keypoints[13];
-        const lAnkle = keypoints[15];
-
-        const lThighDir = computeDirection(lHip, lKnee);
-        const lCalfDir = computeDirection(lKnee, lAnkle);
-
-        rotateBone("mixamorigLeftUpLeg", lThighDir);
-        rotateBone("mixamorigLeftLeg", lCalfDir);
-
-        const lShoulderKp = keypoints[5];
-        const rShoulderKp = keypoints[6];
-        const lHipKp = keypoints[11];
-        const rHipKp = keypoints[12];
-
-        if (
-          isConfident(lShoulderKp) &&
-          isConfident(rShoulderKp) &&
-          isConfident(lHipKp) &&
-          isConfident(rHipKp)
-        ) {
-          const spineMid = {
-            x: (lShoulderKp.x + rShoulderKp.x) / 2,
-            y: (lShoulderKp.y + rShoulderKp.y) / 2,
-          };
-          const hipMid = {
-            x: (lHipKp.x + rHipKp.x) / 2,
-            y: (lHipKp.y + rHipKp.y) / 2,
-          };
-          const spineDir = computeDirection(hipMid, spineMid);
-          rotateBone("mixamorigSpine2", spineDir);
-        }
-
-        const noseKp = keypoints[0];
-        const lEar = keypoints[3];
-        const rEar = keypoints[4];
-
-        if (isConfident(noseKp) && (isConfident(lEar) || isConfident(rEar))) {
-          const refEar = isConfident(rEar) ? rEar : lEar;
-          const headDir = computeDirection(refEar, noseKp);
-          rotateBone("mixamorigHead", headDir);
-          rotateBone("mixamorigNeck", headDir);
-        }
-      }
-
-      // ===========================
-      // 아바타 스타일 셀렉트 이벤트 바인딩
-      // ===========================
-      if (avatarStyleSelect) {
-        avatarStyleSelect.addEventListener("change", (e) => {
-          const value = e.target.value;
-          if (!window.avatarInitialized) {
-            initAvatarMode();
-            window.avatarInitialized = true;
-          }
-          loadAvatarModel(value);
-        });
-      }
     </script>
   </body>
 </html>
