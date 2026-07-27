@@ -1,4 +1,5 @@
 .agents/
 .codex/
 jd.png
-
+evaluation/results/*
+!evaluation/results/.gitkeep

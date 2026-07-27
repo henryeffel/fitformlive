@@ -452,6 +452,44 @@
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.16.0/dist/tf.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/pose-detection"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose"></script>
+    <script>
+      window.openCvReady = false;
+      window.openCvLoadError = false;
+
+      function notifyOpenCvReady(instance) {
+        if (instance) window.cv = instance;
+        if (window.openCvReady) return;
+        window.openCvReady = true;
+        window.dispatchEvent(new Event("opencv-ready"));
+      }
+
+      window.Module = {
+        onRuntimeInitialized() {
+          notifyOpenCvReady(window.cv);
+        },
+      };
+
+      function handleOpenCvScriptLoad() {
+        if (window.cv && typeof window.cv.then === "function") {
+          window.cv
+            .then((instance) => notifyOpenCvReady(instance))
+            .catch(handleOpenCvScriptError);
+        } else if (window.cv && window.cv.Mat) {
+          notifyOpenCvReady(window.cv);
+        }
+      }
+
+      function handleOpenCvScriptError(error) {
+        window.openCvLoadError = true;
+        console.warn("OpenCV.js를 불러오지 못해 영상 품질 분석을 비활성화합니다.", error);
+      }
+    </script>
+    <script
+      async
+      src="https://docs.opencv.org/4.10.0/opencv.js"
+      onload="handleOpenCvScriptLoad()"
+      onerror="handleOpenCvScriptError(event)"
+    ></script>
   </head>
 
   <body>
@@ -570,7 +608,37 @@
             <p style="color:#9ca3af; font-size:14px; margin:0 0 12px;">
               실시간 관절 좌표, 운동 판정 상태 및 영상처리 성능 지표를 확인하는 도구가 여기에 표시됩니다.
             </p>
+            <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:8px; margin-bottom:12px;">
+              <label style="font-size:12px; color:#9ca3af;">
+                테스트 ID
+                <input id="test-id-input" type="text" placeholder="curl-normal-01" style="width:100%; margin-top:4px; padding:7px; border-radius:8px; border:1px solid #374151; background:#020617; color:#e5e7eb;" />
+              </label>
+              <label style="font-size:12px; color:#9ca3af;">
+                테스트 조건
+                <select id="test-condition-select" style="width:100%; margin-top:4px; padding:7px; border-radius:8px; border:1px solid #374151; background:#020617; color:#e5e7eb;">
+                  <option value="normal">정상 환경</option>
+                  <option value="partial_range">동작 범위 부족</option>
+                  <option value="fast_motion">빠른 동작</option>
+                  <option value="low_light">낮은 조도</option>
+                  <option value="occlusion">관절 일부 가림</option>
+                  <option value="distance">거리 변화</option>
+                </select>
+              </label>
+              <label style="font-size:12px; color:#9ca3af;">
+                실제 수행 횟수
+                <input id="true-reps-input" type="number" min="0" step="1" placeholder="10" style="width:100%; margin-top:4px; padding:7px; border-radius:8px; border:1px solid #374151; background:#020617; color:#e5e7eb;" />
+              </label>
+            </div>
+            <label style="display:block; font-size:12px; color:#9ca3af; margin-bottom:12px;">
+              테스트 메모
+              <textarea id="test-notes-input" rows="2" placeholder="촬영 거리, 조명, 실패 상황 등을 기록하세요." style="width:100%; margin-top:4px; padding:7px; border-radius:8px; border:1px solid #374151; background:#020617; color:#e5e7eb; resize:vertical;"></textarea>
+            </label>
             <pre id="dev-log" style="max-height:260px; overflow:auto; font-size:12px; background:#020617; padding:10px; border-radius:8px; border:1px solid rgba(31,41,55,0.9);"></pre>
+            <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:12px;">
+              <button id="export-json-btn" class="btn secondary">JSON 결과 저장</button>
+              <button id="export-csv-btn" class="btn secondary">CSV 결과 저장</button>
+              <button id="reset-metrics-btn" class="btn secondary">성능 지표 초기화</button>
+            </div>
           </div>
         </div>
       </main>
@@ -602,10 +670,20 @@
       const exercisePickerOverlay = document.getElementById("exercise-picker-overlay");
       const exercisePickerPanel = document.getElementById("exercise-picker-panel");
       const openExercisePickerBtn = document.getElementById("open-exercise-picker");
-      // 음성 기능은 프로젝트 핵심 범위에서 제외했습니다.
-      function speakText() {}
-      function playCountTTS() {}
-
+      const devLogEl = document.getElementById("dev-log");
+      const exportJsonBtn = document.getElementById("export-json-btn");
+      const exportCsvBtn = document.getElementById("export-csv-btn");
+      const resetMetricsBtn = document.getElementById("reset-metrics-btn");
+      const testIdInput = document.getElementById("test-id-input");
+      const testConditionSelect = document.getElementById(
+        "test-condition-select"
+      );
+      const trueRepsInput = document.getElementById("true-reps-input");
+      const testNotesInput = document.getElementById("test-notes-input");
+      const qualityCanvas = document.createElement("canvas");
+      const qualityCtx = qualityCanvas.getContext("2d", {
+        willReadFrequently: true,
+      });
       function handleRepCounted(rep) {
         if (repOverlayEl) {
           if (state.repOverlayTimer) {
@@ -620,8 +698,6 @@
             repOverlayEl.style.opacity = 0;
           }, 700);
         }
-
-        playCountTTS(rep);
       }
 
       const KEY = {
@@ -642,6 +718,26 @@
         rightKnee: 14,
         leftAnkle: 15,
         rightAnkle: 16,
+      };
+
+      const POSE_CONFIG = {
+        minJointConfidence: 0.4,
+        emaAlpha: 0.35,
+        transitionHoldMs: 180,
+        invalidResetMs: 1000,
+        thresholdHysteresis: 8,
+        qualityIntervalMs: 500,
+        qualityWidth: 320,
+        minBrightness: 55,
+        minSharpness: 80,
+        maxPerformanceSamples: 3000,
+        inferenceWarmupFrames: 5,
+      };
+
+      const REP_PHASE = {
+        READY: "ready",
+        BOTTOM_HOLD: "bottom_hold",
+        RETURNING: "returning",
       };
 
       // --------------------------
@@ -918,6 +1014,7 @@
           },
         },
       };
+      const SUPPORTED_EXERCISE_KEYS = ["right_curl", "squat"];
 
       // --------------------------
       // 2.5. 운동 선택기 helpers
@@ -953,8 +1050,7 @@
             <div class="exercise-picker-grid">
           `;
 
-        for (const key in EXERCISES) {
-          if (!Object.prototype.hasOwnProperty.call(EXERCISES, key)) continue;
+        for (const key of SUPPORTED_EXERCISE_KEYS) {
           const ex = EXERCISES[key];
           html += `
               <div class="exercise-card">
@@ -998,7 +1094,6 @@
 
         resetCounter();
         state.workoutStarted = false;
-        state.stage = "up";
 
         const ex = EXERCISES[key];
         hudExercise.textContent = ex.name;
@@ -1006,12 +1101,6 @@
         statusLabel.textContent = "Set start position";
         statusDetail.textContent =
           ex.start?.hint || "준비자세를 맞춰 주세요.";
-
-        speakText(
-          ex.name +
-            "를 선택했습니다. " +
-            (ex.start?.hint || "준비자세를 맞춰 주세요.")
-        );
 
         closeExercisePicker();
 
@@ -1022,8 +1111,12 @@
         currentKey: "right_curl",
         currentMode: "training",
         reps: 0,
-        stage: "up",
+        repPhase: REP_PHASE.READY,
+        transitionCandidate: null,
+        transitionStartedAt: 0,
         lastAngle: 0,
+        angularVelocity: 0,
+        lastAngleTime: 0,
         fps: 0,
         lastFrameTime: performance.now(),
         running: false,
@@ -1032,9 +1125,31 @@
         stream: null,
         showSkeleton: true,
         workoutStarted: false,
-        startStableFrames: 0,
-        downStableFrames: 0,
-        upStableFrames: 0,
+        smoothedKeypoints: null,
+        invalidSince: 0,
+        validFrames: 0,
+        invalidFrames: 0,
+        lastValidationReason: "카메라 대기",
+        frameQuality: {
+          status: "loading",
+          brightness: null,
+          sharpness: null,
+          warning: null,
+          lastAnalyzedAt: 0,
+          analysisMs: 0,
+          error: null,
+        },
+        performance: {
+          sessionStartedAt: 0,
+          modelLoadMs: null,
+          inferenceSamples: [],
+          frameSamples: [],
+          inferenceErrors: 0,
+          processedFrames: 0,
+          fpsEma: 0,
+          lastDevLogAt: 0,
+          inferenceWarmupRemaining: POSE_CONFIG.inferenceWarmupFrames,
+        },
         countdownActive: false,
         countdownValue: 0,
         repOverlayTimer: null,
@@ -1046,6 +1161,12 @@
         challengeDurationMinutes: null,
         countdownTimerId: null,
       };
+
+      window.addEventListener("opencv-ready", () => {
+        state.frameQuality.status = "ready";
+        state.frameQuality.error = null;
+        updateDeveloperLog();
+      });
       // --------------------------
       // Challenge Mode Timer Logic
       // --------------------------
@@ -1053,7 +1174,6 @@
         if (!minutes) return;
         state.challengeActive = true;
         state.challengeEndTime = performance.now() + minutes * 60000;
-        speakText(minutes + "분 도전 시작합니다.");
       }
 
       function updateChallengeTimer() {
@@ -1066,7 +1186,6 @@
           if (remainingEl) remainingEl.textContent = "00:00";
           state.challengeActive = false;
           stopWorkout(true);
-          speakText("도전 종료! 수고하셨습니다.");
           return;
         }
 
@@ -1093,9 +1212,471 @@
         const dot = ab[0] * cb[0] + ab[1] * cb[1];
         const magAB = Math.hypot(ab[0], ab[1]);
         const magCB = Math.hypot(cb[0], cb[1]);
-        const cosine = dot / (magAB * magCB + 1e-6);
+        if (magAB < 1e-6 || magCB < 1e-6) return null;
+        const cosine = dot / (magAB * magCB);
         const rad = Math.acos(Math.min(Math.max(cosine, -1), 1));
-        return (rad * 180) / Math.PI;
+        const angle = (rad * 180) / Math.PI;
+        return Number.isFinite(angle) ? angle : null;
+      }
+
+      function resetPoseAnalysis() {
+        state.smoothedKeypoints = null;
+        state.repPhase = REP_PHASE.READY;
+        state.transitionCandidate = null;
+        state.transitionStartedAt = 0;
+        state.lastAngle = 0;
+        state.angularVelocity = 0;
+        state.lastAngleTime = 0;
+        state.invalidSince = 0;
+      }
+
+      function smoothKeypoints(keypoints) {
+        const alpha = POSE_CONFIG.emaAlpha;
+        if (!state.smoothedKeypoints) {
+          state.smoothedKeypoints = keypoints.map((kp) => ({ ...kp }));
+          return state.smoothedKeypoints;
+        }
+
+        state.smoothedKeypoints = keypoints.map((kp, index) => {
+          const previous = state.smoothedKeypoints[index];
+          if (
+            !previous ||
+            !Number.isFinite(kp?.x) ||
+            !Number.isFinite(kp?.y)
+          ) {
+            return { ...kp };
+          }
+          return {
+            ...kp,
+            x: alpha * kp.x + (1 - alpha) * previous.x,
+            y: alpha * kp.y + (1 - alpha) * previous.y,
+          };
+        });
+        return state.smoothedKeypoints;
+      }
+
+      function validateExerciseKeypoints(keypoints, exercise) {
+        if (!keypoints || keypoints.length < 17) {
+          return { valid: false, reason: "관절 데이터가 부족합니다." };
+        }
+
+        for (const index of exercise.angleJoints) {
+          const kp = keypoints[index];
+          if (
+            !kp ||
+            !Number.isFinite(kp.x) ||
+            !Number.isFinite(kp.y) ||
+            !Number.isFinite(kp.score)
+          ) {
+            return { valid: false, reason: "유효하지 않은 관절 좌표입니다." };
+          }
+          if (kp.score < POSE_CONFIG.minJointConfidence) {
+            return {
+              valid: false,
+              reason: "운동에 필요한 관절이 선명하게 보이도록 위치를 조정하세요.",
+            };
+          }
+          if (
+            kp.x < 0 ||
+            kp.x > videoEl.videoWidth ||
+            kp.y < 0 ||
+            kp.y > videoEl.videoHeight
+          ) {
+            return {
+              valid: false,
+              reason: "운동에 필요한 관절이 화면 안에 들어오도록 이동하세요.",
+            };
+          }
+        }
+
+        return { valid: true, reason: "필수 관절 인식 정상" };
+      }
+
+      function updateAngularVelocity(angle, now) {
+        if (!state.lastAngleTime || !Number.isFinite(state.lastAngle)) {
+          state.angularVelocity = 0;
+        } else {
+          const elapsedSeconds = (now - state.lastAngleTime) / 1000;
+          state.angularVelocity =
+            elapsedSeconds > 0 ? (angle - state.lastAngle) / elapsedSeconds : 0;
+        }
+        state.lastAngle = angle;
+        state.lastAngleTime = now;
+      }
+
+      function holdTransition(candidate, condition, now) {
+        if (!condition) {
+          if (state.transitionCandidate === candidate) {
+            state.transitionCandidate = null;
+            state.transitionStartedAt = 0;
+          }
+          return false;
+        }
+
+        if (state.transitionCandidate !== candidate) {
+          state.transitionCandidate = candidate;
+          state.transitionStartedAt = now;
+          return false;
+        }
+
+        return now - state.transitionStartedAt >= POSE_CONFIG.transitionHoldMs;
+      }
+
+      function completeTransition(nextPhase) {
+        state.repPhase = nextPhase;
+        state.transitionCandidate = null;
+        state.transitionStartedAt = 0;
+      }
+
+      function resetFrameQuality() {
+        state.frameQuality = {
+          status: window.openCvReady
+            ? "ready"
+            : window.openCvLoadError
+              ? "unavailable"
+              : "loading",
+          brightness: null,
+          sharpness: null,
+          warning: null,
+          lastAnalyzedAt: 0,
+          analysisMs: 0,
+          error: null,
+        };
+      }
+
+      function analyzeFrameQuality(now) {
+        const quality = state.frameQuality;
+        if (window.openCvLoadError) {
+          quality.status = "unavailable";
+          quality.error = "OpenCV.js 로딩 실패";
+          return;
+        }
+        if (!window.openCvReady || !window.cv?.Mat) {
+          quality.status = "loading";
+          return;
+        }
+        if (
+          !videoEl.videoWidth ||
+          !videoEl.videoHeight ||
+          now - quality.lastAnalyzedAt < POSE_CONFIG.qualityIntervalMs
+        ) {
+          return;
+        }
+
+        quality.lastAnalyzedAt = now;
+        const analysisStartedAt = performance.now();
+        const width = POSE_CONFIG.qualityWidth;
+        const height = Math.max(
+          1,
+          Math.round(width * (videoEl.videoHeight / videoEl.videoWidth))
+        );
+        qualityCanvas.width = width;
+        qualityCanvas.height = height;
+        qualityCtx.drawImage(videoEl, 0, 0, width, height);
+
+        let src = null;
+        let gray = null;
+        let blurred = null;
+        let laplacian = null;
+        let mean = null;
+        let stddev = null;
+
+        try {
+          src = cv.imread(qualityCanvas);
+          gray = new cv.Mat();
+          blurred = new cv.Mat();
+          laplacian = new cv.Mat();
+          mean = new cv.Mat();
+          stddev = new cv.Mat();
+
+          cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
+          cv.GaussianBlur(
+            gray,
+            blurred,
+            new cv.Size(3, 3),
+            0,
+            0,
+            cv.BORDER_DEFAULT
+          );
+          cv.Laplacian(blurred, laplacian, cv.CV_64F, 3, 1, 0);
+          cv.meanStdDev(laplacian, mean, stddev);
+
+          const brightness = cv.mean(gray)[0];
+          const standardDeviation = stddev.doubleAt(0, 0);
+          const sharpness = standardDeviation * standardDeviation;
+
+          quality.status = "ready";
+          quality.brightness = brightness;
+          quality.sharpness = sharpness;
+          quality.error = null;
+          if (brightness < POSE_CONFIG.minBrightness) {
+            quality.warning = "조명이 어둡습니다. 얼굴과 관절이 보이도록 밝기를 높여주세요.";
+          } else if (sharpness < POSE_CONFIG.minSharpness) {
+            quality.warning = "영상이 흐립니다. 카메라를 고정하고 렌즈를 확인하세요.";
+          } else {
+            quality.warning = null;
+          }
+        } catch (error) {
+          quality.status = "error";
+          quality.error = error instanceof Error ? error.message : String(error);
+          quality.warning = null;
+          console.warn("OpenCV.js 프레임 품질 분석 오류:", error);
+        } finally {
+          [src, gray, blurred, laplacian, mean, stddev].forEach((mat) => {
+            if (mat && typeof mat.delete === "function") mat.delete();
+          });
+          quality.analysisMs = performance.now() - analysisStartedAt;
+        }
+      }
+
+      function withFrameQualityFeedback(feedback) {
+        if (!state.frameQuality.warning) return feedback;
+        return {
+          label: "촬영 환경 확인",
+          detail: state.frameQuality.warning,
+          good: false,
+        };
+      }
+
+      function addPerformanceSample(samples, value) {
+        if (!Number.isFinite(value) || value < 0) return;
+        samples.push(value);
+        if (samples.length > POSE_CONFIG.maxPerformanceSamples) {
+          samples.shift();
+        }
+      }
+
+      function percentile(sortedValues, ratio) {
+        if (!sortedValues.length) return null;
+        const index = (sortedValues.length - 1) * ratio;
+        const lower = Math.floor(index);
+        const upper = Math.ceil(index);
+        if (lower === upper) return sortedValues[lower];
+        const weight = index - lower;
+        return (
+          sortedValues[lower] * (1 - weight) +
+          sortedValues[upper] * weight
+        );
+      }
+
+      function summarizeSamples(samples) {
+        if (!samples.length) {
+          return {
+            count: 0,
+            average: null,
+            p50: null,
+            p95: null,
+            max: null,
+          };
+        }
+        const sorted = [...samples].sort((a, b) => a - b);
+        const total = sorted.reduce((sum, value) => sum + value, 0);
+        return {
+          count: sorted.length,
+          average: total / sorted.length,
+          p50: percentile(sorted, 0.5),
+          p95: percentile(sorted, 0.95),
+          max: sorted[sorted.length - 1],
+        };
+      }
+
+      function resetPerformanceMetrics(preserveModelLoad = true) {
+        const modelLoadMs = preserveModelLoad
+          ? state.performance.modelLoadMs
+          : null;
+        state.performance = {
+          sessionStartedAt: performance.now(),
+          modelLoadMs,
+          inferenceSamples: [],
+          frameSamples: [],
+          inferenceErrors: 0,
+          processedFrames: 0,
+          fpsEma: 0,
+          lastDevLogAt: 0,
+          inferenceWarmupRemaining: POSE_CONFIG.inferenceWarmupFrames,
+        };
+        state.fps = 0;
+      }
+
+      function formatMetric(value, digits = 1) {
+        return Number.isFinite(value) ? value.toFixed(digits) : "-";
+      }
+
+      function buildValidationMetadata() {
+        const rawTrueReps = trueRepsInput.value.trim();
+        const parsedTrueReps =
+          rawTrueReps === "" ? null : Number.parseInt(rawTrueReps, 10);
+        const trueReps =
+          Number.isInteger(parsedTrueReps) && parsedTrueReps >= 0
+            ? parsedTrueReps
+            : null;
+        const absoluteError =
+          trueReps === null ? null : Math.abs(state.reps - trueReps);
+
+        return {
+          testId: testIdInput.value.trim() || null,
+          condition: testConditionSelect.value,
+          trueReps,
+          predictedReps: state.reps,
+          absoluteError,
+          exactMatch: absoluteError === null ? null : absoluteError === 0,
+          withinOneRep:
+            absoluteError === null ? null : absoluteError <= 1,
+          notes: testNotesInput.value.trim() || null,
+        };
+      }
+
+      function buildPerformanceReport() {
+        const inference = summarizeSamples(
+          state.performance.inferenceSamples
+        );
+        const frame = summarizeSamples(state.performance.frameSamples);
+        const analyzedFrames = state.validFrames + state.invalidFrames;
+        const validJointRate =
+          analyzedFrames > 0 ? state.validFrames / analyzedFrames : null;
+
+        return {
+          schemaVersion: 1,
+          generatedAt: new Date().toISOString(),
+          exercise: state.currentKey,
+          mode: state.currentMode,
+          session: {
+            durationMs: state.performance.sessionStartedAt
+              ? performance.now() - state.performance.sessionStartedAt
+              : 0,
+            reps: state.reps,
+            processedFrames: state.performance.processedFrames,
+            validFrames: state.validFrames,
+            invalidFrames: state.invalidFrames,
+            validJointRate,
+          },
+          environment: {
+            userAgent: navigator.userAgent,
+            videoWidth: videoEl.videoWidth || null,
+            videoHeight: videoEl.videoHeight || null,
+          },
+          validation: buildValidationMetadata(),
+          model: {
+            name: "MoveNet SinglePose Lightning",
+            loadMs: state.performance.modelLoadMs,
+          },
+          performance: {
+            fpsEma: state.performance.fpsEma || null,
+            inferenceErrors: state.performance.inferenceErrors,
+            excludedWarmupFrames:
+              POSE_CONFIG.inferenceWarmupFrames -
+              state.performance.inferenceWarmupRemaining,
+            inferenceMs: inference,
+            frameMs: frame,
+          },
+          frameQuality: {
+            openCvStatus: state.frameQuality.status,
+            brightness: state.frameQuality.brightness,
+            sharpness: state.frameQuality.sharpness,
+            analysisMs: state.frameQuality.analysisMs,
+            warning: state.frameQuality.warning,
+          },
+          configuration: {
+            minJointConfidence: POSE_CONFIG.minJointConfidence,
+            emaAlpha: POSE_CONFIG.emaAlpha,
+            transitionHoldMs: POSE_CONFIG.transitionHoldMs,
+            invalidResetMs: POSE_CONFIG.invalidResetMs,
+            thresholdHysteresis: POSE_CONFIG.thresholdHysteresis,
+            qualityIntervalMs: POSE_CONFIG.qualityIntervalMs,
+            minBrightness: POSE_CONFIG.minBrightness,
+            minSharpness: POSE_CONFIG.minSharpness,
+          },
+          samples: {
+            inferenceMs: [...state.performance.inferenceSamples],
+            frameMs: [...state.performance.frameSamples],
+          },
+        };
+      }
+
+      function downloadTextFile(filename, text, type) {
+        const blob = new Blob([text], { type });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 0);
+      }
+
+      function buildResultFilename(extension) {
+        const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+        return `fitform-${state.currentKey}-${timestamp}.${extension}`;
+      }
+
+      function exportPerformanceJson() {
+        const report = buildPerformanceReport();
+        downloadTextFile(
+          buildResultFilename("json"),
+          JSON.stringify(report, null, 2),
+          "application/json;charset=utf-8"
+        );
+      }
+
+      function escapeCsv(value) {
+        if (value === null || value === undefined) return "";
+        const text = String(value);
+        return /[",\n]/.test(text)
+          ? `"${text.replace(/"/g, '""')}"`
+          : text;
+      }
+
+      function exportPerformanceCsv() {
+        const report = buildPerformanceReport();
+        const inference = report.performance.inferenceMs;
+        const frame = report.performance.frameMs;
+        const row = {
+          generated_at: report.generatedAt,
+          exercise: report.exercise,
+          mode: report.mode,
+          duration_ms: report.session.durationMs,
+          reps: report.session.reps,
+          processed_frames: report.session.processedFrames,
+          valid_frames: report.session.validFrames,
+          invalid_frames: report.session.invalidFrames,
+          valid_joint_rate: report.session.validJointRate,
+          model_load_ms: report.model.loadMs,
+          fps_ema: report.performance.fpsEma,
+          excluded_warmup_frames: report.performance.excludedWarmupFrames,
+          inference_count: inference.count,
+          inference_avg_ms: inference.average,
+          inference_p50_ms: inference.p50,
+          inference_p95_ms: inference.p95,
+          inference_max_ms: inference.max,
+          frame_avg_ms: frame.average,
+          frame_p50_ms: frame.p50,
+          frame_p95_ms: frame.p95,
+          frame_max_ms: frame.max,
+          brightness: report.frameQuality.brightness,
+          sharpness: report.frameQuality.sharpness,
+          opencv_status: report.frameQuality.openCvStatus,
+          video_width: report.environment.videoWidth,
+          video_height: report.environment.videoHeight,
+          test_id: report.validation.testId,
+          test_condition: report.validation.condition,
+          true_reps: report.validation.trueReps,
+          predicted_reps: report.validation.predictedReps,
+          absolute_error: report.validation.absoluteError,
+          exact_match: report.validation.exactMatch,
+          within_one_rep: report.validation.withinOneRep,
+          notes: report.validation.notes,
+        };
+        const headers = Object.keys(row);
+        const csv = [
+          headers.join(","),
+          headers.map((header) => escapeCsv(row[header])).join(","),
+        ].join("\n");
+        downloadTextFile(
+          buildResultFilename("csv"),
+          `\uFEFF${csv}`,
+          "text/csv;charset=utf-8"
+        );
       }
 
       const SKELETON_CONNECTIONS = [
@@ -1169,7 +1750,9 @@
 
       function updateHUD(angle, feedback) {
         hudReps.textContent = state.reps;
-        hudAngle.textContent = `${Math.round(angle)}°`;
+        hudAngle.textContent = Number.isFinite(angle)
+          ? `${Math.round(angle)}°`
+          : "-";
         hudFps.textContent = state.fps.toFixed(0);
         statusLabel.textContent = feedback.label;
         statusDetail.textContent = feedback.detail;
@@ -1178,15 +1761,68 @@
         else statusDot.classList.add("bad");
       }
 
+      function updateDeveloperLog(force = false) {
+        if (!devLogEl) return;
+        const now = performance.now();
+        if (!force && now - state.performance.lastDevLogAt < 250) return;
+        state.performance.lastDevLogAt = now;
+        const analyzedFrames = state.validFrames + state.invalidFrames;
+        const validRate =
+          analyzedFrames > 0
+            ? ((state.validFrames / analyzedFrames) * 100).toFixed(1)
+            : "0.0";
+        const inference = summarizeSamples(
+          state.performance.inferenceSamples
+        );
+        const frame = summarizeSamples(state.performance.frameSamples);
+        const validation = buildValidationMetadata();
+        devLogEl.textContent = [
+          `exercise: ${state.currentKey}`,
+          `rep phase: ${state.repPhase}`,
+          `angle: ${Number.isFinite(state.lastAngle) ? state.lastAngle.toFixed(1) : "-"}`,
+          `angular velocity: ${state.angularVelocity.toFixed(1)} deg/s`,
+          `fps (EMA): ${state.performance.fpsEma.toFixed(1)}`,
+          `model load: ${formatMetric(state.performance.modelLoadMs)} ms`,
+          `inference avg/p50/p95/max: ${formatMetric(inference.average)} / ${formatMetric(inference.p50)} / ${formatMetric(inference.p95)} / ${formatMetric(inference.max)} ms`,
+          `frame avg/p50/p95/max: ${formatMetric(frame.average)} / ${formatMetric(frame.p50)} / ${formatMetric(frame.p95)} / ${formatMetric(frame.max)} ms`,
+          `performance samples: ${inference.count}`,
+          `warm-up frames remaining: ${state.performance.inferenceWarmupRemaining}`,
+          `inference errors: ${state.performance.inferenceErrors}`,
+          `test condition: ${validation.condition}`,
+          `true / predicted reps: ${validation.trueReps ?? "-"} / ${validation.predictedReps}`,
+          `absolute rep error: ${validation.absoluteError ?? "-"}`,
+          `valid frames: ${state.validFrames}`,
+          `invalid frames: ${state.invalidFrames}`,
+          `valid joint rate: ${validRate}%`,
+          `validation: ${state.lastValidationReason}`,
+          `OpenCV.js: ${state.frameQuality.status}`,
+          `brightness: ${
+            Number.isFinite(state.frameQuality.brightness)
+              ? state.frameQuality.brightness.toFixed(1)
+              : "-"
+          }`,
+          `sharpness: ${
+            Number.isFinite(state.frameQuality.sharpness)
+              ? state.frameQuality.sharpness.toFixed(1)
+              : "-"
+          }`,
+          `quality analysis: ${state.frameQuality.analysisMs.toFixed(1)} ms`,
+          `quality warning: ${state.frameQuality.warning || "none"}`,
+          `EMA alpha: ${POSE_CONFIG.emaAlpha}`,
+          `min confidence: ${POSE_CONFIG.minJointConfidence}`,
+        ].join("\n");
+      }
+
       function resetCounter(keepButtonLabel = false) {
         state.reps = 0;
-        state.stage = "up";
-        state.lastAngle = 0;
         state.workoutStarted = false;
-        state.startStableFrames = 0;
-        state.downStableFrames = 0;
-        state.upStableFrames = 0;
         state.countdownActive = false;
+        state.validFrames = 0;
+        state.invalidFrames = 0;
+        state.lastValidationReason = "카메라 대기";
+        resetPoseAnalysis();
+        resetFrameQuality();
+        resetPerformanceMetrics(true);
 
         if (!keepButtonLabel && startWorkoutBtn) {
           startWorkoutBtn.textContent = "운동 시작";
@@ -1220,31 +1856,33 @@
       // --------------------------
       // 4. 카운팅 & MoveNet
       // --------------------------
-      function updateRepsForExercise(ex, angle) {
+      function updateRepsForExercise(ex, angle, now) {
         const { up, down } = ex.thresholds;
+        const hysteresis = POSE_CONFIG.thresholdHysteresis;
 
-        if (angle <= down) {
-          state.downStableFrames += 1;
-          state.upStableFrames = 0;
-        } else if (angle >= up) {
-          state.upStableFrames += 1;
-          state.downStableFrames = 0;
-        } else {
-          state.downStableFrames = 0;
-          state.upStableFrames = 0;
-        }
-
-        if (state.stage === "up" && state.downStableFrames >= 2) {
-          state.stage = "down";
+        if (
+          state.repPhase === REP_PHASE.READY &&
+          holdTransition("bottom", angle <= down, now)
+        ) {
+          completeTransition(REP_PHASE.BOTTOM_HOLD);
           return;
         }
 
-        if (state.stage === "down" && state.upStableFrames >= 2) {
-          state.stage = "up";
+        if (
+          state.repPhase === REP_PHASE.BOTTOM_HOLD &&
+          angle >= down + hysteresis
+        ) {
+          completeTransition(REP_PHASE.RETURNING);
+          return;
+        }
+
+        if (
+          state.repPhase === REP_PHASE.RETURNING &&
+          holdTransition("top", angle >= up, now)
+        ) {
+          completeTransition(REP_PHASE.READY);
           state.reps += 1;
-          if (state.reps > 0) {
-            handleRepCounted(state.reps);
-          }
+          handleRepCounted(state.reps);
 
           if (
             state.currentMode !== "challenge" &&
@@ -1267,23 +1905,87 @@
       // --------------------------
       // 5. 메인 루프
       // --------------------------
+      function finishFrame(frameStartedAt) {
+        const frameMs = performance.now() - frameStartedAt;
+        addPerformanceSample(state.performance.frameSamples, frameMs);
+        state.performance.processedFrames += 1;
+        updateDeveloperLog();
+        updateChallengeTimer();
+        state.animationId = requestAnimationFrame(renderLoop);
+      }
+
       async function renderLoop() {
         if (!state.detector || !state.running) return;
 
-        const now = performance.now();
+        const frameStartedAt = performance.now();
+        const now = frameStartedAt;
         const dt = now - state.lastFrameTime;
         state.lastFrameTime = now;
-        state.fps = 1000 / dt;
+        const instantFps = dt > 0 ? 1000 / dt : 0;
+        state.performance.fpsEma =
+          state.performance.fpsEma > 0
+            ? 0.15 * instantFps + 0.85 * state.performance.fpsEma
+            : instantFps;
+        state.fps = state.performance.fpsEma;
+        analyzeFrameQuality(now);
 
-        const poses = await state.detector.estimatePoses(videoEl, {
-          maxPoses: 1,
-          flipHorizontal: true,
-        });
+        let poses = [];
+        const inferenceStartedAt = performance.now();
+        try {
+          poses = await state.detector.estimatePoses(videoEl, {
+            maxPoses: 1,
+            flipHorizontal: true,
+          });
+          const inferenceMs = performance.now() - inferenceStartedAt;
+          if (state.performance.inferenceWarmupRemaining > 0) {
+            state.performance.inferenceWarmupRemaining -= 1;
+          } else {
+            addPerformanceSample(
+              state.performance.inferenceSamples,
+              inferenceMs
+            );
+          }
+        } catch (error) {
+          state.performance.inferenceErrors += 1;
+          statusLabel.textContent = "AI 추론 오류";
+          statusDetail.textContent = "자세 추정 중 오류가 발생했습니다.";
+          statusDot.classList.remove("good", "bad");
+          statusDot.classList.add("bad");
+          console.error("MoveNet 추론 오류:", error);
+          finishFrame(frameStartedAt);
+          return;
+        }
 
         if (poses.length > 0) {
-          const kp = poses[0].keypoints;
-
           const ex = EXERCISES[state.currentKey];
+          const rawKeypoints = poses[0].keypoints;
+          const validation = validateExerciseKeypoints(rawKeypoints, ex);
+
+          if (!validation.valid) {
+            state.invalidFrames += 1;
+            state.lastValidationReason = validation.reason;
+            if (!state.invalidSince) state.invalidSince = now;
+            if (now - state.invalidSince >= POSE_CONFIG.invalidResetMs) {
+              state.repPhase = REP_PHASE.READY;
+              state.transitionCandidate = null;
+              state.transitionStartedAt = 0;
+              state.lastAngleTime = 0;
+            }
+
+            drawSkeleton(rawKeypoints);
+            updateHUD(null, {
+              label: "관절 인식 불안정",
+              detail: validation.reason,
+              good: false,
+            });
+            finishFrame(frameStartedAt);
+            return;
+          }
+
+          state.invalidSince = 0;
+          state.validFrames += 1;
+          state.lastValidationReason = validation.reason;
+          const kp = smoothKeypoints(rawKeypoints);
           const [ia, ib, ic] = ex.angleJoints;
 
           const a = toVec2(kp[ia]);
@@ -1291,7 +1993,19 @@
           const c = toVec2(kp[ic]);
 
           const angle = angleBetween(a, b, c);
-          state.lastAngle = angle;
+          if (angle === null) {
+            state.invalidFrames += 1;
+            state.validFrames -= 1;
+            state.lastValidationReason = "관절 간 거리가 너무 짧아 각도를 계산할 수 없습니다.";
+            updateHUD(null, {
+              label: "각도 계산 실패",
+              detail: state.lastValidationReason,
+              good: false,
+            });
+            finishFrame(frameStartedAt);
+            return;
+          }
+          updateAngularVelocity(angle, now);
 
           if (!state.workoutStarted) {
             let ok = false;
@@ -1301,21 +2015,18 @@
               ok = angle > ex.thresholds.up - 5;
             }
 
-            if (ok) state.startStableFrames += 1;
-            else state.startStableFrames = 0;
-
             drawSkeleton(kp);
-            const fb = {
+            const fb = withFrameQualityFeedback({
               label: ok ? "Hold start position" : "Set start position",
               detail:
                 ex.start?.hint ||
                 "준비자세를 맞춰 주세요. (정면을 보고 화면 중앙에 서세요.)",
               good: ok,
-            };
+            });
             updateHUD(angle, fb);
           } else {
-            updateRepsForExercise(ex, angle);
-            const fb = ex.feedback(angle);
+            updateRepsForExercise(ex, angle, now);
+            const fb = withFrameQualityFeedback(ex.feedback(angle));
 
             state.totalFrames += 1;
             if (fb.good) {
@@ -1326,6 +2037,15 @@
             updateHUD(angle, fb);
           }
         } else {
+          state.invalidFrames += 1;
+          state.lastValidationReason = "화면에서 사람을 찾지 못했습니다.";
+          if (!state.invalidSince) state.invalidSince = now;
+          if (now - state.invalidSince >= POSE_CONFIG.invalidResetMs) {
+            state.repPhase = REP_PHASE.READY;
+            state.transitionCandidate = null;
+            state.transitionStartedAt = 0;
+            state.lastAngleTime = 0;
+          }
           ctx.clearRect(0, 0, canvasEl.width, canvasEl.height);
           statusLabel.textContent = "No pose";
           statusDetail.textContent =
@@ -1333,8 +2053,7 @@
           statusDot.classList.remove("good", "bad");
         }
 
-        updateChallengeTimer();
-        state.animationId = requestAnimationFrame(renderLoop);
+        finishFrame(frameStartedAt);
       }
 
       // --------------------------
@@ -1358,18 +2077,20 @@
           canvasEl.height = videoEl.videoHeight;
 
           if (!state.detector) {
+            const modelLoadStartedAt = performance.now();
             state.detector = await createDetector();
+            state.performance.modelLoadMs =
+              performance.now() - modelLoadStartedAt;
           }
 
           state.running = true;
           state.lastFrameTime = performance.now();
           toggleCameraBtn.textContent = "카메라 정지";
           toggleCameraBtn.disabled = false;
+          resetPoseAnalysis();
+          resetFrameQuality();
+          resetPerformanceMetrics(true);
           renderLoop();
-
-          speakText(
-            "카메라가 시작되었습니다. 화면 중앙에 서서 자세를 맞춰 주세요."
-          );
         } catch (err) {
           console.error(err);
           alert("카메라 접근 중 오류가 발생했습니다. 브라우저 권한을 확인하세요.");
@@ -1386,6 +2107,8 @@
           state.stream = null;
         }
         ctx.clearRect(0, 0, canvasEl.width, canvasEl.height);
+        resetPoseAnalysis();
+        resetFrameQuality();
         toggleCameraBtn.textContent = "카메라 시작";
         toggleCameraBtn.disabled = false;
       }
@@ -1407,7 +2130,6 @@
           statusLabel.textContent = "시간 선택 필요";
           statusDetail.textContent =
             "도전 모드에서는 먼저 도전 시간을 선택해 주세요.";
-          speakText("도전 시간을 먼저 선택해 주세요.");
           return;
         }
 
@@ -1416,33 +2138,14 @@
             state.currentMode === "challenge" ? "도전 중지" : "운동 정지";
         }
 
+        resetCounter(true);
         state.countdownActive = true;
         state.countdownValue = 5;
-
-        resetCounter(true);
         statusLabel.textContent = "시작 준비";
         statusDetail.textContent = "5초 후에 시작합니다.";
 
         countdownEl.textContent = state.countdownValue;
         countdownEl.style.opacity = 1;
-
-        if (countdownAudio) {
-          try {
-            countdownAudio.currentTime = 0;
-            countdownAudio.play();
-          } catch (e) {
-            console.warn(
-              "Countdown cached audio play error, fallback to TTS:",
-              e
-            );
-            speakText("5초 후에 시작합니다.");
-          }
-        } else {
-          speakText("5초 후에 시작합니다.");
-          if (ttsReady) {
-            preloadCountdownAudio();
-          }
-        }
 
         state.countdownTimerId = setInterval(() => {
           state.countdownValue -= 1;
@@ -1458,7 +2161,6 @@
             statusLabel.textContent =
               state.currentMode === "challenge" ? "도전 시작" : "운동 시작";
             statusDetail.textContent = "";
-            speakText("시작합니다.");
 
             // 도전 모드면 타이머 시작
             if (state.currentMode === "challenge") {
@@ -1489,8 +2191,7 @@
 
         state.workoutStarted = false;
         state.countdownActive = false;
-        state.startStableFrames = 0;
-        // 아바타 모드 전신 인식/일시정지 상태도 초기화
+        resetPoseAnalysis();
 
         if (countdownEl) {
           countdownEl.style.opacity = 0;
@@ -1511,10 +2212,6 @@
 
         showSummaryReport();
 
-        if (state.reps > 0) {
-          const msg = `총 ${state.reps}회 수행했습니다. 수고하셨습니다.`;
-          speakText(msg);
-        }
       }
 
       // --------------------------
@@ -1528,6 +2225,20 @@
       resetBtn.addEventListener("click", () => {
         resetCounter();
       });
+
+      exportJsonBtn.addEventListener("click", exportPerformanceJson);
+      exportCsvBtn.addEventListener("click", exportPerformanceCsv);
+      resetMetricsBtn.addEventListener("click", () => {
+        resetPerformanceMetrics(true);
+        state.validFrames = 0;
+        state.invalidFrames = 0;
+        updateDeveloperLog(true);
+      });
+      [testIdInput, testConditionSelect, trueRepsInput, testNotesInput].forEach(
+        (element) => {
+          element.addEventListener("input", () => updateDeveloperLog(true));
+        }
+      );
 
       startWorkoutBtn.addEventListener("click", () => {
         if (state.workoutStarted || state.countdownActive) {
@@ -1695,7 +2406,6 @@
           statusLabel.textContent = "도전 시간 선택됨";
           statusDetail.textContent =
             mins + "분 동안 수행 가능한 횟수를 측정합니다.";
-          speakText(mins + "분 도전을 선택했습니다.");
         });
       });
 

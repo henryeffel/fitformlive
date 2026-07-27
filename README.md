@@ -8,8 +8,8 @@ Microsoft AI School Cohort 8, First Team Project(20251111 ~ 20251121)
     -   🚧 The Reality Beginners Face : Most beginners struggle to learn proper exercise form. 
     -   📣 Pain Points : Injury Risk, Lack of Feedback, Financial Burden, Lack of Motivation
 -   🚀 **How** we solved it
-    -   🛠️ Browser-based pipeline combining webcam input, **MoveNet pose estimation**, and joint-angle analysis.
-    -   🖼️ Real-time pose visualization, repetition counting, and immediate form feedback.
+    -   🛠️ Browser-based pipeline combining webcam input, **OpenCV.js frame-quality analysis**, **MoveNet pose estimation**, and joint-angle analysis.
+    -   🖼️ Real-time pose visualization, stabilized repetition counting, and immediate form feedback.
 
 ## 👀 How does it work?
 
@@ -22,6 +22,7 @@ Microsoft AI School Cohort 8, First Team Project(20251111 ~ 20251121)
   <img alt="JavaScript" src="https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black" />
   <img alt="TensorFlow.js" src="https://img.shields.io/badge/TensorFlow.js-FF6F00?style=for-the-badge&logo=tensorflow&logoColor=white" />
   <img alt="MoveNet" src="https://img.shields.io/badge/MoveNet-Pose%20Estimation-111F68?style=for-the-badge" />
+  <img alt="OpenCV.js" src="https://img.shields.io/badge/OpenCV.js-5C3EE8?style=for-the-badge&logo=opencv&logoColor=white" />
 </p>
 
 ## 🧑🏻‍💻 Developers

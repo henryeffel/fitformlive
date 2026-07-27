@@ -1,0 +1,8 @@
+test_id,test_date,exercise,condition,true_reps,predicted_reps,absolute_error,exact_match,within_one_rep,duration_ms,processed_frames,valid_frames,invalid_frames,valid_joint_rate,model_load_ms,fps_ema,inference_avg_ms,inference_p50_ms,inference_p95_ms,inference_max_ms,frame_avg_ms,frame_p95_ms,brightness,sharpness,opencv_status,video_width,video_height,browser,notes
+curl-normal-01,,right_curl,normal,10,,,,,,,,,,,,,,,,,,,,,,,,
+curl-partial-01,,right_curl,partial_range,10,,,,,,,,,,,,,,,,,,,,,,,,
+curl-fast-01,,right_curl,fast_motion,10,,,,,,,,,,,,,,,,,,,,,,,,
+curl-low-light-01,,right_curl,low_light,10,,,,,,,,,,,,,,,,,,,,,,,,
+curl-occlusion-01,,right_curl,occlusion,10,,,,,,,,,,,,,,,,,,,,,,,,
+curl-distance-01,,right_curl,distance,10,,,,,,,,,,,,,,,,,,,,,,,,
+squat-normal-01,,squat,normal,10,,,,,,,,,,,,,,,,,,,,,,,,
