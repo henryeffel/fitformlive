@@ -1,0 +1,24 @@
+{
+  "manifestVersion": "1.0",
+  "hashAlgorithm": "sha256",
+  "files": [
+    {
+      "path": "raw/curl-normal-01.schema-1.0.json",
+      "sha256": "55a20a1da1bc5d912b04a8cc8a7726ef33180719d5bcf0bc5b7bb64b4e10311f",
+      "bytes": 15276774,
+      "schemaVersion": "1.0"
+    },
+    {
+      "path": "raw/curl-partial-01.schema-1.0.json",
+      "sha256": "1448fb1010891c708d18a842dc17153291c1315366cd8893b4ab4fcd40bd3c97",
+      "bytes": 8896235,
+      "schemaVersion": "1.0"
+    },
+    {
+      "path": "raw/curl-occlusion-01.schema-1.0.json",
+      "sha256": "f1128c5ebc116f1bd5d4bf0f6a58dec8ea5f8666dc2810a39adc02c75934e1d2",
+      "bytes": 8741525,
+      "schemaVersion": "1.0"
+    }
+  ]
+}

@@ -1,0 +1,1217 @@
+{
+  "experimentVersion": "1.0",
+  "design": "cumulative_single-feature-addition",
+  "interpretationLimit": "Results are marginal effects within a cumulative pipeline, not independent factorial effects.",
+  "fixtureCount": 3,
+  "configurationCount": 6,
+  "resultCount": 18,
+  "allDeterministic": true,
+  "configurations": [
+    {
+      "id": "A_BASELINE",
+      "label": "Baseline",
+      "features": {
+        "validation": false,
+        "ema": false,
+        "hysteresis": false,
+        "holdTime": false,
+        "invalidReset": false
+      }
+    },
+    {
+      "id": "B_VALIDATION",
+      "label": "Validation",
+      "features": {
+        "validation": true,
+        "ema": false,
+        "hysteresis": false,
+        "holdTime": false,
+        "invalidReset": false
+      }
+    },
+    {
+      "id": "C_SMOOTHING",
+      "label": "Smoothing",
+      "features": {
+        "validation": true,
+        "ema": true,
+        "hysteresis": false,
+        "holdTime": false,
+        "invalidReset": false
+      }
+    },
+    {
+      "id": "D_HYSTERESIS",
+      "label": "Hysteresis",
+      "features": {
+        "validation": true,
+        "ema": true,
+        "hysteresis": true,
+        "holdTime": false,
+        "invalidReset": false
+      }
+    },
+    {
+      "id": "E_STABLE_FSM",
+      "label": "Stable FSM",
+      "features": {
+        "validation": true,
+        "ema": true,
+        "hysteresis": true,
+        "holdTime": true,
+        "invalidReset": false
+      }
+    },
+    {
+      "id": "F_FULL",
+      "label": "Full",
+      "features": {
+        "validation": true,
+        "ema": true,
+        "hysteresis": true,
+        "holdTime": true,
+        "invalidReset": true
+      }
+    }
+  ],
+  "results": [
+    {
+      "fixture": {
+        "testId": "curl-normal-01",
+        "role": "normal_regression",
+        "sourceSha256": "55a20a1da1bc5d912b04a8cc8a7726ef33180719d5bcf0bc5b7bb64b4e10311f"
+      },
+      "configuration": {
+        "id": "A_BASELINE",
+        "label": "Baseline",
+        "features": {
+          "validation": false,
+          "ema": false,
+          "hysteresis": false,
+          "holdTime": false,
+          "invalidReset": false
+        },
+        "parameters": {
+          "minJointConfidence": 0.4,
+          "emaAlpha": 0.35,
+          "invalidResetMs": 1000,
+          "up": 155,
+          "down": 60,
+          "hysteresis": 0,
+          "holdMs": 0,
+          "angleJoints": [
+            6,
+            8,
+            10
+          ]
+        }
+      },
+      "metrics": {
+        "groundTruth": 10,
+        "predictedReps": 18,
+        "absoluteRepError": 8,
+        "overCount": 8,
+        "underCount": 0,
+        "validFrames": 4395,
+        "invalidFrames": 0,
+        "validJointRate": 1,
+        "stateTransitions": 54,
+        "contractionCandidates": 18,
+        "confirmedContractions": 18,
+        "repCountEvents": 18,
+        "invalidResets": 0,
+        "trackingRecoveries": 0,
+        "countsDuringTrackingFailure": 2,
+        "invalidReasons": {}
+      },
+      "interpretation": {
+        "possibleDuplicateCounts": 8,
+        "partialMotionFalsePositives": null,
+        "trackingFailureFalseCounts": null,
+        "resetObserved": null
+      },
+      "determinism": {
+        "run1Hash": "4757de116bd58293b3e09a173735901dd7ae60778023213fe229868c4304c11a",
+        "run2Hash": "4757de116bd58293b3e09a173735901dd7ae60778023213fe229868c4304c11a",
+        "equal": true
+      }
+    },
+    {
+      "fixture": {
+        "testId": "curl-normal-01",
+        "role": "normal_regression",
+        "sourceSha256": "55a20a1da1bc5d912b04a8cc8a7726ef33180719d5bcf0bc5b7bb64b4e10311f"
+      },
+      "configuration": {
+        "id": "B_VALIDATION",
+        "label": "Validation",
+        "features": {
+          "validation": true,
+          "ema": false,
+          "hysteresis": false,
+          "holdTime": false,
+          "invalidReset": false
+        },
+        "parameters": {
+          "minJointConfidence": 0.4,
+          "emaAlpha": 0.35,
+          "invalidResetMs": 1000,
+          "up": 155,
+          "down": 60,
+          "hysteresis": 0,
+          "holdMs": 0,
+          "angleJoints": [
+            6,
+            8,
+            10
+          ]
+        }
+      },
+      "metrics": {
+        "groundTruth": 10,
+        "predictedReps": 16,
+        "absoluteRepError": 6,
+        "overCount": 6,
+        "underCount": 0,
+        "validFrames": 2702,
+        "invalidFrames": 1693,
+        "validJointRate": 0.6147895335608646,
+        "stateTransitions": 50,
+        "contractionCandidates": 17,
+        "confirmedContractions": 17,
+        "repCountEvents": 16,
+        "invalidResets": 0,
+        "trackingRecoveries": 194,
+        "countsDuringTrackingFailure": 0,
+        "invalidReasons": {
+          "low_confidence": 1445,
+          "outside_frame": 248
+        }
+      },
+      "interpretation": {
+        "possibleDuplicateCounts": 6,
+        "partialMotionFalsePositives": null,
+        "trackingFailureFalseCounts": null,
+        "resetObserved": null
+      },
+      "determinism": {
+        "run1Hash": "5e8e292d647f8b16a87823b62c91959106e403ce373ffe99b5717c7ab2a3e9b0",
+        "run2Hash": "5e8e292d647f8b16a87823b62c91959106e403ce373ffe99b5717c7ab2a3e9b0",
+        "equal": true
+      }
+    },
+    {
+      "fixture": {
+        "testId": "curl-normal-01",
+        "role": "normal_regression",
+        "sourceSha256": "55a20a1da1bc5d912b04a8cc8a7726ef33180719d5bcf0bc5b7bb64b4e10311f"
+      },
+      "configuration": {
+        "id": "C_SMOOTHING",
+        "label": "Smoothing",
+        "features": {
+          "validation": true,
+          "ema": true,
+          "hysteresis": false,
+          "holdTime": false,
+          "invalidReset": false
+        },
+        "parameters": {
+          "minJointConfidence": 0.4,
+          "emaAlpha": 0.35,
+          "invalidResetMs": 1000,
+          "up": 155,
+          "down": 60,
+          "hysteresis": 0,
+          "holdMs": 0,
+          "angleJoints": [
+            6,
+            8,
+            10
+          ]
+        }
+      },
+      "metrics": {
+        "groundTruth": 10,
+        "predictedReps": 16,
+        "absoluteRepError": 6,
+        "overCount": 6,
+        "underCount": 0,
+        "validFrames": 2702,
+        "invalidFrames": 1693,
+        "validJointRate": 0.6147895335608646,
+        "stateTransitions": 50,
+        "contractionCandidates": 17,
+        "confirmedContractions": 17,
+        "repCountEvents": 16,
+        "invalidResets": 0,
+        "trackingRecoveries": 194,
+        "countsDuringTrackingFailure": 0,
+        "invalidReasons": {
+          "low_confidence": 1445,
+          "outside_frame": 248
+        }
+      },
+      "interpretation": {
+        "possibleDuplicateCounts": 6,
+        "partialMotionFalsePositives": null,
+        "trackingFailureFalseCounts": null,
+        "resetObserved": null
+      },
+      "determinism": {
+        "run1Hash": "94397d1959e52067a9dd80b5b4403924926ad37fa9466a83bcfbd32ebd12ce39",
+        "run2Hash": "94397d1959e52067a9dd80b5b4403924926ad37fa9466a83bcfbd32ebd12ce39",
+        "equal": true
+      }
+    },
+    {
+      "fixture": {
+        "testId": "curl-normal-01",
+        "role": "normal_regression",
+        "sourceSha256": "55a20a1da1bc5d912b04a8cc8a7726ef33180719d5bcf0bc5b7bb64b4e10311f"
+      },
+      "configuration": {
+        "id": "D_HYSTERESIS",
+        "label": "Hysteresis",
+        "features": {
+          "validation": true,
+          "ema": true,
+          "hysteresis": true,
+          "holdTime": false,
+          "invalidReset": false
+        },
+        "parameters": {
+          "minJointConfidence": 0.4,
+          "emaAlpha": 0.35,
+          "invalidResetMs": 1000,
+          "up": 155,
+          "down": 60,
+          "hysteresis": 8,
+          "holdMs": 0,
+          "angleJoints": [
+            6,
+            8,
+            10
+          ]
+        }
+      },
+      "metrics": {
+        "groundTruth": 10,
+        "predictedReps": 16,
+        "absoluteRepError": 6,
+        "overCount": 6,
+        "underCount": 0,
+        "validFrames": 2702,
+        "invalidFrames": 1693,
+        "validJointRate": 0.6147895335608646,
+        "stateTransitions": 50,
+        "contractionCandidates": 17,
+        "confirmedContractions": 17,
+        "repCountEvents": 16,
+        "invalidResets": 0,
+        "trackingRecoveries": 194,
+        "countsDuringTrackingFailure": 0,
+        "invalidReasons": {
+          "low_confidence": 1445,
+          "outside_frame": 248
+        }
+      },
+      "interpretation": {
+        "possibleDuplicateCounts": 6,
+        "partialMotionFalsePositives": null,
+        "trackingFailureFalseCounts": null,
+        "resetObserved": null
+      },
+      "determinism": {
+        "run1Hash": "70c597da22b2cec451ec08ad1bdaaca206bae2c5a7a7ed238287e2cc5a5c41f9",
+        "run2Hash": "70c597da22b2cec451ec08ad1bdaaca206bae2c5a7a7ed238287e2cc5a5c41f9",
+        "equal": true
+      }
+    },
+    {
+      "fixture": {
+        "testId": "curl-normal-01",
+        "role": "normal_regression",
+        "sourceSha256": "55a20a1da1bc5d912b04a8cc8a7726ef33180719d5bcf0bc5b7bb64b4e10311f"
+      },
+      "configuration": {
+        "id": "E_STABLE_FSM",
+        "label": "Stable FSM",
+        "features": {
+          "validation": true,
+          "ema": true,
+          "hysteresis": true,
+          "holdTime": true,
+          "invalidReset": false
+        },
+        "parameters": {
+          "minJointConfidence": 0.4,
+          "emaAlpha": 0.35,
+          "invalidResetMs": 1000,
+          "up": 155,
+          "down": 60,
+          "hysteresis": 8,
+          "holdMs": 180,
+          "angleJoints": [
+            6,
+            8,
+            10
+          ]
+        }
+      },
+      "metrics": {
+        "groundTruth": 10,
+        "predictedReps": 15,
+        "absoluteRepError": 5,
+        "overCount": 5,
+        "underCount": 0,
+        "validFrames": 2702,
+        "invalidFrames": 1693,
+        "validJointRate": 0.6147895335608646,
+        "stateTransitions": 47,
+        "contractionCandidates": 16,
+        "confirmedContractions": 16,
+        "repCountEvents": 15,
+        "invalidResets": 0,
+        "trackingRecoveries": 194,
+        "countsDuringTrackingFailure": 4,
+        "invalidReasons": {
+          "low_confidence": 1445,
+          "outside_frame": 248
+        }
+      },
+      "interpretation": {
+        "possibleDuplicateCounts": 5,
+        "partialMotionFalsePositives": null,
+        "trackingFailureFalseCounts": null,
+        "resetObserved": null
+      },
+      "determinism": {
+        "run1Hash": "cb09a205aba7a05d4d93030395f62de4f8ccd08123798b7f54856873e2dfe64b",
+        "run2Hash": "cb09a205aba7a05d4d93030395f62de4f8ccd08123798b7f54856873e2dfe64b",
+        "equal": true
+      }
+    },
+    {
+      "fixture": {
+        "testId": "curl-normal-01",
+        "role": "normal_regression",
+        "sourceSha256": "55a20a1da1bc5d912b04a8cc8a7726ef33180719d5bcf0bc5b7bb64b4e10311f"
+      },
+      "configuration": {
+        "id": "F_FULL",
+        "label": "Full",
+        "features": {
+          "validation": true,
+          "ema": true,
+          "hysteresis": true,
+          "holdTime": true,
+          "invalidReset": true
+        },
+        "parameters": {
+          "minJointConfidence": 0.4,
+          "emaAlpha": 0.35,
+          "invalidResetMs": 1000,
+          "up": 155,
+          "down": 60,
+          "hysteresis": 8,
+          "holdMs": 180,
+          "angleJoints": [
+            6,
+            8,
+            10
+          ]
+        }
+      },
+      "metrics": {
+        "groundTruth": 10,
+        "predictedReps": 13,
+        "absoluteRepError": 3,
+        "overCount": 3,
+        "underCount": 0,
+        "validFrames": 2702,
+        "invalidFrames": 1693,
+        "validJointRate": 0.6147895335608646,
+        "stateTransitions": 47,
+        "contractionCandidates": 17,
+        "confirmedContractions": 17,
+        "repCountEvents": 13,
+        "invalidResets": 4,
+        "trackingRecoveries": 194,
+        "countsDuringTrackingFailure": 2,
+        "invalidReasons": {
+          "low_confidence": 1445,
+          "outside_frame": 248
+        }
+      },
+      "interpretation": {
+        "possibleDuplicateCounts": 3,
+        "partialMotionFalsePositives": null,
+        "trackingFailureFalseCounts": null,
+        "resetObserved": null
+      },
+      "determinism": {
+        "run1Hash": "437ea22b334e339f57f83f4455edd03a002d1cdd1f443ed11caf83f308ba8bea",
+        "run2Hash": "437ea22b334e339f57f83f4455edd03a002d1cdd1f443ed11caf83f308ba8bea",
+        "equal": true
+      }
+    },
+    {
+      "fixture": {
+        "testId": "curl-boundary-contraction-01",
+        "role": "threshold_sensitivity",
+        "sourceSha256": "1448fb1010891c708d18a842dc17153291c1315366cd8893b4ab4fcd40bd3c97"
+      },
+      "configuration": {
+        "id": "A_BASELINE",
+        "label": "Baseline",
+        "features": {
+          "validation": false,
+          "ema": false,
+          "hysteresis": false,
+          "holdTime": false,
+          "invalidReset": false
+        },
+        "parameters": {
+          "minJointConfidence": 0.4,
+          "emaAlpha": 0.35,
+          "invalidResetMs": 1000,
+          "up": 155,
+          "down": 60,
+          "hysteresis": 0,
+          "holdMs": 0,
+          "angleJoints": [
+            6,
+            8,
+            10
+          ]
+        }
+      },
+      "metrics": {
+        "groundTruth": 0,
+        "predictedReps": 4,
+        "absoluteRepError": 4,
+        "overCount": 4,
+        "underCount": 0,
+        "validFrames": 2419,
+        "invalidFrames": 0,
+        "validJointRate": 1,
+        "stateTransitions": 12,
+        "contractionCandidates": 4,
+        "confirmedContractions": 4,
+        "repCountEvents": 4,
+        "invalidResets": 0,
+        "trackingRecoveries": 0,
+        "countsDuringTrackingFailure": 0,
+        "invalidReasons": {}
+      },
+      "interpretation": {
+        "possibleDuplicateCounts": null,
+        "partialMotionFalsePositives": 4,
+        "trackingFailureFalseCounts": null,
+        "resetObserved": null
+      },
+      "determinism": {
+        "run1Hash": "6cb8f7a6b5c4ff5a83663204bb974b0134bdc9d2428733afa85fe42abbb89a0e",
+        "run2Hash": "6cb8f7a6b5c4ff5a83663204bb974b0134bdc9d2428733afa85fe42abbb89a0e",
+        "equal": true
+      }
+    },
+    {
+      "fixture": {
+        "testId": "curl-boundary-contraction-01",
+        "role": "threshold_sensitivity",
+        "sourceSha256": "1448fb1010891c708d18a842dc17153291c1315366cd8893b4ab4fcd40bd3c97"
+      },
+      "configuration": {
+        "id": "B_VALIDATION",
+        "label": "Validation",
+        "features": {
+          "validation": true,
+          "ema": false,
+          "hysteresis": false,
+          "holdTime": false,
+          "invalidReset": false
+        },
+        "parameters": {
+          "minJointConfidence": 0.4,
+          "emaAlpha": 0.35,
+          "invalidResetMs": 1000,
+          "up": 155,
+          "down": 60,
+          "hysteresis": 0,
+          "holdMs": 0,
+          "angleJoints": [
+            6,
+            8,
+            10
+          ]
+        }
+      },
+      "metrics": {
+        "groundTruth": 0,
+        "predictedReps": 4,
+        "absoluteRepError": 4,
+        "overCount": 4,
+        "underCount": 0,
+        "validFrames": 1844,
+        "invalidFrames": 575,
+        "validJointRate": 0.7622984704423316,
+        "stateTransitions": 12,
+        "contractionCandidates": 4,
+        "confirmedContractions": 4,
+        "repCountEvents": 4,
+        "invalidResets": 0,
+        "trackingRecoveries": 52,
+        "countsDuringTrackingFailure": 0,
+        "invalidReasons": {
+          "low_confidence": 524,
+          "outside_frame": 51
+        }
+      },
+      "interpretation": {
+        "possibleDuplicateCounts": null,
+        "partialMotionFalsePositives": 4,
+        "trackingFailureFalseCounts": null,
+        "resetObserved": null
+      },
+      "determinism": {
+        "run1Hash": "3ee10612d34c9d86a49561fc84adf61ca0f23929e91ddd9fabb47a4ab9cdd067",
+        "run2Hash": "3ee10612d34c9d86a49561fc84adf61ca0f23929e91ddd9fabb47a4ab9cdd067",
+        "equal": true
+      }
+    },
+    {
+      "fixture": {
+        "testId": "curl-boundary-contraction-01",
+        "role": "threshold_sensitivity",
+        "sourceSha256": "1448fb1010891c708d18a842dc17153291c1315366cd8893b4ab4fcd40bd3c97"
+      },
+      "configuration": {
+        "id": "C_SMOOTHING",
+        "label": "Smoothing",
+        "features": {
+          "validation": true,
+          "ema": true,
+          "hysteresis": false,
+          "holdTime": false,
+          "invalidReset": false
+        },
+        "parameters": {
+          "minJointConfidence": 0.4,
+          "emaAlpha": 0.35,
+          "invalidResetMs": 1000,
+          "up": 155,
+          "down": 60,
+          "hysteresis": 0,
+          "holdMs": 0,
+          "angleJoints": [
+            6,
+            8,
+            10
+          ]
+        }
+      },
+      "metrics": {
+        "groundTruth": 0,
+        "predictedReps": 3,
+        "absoluteRepError": 3,
+        "overCount": 3,
+        "underCount": 0,
+        "validFrames": 1844,
+        "invalidFrames": 575,
+        "validJointRate": 0.7622984704423316,
+        "stateTransitions": 9,
+        "contractionCandidates": 3,
+        "confirmedContractions": 3,
+        "repCountEvents": 3,
+        "invalidResets": 0,
+        "trackingRecoveries": 52,
+        "countsDuringTrackingFailure": 0,
+        "invalidReasons": {
+          "low_confidence": 524,
+          "outside_frame": 51
+        }
+      },
+      "interpretation": {
+        "possibleDuplicateCounts": null,
+        "partialMotionFalsePositives": 3,
+        "trackingFailureFalseCounts": null,
+        "resetObserved": null
+      },
+      "determinism": {
+        "run1Hash": "1672fbb4eb459bb14b731d19866af3ac9fa8b8b4f5402c157a7a6238d462bec1",
+        "run2Hash": "1672fbb4eb459bb14b731d19866af3ac9fa8b8b4f5402c157a7a6238d462bec1",
+        "equal": true
+      }
+    },
+    {
+      "fixture": {
+        "testId": "curl-boundary-contraction-01",
+        "role": "threshold_sensitivity",
+        "sourceSha256": "1448fb1010891c708d18a842dc17153291c1315366cd8893b4ab4fcd40bd3c97"
+      },
+      "configuration": {
+        "id": "D_HYSTERESIS",
+        "label": "Hysteresis",
+        "features": {
+          "validation": true,
+          "ema": true,
+          "hysteresis": true,
+          "holdTime": false,
+          "invalidReset": false
+        },
+        "parameters": {
+          "minJointConfidence": 0.4,
+          "emaAlpha": 0.35,
+          "invalidResetMs": 1000,
+          "up": 155,
+          "down": 60,
+          "hysteresis": 8,
+          "holdMs": 0,
+          "angleJoints": [
+            6,
+            8,
+            10
+          ]
+        }
+      },
+      "metrics": {
+        "groundTruth": 0,
+        "predictedReps": 3,
+        "absoluteRepError": 3,
+        "overCount": 3,
+        "underCount": 0,
+        "validFrames": 1844,
+        "invalidFrames": 575,
+        "validJointRate": 0.7622984704423316,
+        "stateTransitions": 9,
+        "contractionCandidates": 3,
+        "confirmedContractions": 3,
+        "repCountEvents": 3,
+        "invalidResets": 0,
+        "trackingRecoveries": 52,
+        "countsDuringTrackingFailure": 0,
+        "invalidReasons": {
+          "low_confidence": 524,
+          "outside_frame": 51
+        }
+      },
+      "interpretation": {
+        "possibleDuplicateCounts": null,
+        "partialMotionFalsePositives": 3,
+        "trackingFailureFalseCounts": null,
+        "resetObserved": null
+      },
+      "determinism": {
+        "run1Hash": "13e0c620ddbf52332a25cc28f86cc2d91cfb127def7120cddba5c146bebcd656",
+        "run2Hash": "13e0c620ddbf52332a25cc28f86cc2d91cfb127def7120cddba5c146bebcd656",
+        "equal": true
+      }
+    },
+    {
+      "fixture": {
+        "testId": "curl-boundary-contraction-01",
+        "role": "threshold_sensitivity",
+        "sourceSha256": "1448fb1010891c708d18a842dc17153291c1315366cd8893b4ab4fcd40bd3c97"
+      },
+      "configuration": {
+        "id": "E_STABLE_FSM",
+        "label": "Stable FSM",
+        "features": {
+          "validation": true,
+          "ema": true,
+          "hysteresis": true,
+          "holdTime": true,
+          "invalidReset": false
+        },
+        "parameters": {
+          "minJointConfidence": 0.4,
+          "emaAlpha": 0.35,
+          "invalidResetMs": 1000,
+          "up": 155,
+          "down": 60,
+          "hysteresis": 8,
+          "holdMs": 180,
+          "angleJoints": [
+            6,
+            8,
+            10
+          ]
+        }
+      },
+      "metrics": {
+        "groundTruth": 0,
+        "predictedReps": 3,
+        "absoluteRepError": 3,
+        "overCount": 3,
+        "underCount": 0,
+        "validFrames": 1844,
+        "invalidFrames": 575,
+        "validJointRate": 0.7622984704423316,
+        "stateTransitions": 9,
+        "contractionCandidates": 3,
+        "confirmedContractions": 3,
+        "repCountEvents": 3,
+        "invalidResets": 0,
+        "trackingRecoveries": 52,
+        "countsDuringTrackingFailure": 0,
+        "invalidReasons": {
+          "low_confidence": 524,
+          "outside_frame": 51
+        }
+      },
+      "interpretation": {
+        "possibleDuplicateCounts": null,
+        "partialMotionFalsePositives": 3,
+        "trackingFailureFalseCounts": null,
+        "resetObserved": null
+      },
+      "determinism": {
+        "run1Hash": "29c890dd04c17f0c1ce642df043544d4b8c15045771f867474bfa0f2bf56f4eb",
+        "run2Hash": "29c890dd04c17f0c1ce642df043544d4b8c15045771f867474bfa0f2bf56f4eb",
+        "equal": true
+      }
+    },
+    {
+      "fixture": {
+        "testId": "curl-boundary-contraction-01",
+        "role": "threshold_sensitivity",
+        "sourceSha256": "1448fb1010891c708d18a842dc17153291c1315366cd8893b4ab4fcd40bd3c97"
+      },
+      "configuration": {
+        "id": "F_FULL",
+        "label": "Full",
+        "features": {
+          "validation": true,
+          "ema": true,
+          "hysteresis": true,
+          "holdTime": true,
+          "invalidReset": true
+        },
+        "parameters": {
+          "minJointConfidence": 0.4,
+          "emaAlpha": 0.35,
+          "invalidResetMs": 1000,
+          "up": 155,
+          "down": 60,
+          "hysteresis": 8,
+          "holdMs": 180,
+          "angleJoints": [
+            6,
+            8,
+            10
+          ]
+        }
+      },
+      "metrics": {
+        "groundTruth": 0,
+        "predictedReps": 3,
+        "absoluteRepError": 3,
+        "overCount": 3,
+        "underCount": 0,
+        "validFrames": 1844,
+        "invalidFrames": 575,
+        "validJointRate": 0.7622984704423316,
+        "stateTransitions": 9,
+        "contractionCandidates": 3,
+        "confirmedContractions": 3,
+        "repCountEvents": 3,
+        "invalidResets": 1,
+        "trackingRecoveries": 52,
+        "countsDuringTrackingFailure": 0,
+        "invalidReasons": {
+          "low_confidence": 524,
+          "outside_frame": 51
+        }
+      },
+      "interpretation": {
+        "possibleDuplicateCounts": null,
+        "partialMotionFalsePositives": 3,
+        "trackingFailureFalseCounts": null,
+        "resetObserved": null
+      },
+      "determinism": {
+        "run1Hash": "90f83664fcddbe6e2b6cd6ab777dab88696bc28e26623b9ecb32af112c0b7a7e",
+        "run2Hash": "90f83664fcddbe6e2b6cd6ab777dab88696bc28e26623b9ecb32af112c0b7a7e",
+        "equal": true
+      }
+    },
+    {
+      "fixture": {
+        "testId": "curl-tracking-failure-01",
+        "role": "failure_safety",
+        "sourceSha256": "f1128c5ebc116f1bd5d4bf0f6a58dec8ea5f8666dc2810a39adc02c75934e1d2"
+      },
+      "configuration": {
+        "id": "A_BASELINE",
+        "label": "Baseline",
+        "features": {
+          "validation": false,
+          "ema": false,
+          "hysteresis": false,
+          "holdTime": false,
+          "invalidReset": false
+        },
+        "parameters": {
+          "minJointConfidence": 0.4,
+          "emaAlpha": 0.35,
+          "invalidResetMs": 1000,
+          "up": 155,
+          "down": 60,
+          "hysteresis": 0,
+          "holdMs": 0,
+          "angleJoints": [
+            6,
+            8,
+            10
+          ]
+        }
+      },
+      "metrics": {
+        "groundTruth": 3,
+        "predictedReps": 11,
+        "absoluteRepError": 8,
+        "overCount": 8,
+        "underCount": 0,
+        "validFrames": 2240,
+        "invalidFrames": 0,
+        "validJointRate": 1,
+        "stateTransitions": 33,
+        "contractionCandidates": 11,
+        "confirmedContractions": 11,
+        "repCountEvents": 11,
+        "invalidResets": 0,
+        "trackingRecoveries": 0,
+        "countsDuringTrackingFailure": 9,
+        "invalidReasons": {}
+      },
+      "interpretation": {
+        "possibleDuplicateCounts": null,
+        "partialMotionFalsePositives": null,
+        "trackingFailureFalseCounts": 9,
+        "resetObserved": false
+      },
+      "determinism": {
+        "run1Hash": "e1652368664908cd81527635c23ed56857793d6906ac2906c30bfe5b908d4376",
+        "run2Hash": "e1652368664908cd81527635c23ed56857793d6906ac2906c30bfe5b908d4376",
+        "equal": true
+      }
+    },
+    {
+      "fixture": {
+        "testId": "curl-tracking-failure-01",
+        "role": "failure_safety",
+        "sourceSha256": "f1128c5ebc116f1bd5d4bf0f6a58dec8ea5f8666dc2810a39adc02c75934e1d2"
+      },
+      "configuration": {
+        "id": "B_VALIDATION",
+        "label": "Validation",
+        "features": {
+          "validation": true,
+          "ema": false,
+          "hysteresis": false,
+          "holdTime": false,
+          "invalidReset": false
+        },
+        "parameters": {
+          "minJointConfidence": 0.4,
+          "emaAlpha": 0.35,
+          "invalidResetMs": 1000,
+          "up": 155,
+          "down": 60,
+          "hysteresis": 0,
+          "holdMs": 0,
+          "angleJoints": [
+            6,
+            8,
+            10
+          ]
+        }
+      },
+      "metrics": {
+        "groundTruth": 3,
+        "predictedReps": 3,
+        "absoluteRepError": 0,
+        "overCount": 0,
+        "underCount": 0,
+        "validFrames": 278,
+        "invalidFrames": 1962,
+        "validJointRate": 0.12410714285714286,
+        "stateTransitions": 9,
+        "contractionCandidates": 3,
+        "confirmedContractions": 3,
+        "repCountEvents": 3,
+        "invalidResets": 0,
+        "trackingRecoveries": 44,
+        "countsDuringTrackingFailure": 2,
+        "invalidReasons": {
+          "low_confidence": 1962
+        }
+      },
+      "interpretation": {
+        "possibleDuplicateCounts": null,
+        "partialMotionFalsePositives": null,
+        "trackingFailureFalseCounts": 2,
+        "resetObserved": false
+      },
+      "determinism": {
+        "run1Hash": "193b2ee592dd81809e4800a6dd5b53f25b7caed8ef9ac2b7d0a2ff886ee3ff0a",
+        "run2Hash": "193b2ee592dd81809e4800a6dd5b53f25b7caed8ef9ac2b7d0a2ff886ee3ff0a",
+        "equal": true
+      }
+    },
+    {
+      "fixture": {
+        "testId": "curl-tracking-failure-01",
+        "role": "failure_safety",
+        "sourceSha256": "f1128c5ebc116f1bd5d4bf0f6a58dec8ea5f8666dc2810a39adc02c75934e1d2"
+      },
+      "configuration": {
+        "id": "C_SMOOTHING",
+        "label": "Smoothing",
+        "features": {
+          "validation": true,
+          "ema": true,
+          "hysteresis": false,
+          "holdTime": false,
+          "invalidReset": false
+        },
+        "parameters": {
+          "minJointConfidence": 0.4,
+          "emaAlpha": 0.35,
+          "invalidResetMs": 1000,
+          "up": 155,
+          "down": 60,
+          "hysteresis": 0,
+          "holdMs": 0,
+          "angleJoints": [
+            6,
+            8,
+            10
+          ]
+        }
+      },
+      "metrics": {
+        "groundTruth": 3,
+        "predictedReps": 2,
+        "absoluteRepError": 1,
+        "overCount": 0,
+        "underCount": 1,
+        "validFrames": 278,
+        "invalidFrames": 1962,
+        "validJointRate": 0.12410714285714286,
+        "stateTransitions": 6,
+        "contractionCandidates": 2,
+        "confirmedContractions": 2,
+        "repCountEvents": 2,
+        "invalidResets": 0,
+        "trackingRecoveries": 44,
+        "countsDuringTrackingFailure": 0,
+        "invalidReasons": {
+          "low_confidence": 1962
+        }
+      },
+      "interpretation": {
+        "possibleDuplicateCounts": null,
+        "partialMotionFalsePositives": null,
+        "trackingFailureFalseCounts": 0,
+        "resetObserved": false
+      },
+      "determinism": {
+        "run1Hash": "25c25f368ad44baed028fb10db7200a294ccccb2b4fc6fac32cffac84d7341aa",
+        "run2Hash": "25c25f368ad44baed028fb10db7200a294ccccb2b4fc6fac32cffac84d7341aa",
+        "equal": true
+      }
+    },
+    {
+      "fixture": {
+        "testId": "curl-tracking-failure-01",
+        "role": "failure_safety",
+        "sourceSha256": "f1128c5ebc116f1bd5d4bf0f6a58dec8ea5f8666dc2810a39adc02c75934e1d2"
+      },
+      "configuration": {
+        "id": "D_HYSTERESIS",
+        "label": "Hysteresis",
+        "features": {
+          "validation": true,
+          "ema": true,
+          "hysteresis": true,
+          "holdTime": false,
+          "invalidReset": false
+        },
+        "parameters": {
+          "minJointConfidence": 0.4,
+          "emaAlpha": 0.35,
+          "invalidResetMs": 1000,
+          "up": 155,
+          "down": 60,
+          "hysteresis": 8,
+          "holdMs": 0,
+          "angleJoints": [
+            6,
+            8,
+            10
+          ]
+        }
+      },
+      "metrics": {
+        "groundTruth": 3,
+        "predictedReps": 2,
+        "absoluteRepError": 1,
+        "overCount": 0,
+        "underCount": 1,
+        "validFrames": 278,
+        "invalidFrames": 1962,
+        "validJointRate": 0.12410714285714286,
+        "stateTransitions": 6,
+        "contractionCandidates": 2,
+        "confirmedContractions": 2,
+        "repCountEvents": 2,
+        "invalidResets": 0,
+        "trackingRecoveries": 44,
+        "countsDuringTrackingFailure": 0,
+        "invalidReasons": {
+          "low_confidence": 1962
+        }
+      },
+      "interpretation": {
+        "possibleDuplicateCounts": null,
+        "partialMotionFalsePositives": null,
+        "trackingFailureFalseCounts": 0,
+        "resetObserved": false
+      },
+      "determinism": {
+        "run1Hash": "aefee2a1e129f712654b3844ccfe109c777ac3fd3a1e3dc6964dbeb5e507bfd1",
+        "run2Hash": "aefee2a1e129f712654b3844ccfe109c777ac3fd3a1e3dc6964dbeb5e507bfd1",
+        "equal": true
+      }
+    },
+    {
+      "fixture": {
+        "testId": "curl-tracking-failure-01",
+        "role": "failure_safety",
+        "sourceSha256": "f1128c5ebc116f1bd5d4bf0f6a58dec8ea5f8666dc2810a39adc02c75934e1d2"
+      },
+      "configuration": {
+        "id": "E_STABLE_FSM",
+        "label": "Stable FSM",
+        "features": {
+          "validation": true,
+          "ema": true,
+          "hysteresis": true,
+          "holdTime": true,
+          "invalidReset": false
+        },
+        "parameters": {
+          "minJointConfidence": 0.4,
+          "emaAlpha": 0.35,
+          "invalidResetMs": 1000,
+          "up": 155,
+          "down": 60,
+          "hysteresis": 8,
+          "holdMs": 180,
+          "angleJoints": [
+            6,
+            8,
+            10
+          ]
+        }
+      },
+      "metrics": {
+        "groundTruth": 3,
+        "predictedReps": 1,
+        "absoluteRepError": 2,
+        "overCount": 0,
+        "underCount": 2,
+        "validFrames": 278,
+        "invalidFrames": 1962,
+        "validJointRate": 0.12410714285714286,
+        "stateTransitions": 5,
+        "contractionCandidates": 2,
+        "confirmedContractions": 2,
+        "repCountEvents": 1,
+        "invalidResets": 0,
+        "trackingRecoveries": 44,
+        "countsDuringTrackingFailure": 0,
+        "invalidReasons": {
+          "low_confidence": 1962
+        }
+      },
+      "interpretation": {
+        "possibleDuplicateCounts": null,
+        "partialMotionFalsePositives": null,
+        "trackingFailureFalseCounts": 0,
+        "resetObserved": false
+      },
+      "determinism": {
+        "run1Hash": "c35563e922d19a5b320bb7430689baac6c1d3026c5cc922f219aea12cf66ee51",
+        "run2Hash": "c35563e922d19a5b320bb7430689baac6c1d3026c5cc922f219aea12cf66ee51",
+        "equal": true
+      }
+    },
+    {
+      "fixture": {
+        "testId": "curl-tracking-failure-01",
+        "role": "failure_safety",
+        "sourceSha256": "f1128c5ebc116f1bd5d4bf0f6a58dec8ea5f8666dc2810a39adc02c75934e1d2"
+      },
+      "configuration": {
+        "id": "F_FULL",
+        "label": "Full",
+        "features": {
+          "validation": true,
+          "ema": true,
+          "hysteresis": true,
+          "holdTime": true,
+          "invalidReset": true
+        },
+        "parameters": {
+          "minJointConfidence": 0.4,
+          "emaAlpha": 0.35,
+          "invalidResetMs": 1000,
+          "up": 155,
+          "down": 60,
+          "hysteresis": 8,
+          "holdMs": 180,
+          "angleJoints": [
+            6,
+            8,
+            10
+          ]
+        }
+      },
+      "metrics": {
+        "groundTruth": 3,
+        "predictedReps": 1,
+        "absoluteRepError": 2,
+        "overCount": 0,
+        "underCount": 2,
+        "validFrames": 278,
+        "invalidFrames": 1962,
+        "validJointRate": 0.12410714285714286,
+        "stateTransitions": 9,
+        "contractionCandidates": 4,
+        "confirmedContractions": 4,
+        "repCountEvents": 1,
+        "invalidResets": 9,
+        "trackingRecoveries": 44,
+        "countsDuringTrackingFailure": 0,
+        "invalidReasons": {
+          "low_confidence": 1962
+        }
+      },
+      "interpretation": {
+        "possibleDuplicateCounts": null,
+        "partialMotionFalsePositives": null,
+        "trackingFailureFalseCounts": 0,
+        "resetObserved": true
+      },
+      "determinism": {
+        "run1Hash": "b886cda3803025d4e6cc507580787099e61eb17cfad6e653c05590d46f528380",
+        "run2Hash": "b886cda3803025d4e6cc507580787099e61eb17cfad6e653c05590d46f528380",
+        "equal": true
+      }
+    }
+  ]
+}

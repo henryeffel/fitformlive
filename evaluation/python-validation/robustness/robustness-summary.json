@@ -1,0 +1,586 @@
+{
+  "analysisVersion": "1.0",
+  "scope": "in-sample robustness on three existing canonical fixtures",
+  "independentValidation": false,
+  "criteria": {
+    "normalPredictedReps": 13,
+    "boundaryPredictedReps": 0,
+    "trackingFailurePredictedReps": 0
+  },
+  "configurationCount": 1836,
+  "stableConfigurationCount": 0,
+  "stableConfigurationRate": 0.0,
+  "movementDefinitionStableConfigurationCount": 97,
+  "movementDefinitionStableConfigurationRate": 0.0528322440087146,
+  "rangesByHold": [
+    {
+      "holdMs": 0,
+      "stableThresholdCount": 0,
+      "stableRangesDeg": []
+    },
+    {
+      "holdMs": 10,
+      "stableThresholdCount": 0,
+      "stableRangesDeg": []
+    },
+    {
+      "holdMs": 20,
+      "stableThresholdCount": 0,
+      "stableRangesDeg": []
+    },
+    {
+      "holdMs": 30,
+      "stableThresholdCount": 0,
+      "stableRangesDeg": []
+    },
+    {
+      "holdMs": 40,
+      "stableThresholdCount": 0,
+      "stableRangesDeg": []
+    },
+    {
+      "holdMs": 50,
+      "stableThresholdCount": 0,
+      "stableRangesDeg": []
+    },
+    {
+      "holdMs": 60,
+      "stableThresholdCount": 0,
+      "stableRangesDeg": []
+    },
+    {
+      "holdMs": 70,
+      "stableThresholdCount": 0,
+      "stableRangesDeg": []
+    },
+    {
+      "holdMs": 80,
+      "stableThresholdCount": 0,
+      "stableRangesDeg": []
+    },
+    {
+      "holdMs": 90,
+      "stableThresholdCount": 0,
+      "stableRangesDeg": []
+    },
+    {
+      "holdMs": 100,
+      "stableThresholdCount": 0,
+      "stableRangesDeg": []
+    },
+    {
+      "holdMs": 110,
+      "stableThresholdCount": 0,
+      "stableRangesDeg": []
+    },
+    {
+      "holdMs": 120,
+      "stableThresholdCount": 0,
+      "stableRangesDeg": []
+    },
+    {
+      "holdMs": 130,
+      "stableThresholdCount": 0,
+      "stableRangesDeg": []
+    },
+    {
+      "holdMs": 140,
+      "stableThresholdCount": 0,
+      "stableRangesDeg": []
+    },
+    {
+      "holdMs": 150,
+      "stableThresholdCount": 0,
+      "stableRangesDeg": []
+    },
+    {
+      "holdMs": 160,
+      "stableThresholdCount": 0,
+      "stableRangesDeg": []
+    },
+    {
+      "holdMs": 170,
+      "stableThresholdCount": 0,
+      "stableRangesDeg": []
+    },
+    {
+      "holdMs": 180,
+      "stableThresholdCount": 0,
+      "stableRangesDeg": []
+    },
+    {
+      "holdMs": 190,
+      "stableThresholdCount": 0,
+      "stableRangesDeg": []
+    },
+    {
+      "holdMs": 200,
+      "stableThresholdCount": 0,
+      "stableRangesDeg": []
+    },
+    {
+      "holdMs": 210,
+      "stableThresholdCount": 0,
+      "stableRangesDeg": []
+    },
+    {
+      "holdMs": 220,
+      "stableThresholdCount": 0,
+      "stableRangesDeg": []
+    },
+    {
+      "holdMs": 230,
+      "stableThresholdCount": 0,
+      "stableRangesDeg": []
+    },
+    {
+      "holdMs": 240,
+      "stableThresholdCount": 0,
+      "stableRangesDeg": []
+    },
+    {
+      "holdMs": 250,
+      "stableThresholdCount": 0,
+      "stableRangesDeg": []
+    },
+    {
+      "holdMs": 260,
+      "stableThresholdCount": 0,
+      "stableRangesDeg": []
+    },
+    {
+      "holdMs": 270,
+      "stableThresholdCount": 0,
+      "stableRangesDeg": []
+    },
+    {
+      "holdMs": 280,
+      "stableThresholdCount": 0,
+      "stableRangesDeg": []
+    },
+    {
+      "holdMs": 290,
+      "stableThresholdCount": 0,
+      "stableRangesDeg": []
+    },
+    {
+      "holdMs": 300,
+      "stableThresholdCount": 0,
+      "stableRangesDeg": []
+    },
+    {
+      "holdMs": 310,
+      "stableThresholdCount": 0,
+      "stableRangesDeg": []
+    },
+    {
+      "holdMs": 320,
+      "stableThresholdCount": 0,
+      "stableRangesDeg": []
+    },
+    {
+      "holdMs": 330,
+      "stableThresholdCount": 0,
+      "stableRangesDeg": []
+    },
+    {
+      "holdMs": 340,
+      "stableThresholdCount": 0,
+      "stableRangesDeg": []
+    },
+    {
+      "holdMs": 350,
+      "stableThresholdCount": 0,
+      "stableRangesDeg": []
+    },
+    {
+      "holdMs": 360,
+      "stableThresholdCount": 0,
+      "stableRangesDeg": []
+    },
+    {
+      "holdMs": 370,
+      "stableThresholdCount": 0,
+      "stableRangesDeg": []
+    },
+    {
+      "holdMs": 380,
+      "stableThresholdCount": 0,
+      "stableRangesDeg": []
+    },
+    {
+      "holdMs": 390,
+      "stableThresholdCount": 0,
+      "stableRangesDeg": []
+    },
+    {
+      "holdMs": 400,
+      "stableThresholdCount": 0,
+      "stableRangesDeg": []
+    },
+    {
+      "holdMs": 410,
+      "stableThresholdCount": 0,
+      "stableRangesDeg": []
+    },
+    {
+      "holdMs": 420,
+      "stableThresholdCount": 0,
+      "stableRangesDeg": []
+    },
+    {
+      "holdMs": 430,
+      "stableThresholdCount": 0,
+      "stableRangesDeg": []
+    },
+    {
+      "holdMs": 440,
+      "stableThresholdCount": 0,
+      "stableRangesDeg": []
+    },
+    {
+      "holdMs": 450,
+      "stableThresholdCount": 0,
+      "stableRangesDeg": []
+    },
+    {
+      "holdMs": 460,
+      "stableThresholdCount": 0,
+      "stableRangesDeg": []
+    },
+    {
+      "holdMs": 470,
+      "stableThresholdCount": 0,
+      "stableRangesDeg": []
+    },
+    {
+      "holdMs": 480,
+      "stableThresholdCount": 0,
+      "stableRangesDeg": []
+    },
+    {
+      "holdMs": 490,
+      "stableThresholdCount": 0,
+      "stableRangesDeg": []
+    },
+    {
+      "holdMs": 500,
+      "stableThresholdCount": 0,
+      "stableRangesDeg": []
+    }
+  ],
+  "movementDefinitionRangesByHold": [
+    {
+      "holdMs": 0,
+      "stableThresholdCount": 0,
+      "stableRangesDeg": []
+    },
+    {
+      "holdMs": 10,
+      "stableThresholdCount": 0,
+      "stableRangesDeg": []
+    },
+    {
+      "holdMs": 20,
+      "stableThresholdCount": 0,
+      "stableRangesDeg": []
+    },
+    {
+      "holdMs": 30,
+      "stableThresholdCount": 0,
+      "stableRangesDeg": []
+    },
+    {
+      "holdMs": 40,
+      "stableThresholdCount": 0,
+      "stableRangesDeg": []
+    },
+    {
+      "holdMs": 50,
+      "stableThresholdCount": 0,
+      "stableRangesDeg": []
+    },
+    {
+      "holdMs": 60,
+      "stableThresholdCount": 0,
+      "stableRangesDeg": []
+    },
+    {
+      "holdMs": 70,
+      "stableThresholdCount": 0,
+      "stableRangesDeg": []
+    },
+    {
+      "holdMs": 80,
+      "stableThresholdCount": 0,
+      "stableRangesDeg": []
+    },
+    {
+      "holdMs": 90,
+      "stableThresholdCount": 0,
+      "stableRangesDeg": []
+    },
+    {
+      "holdMs": 100,
+      "stableThresholdCount": 7,
+      "stableRangesDeg": [
+        [
+          25.0,
+          31.0
+        ]
+      ]
+    },
+    {
+      "holdMs": 110,
+      "stableThresholdCount": 7,
+      "stableRangesDeg": [
+        [
+          25.0,
+          31.0
+        ]
+      ]
+    },
+    {
+      "holdMs": 120,
+      "stableThresholdCount": 7,
+      "stableRangesDeg": [
+        [
+          25.0,
+          31.0
+        ]
+      ]
+    },
+    {
+      "holdMs": 130,
+      "stableThresholdCount": 7,
+      "stableRangesDeg": [
+        [
+          25.0,
+          31.0
+        ]
+      ]
+    },
+    {
+      "holdMs": 140,
+      "stableThresholdCount": 7,
+      "stableRangesDeg": [
+        [
+          25.0,
+          31.0
+        ]
+      ]
+    },
+    {
+      "holdMs": 150,
+      "stableThresholdCount": 7,
+      "stableRangesDeg": [
+        [
+          25.0,
+          31.0
+        ]
+      ]
+    },
+    {
+      "holdMs": 160,
+      "stableThresholdCount": 13,
+      "stableRangesDeg": [
+        [
+          32.0,
+          44.0
+        ]
+      ]
+    },
+    {
+      "holdMs": 170,
+      "stableThresholdCount": 14,
+      "stableRangesDeg": [
+        [
+          32.0,
+          45.0
+        ]
+      ]
+    },
+    {
+      "holdMs": 180,
+      "stableThresholdCount": 14,
+      "stableRangesDeg": [
+        [
+          32.0,
+          45.0
+        ]
+      ]
+    },
+    {
+      "holdMs": 190,
+      "stableThresholdCount": 14,
+      "stableRangesDeg": [
+        [
+          32.0,
+          45.0
+        ]
+      ]
+    },
+    {
+      "holdMs": 200,
+      "stableThresholdCount": 0,
+      "stableRangesDeg": []
+    },
+    {
+      "holdMs": 210,
+      "stableThresholdCount": 0,
+      "stableRangesDeg": []
+    },
+    {
+      "holdMs": 220,
+      "stableThresholdCount": 0,
+      "stableRangesDeg": []
+    },
+    {
+      "holdMs": 230,
+      "stableThresholdCount": 0,
+      "stableRangesDeg": []
+    },
+    {
+      "holdMs": 240,
+      "stableThresholdCount": 0,
+      "stableRangesDeg": []
+    },
+    {
+      "holdMs": 250,
+      "stableThresholdCount": 0,
+      "stableRangesDeg": []
+    },
+    {
+      "holdMs": 260,
+      "stableThresholdCount": 0,
+      "stableRangesDeg": []
+    },
+    {
+      "holdMs": 270,
+      "stableThresholdCount": 0,
+      "stableRangesDeg": []
+    },
+    {
+      "holdMs": 280,
+      "stableThresholdCount": 0,
+      "stableRangesDeg": []
+    },
+    {
+      "holdMs": 290,
+      "stableThresholdCount": 0,
+      "stableRangesDeg": []
+    },
+    {
+      "holdMs": 300,
+      "stableThresholdCount": 0,
+      "stableRangesDeg": []
+    },
+    {
+      "holdMs": 310,
+      "stableThresholdCount": 0,
+      "stableRangesDeg": []
+    },
+    {
+      "holdMs": 320,
+      "stableThresholdCount": 0,
+      "stableRangesDeg": []
+    },
+    {
+      "holdMs": 330,
+      "stableThresholdCount": 0,
+      "stableRangesDeg": []
+    },
+    {
+      "holdMs": 340,
+      "stableThresholdCount": 0,
+      "stableRangesDeg": []
+    },
+    {
+      "holdMs": 350,
+      "stableThresholdCount": 0,
+      "stableRangesDeg": []
+    },
+    {
+      "holdMs": 360,
+      "stableThresholdCount": 0,
+      "stableRangesDeg": []
+    },
+    {
+      "holdMs": 370,
+      "stableThresholdCount": 0,
+      "stableRangesDeg": []
+    },
+    {
+      "holdMs": 380,
+      "stableThresholdCount": 0,
+      "stableRangesDeg": []
+    },
+    {
+      "holdMs": 390,
+      "stableThresholdCount": 0,
+      "stableRangesDeg": []
+    },
+    {
+      "holdMs": 400,
+      "stableThresholdCount": 0,
+      "stableRangesDeg": []
+    },
+    {
+      "holdMs": 410,
+      "stableThresholdCount": 0,
+      "stableRangesDeg": []
+    },
+    {
+      "holdMs": 420,
+      "stableThresholdCount": 0,
+      "stableRangesDeg": []
+    },
+    {
+      "holdMs": 430,
+      "stableThresholdCount": 0,
+      "stableRangesDeg": []
+    },
+    {
+      "holdMs": 440,
+      "stableThresholdCount": 0,
+      "stableRangesDeg": []
+    },
+    {
+      "holdMs": 450,
+      "stableThresholdCount": 0,
+      "stableRangesDeg": []
+    },
+    {
+      "holdMs": 460,
+      "stableThresholdCount": 0,
+      "stableRangesDeg": []
+    },
+    {
+      "holdMs": 470,
+      "stableThresholdCount": 0,
+      "stableRangesDeg": []
+    },
+    {
+      "holdMs": 480,
+      "stableThresholdCount": 0,
+      "stableRangesDeg": []
+    },
+    {
+      "holdMs": 490,
+      "stableThresholdCount": 0,
+      "stableRangesDeg": []
+    },
+    {
+      "holdMs": 500,
+      "stableThresholdCount": 0,
+      "stableRangesDeg": []
+    }
+  ],
+  "stableThresholds": [],
+  "limitations": [
+    "The same fixtures are used for exploratory threshold selection and robustness analysis.",
+    "Confidence and invalid-reset parameters are fixed in the upstream F_FULL trace.",
+    "The result demonstrates an in-sample stable region, not user-level generalization."
+  ],
+  "finding": "No configuration preserved normal=13, boundary=0, and tracking-failure=0 simultaneously."
+}

@@ -1,0 +1,24 @@
+{
+  "schemaVersion": "1.0",
+  "dataProvenance": "synthetic-example-only",
+  "sessions": [
+    {
+      "sessionId": "synthetic-normal-01",
+      "condition": {
+        "movementSpeed": "normal",
+        "tracking": "stable"
+      },
+      "annotations": "normal.annotations.json",
+      "predictions": "normal.predictions.json"
+    },
+    {
+      "sessionId": "synthetic-tracking-failure-01",
+      "condition": {
+        "movementSpeed": "normal",
+        "tracking": "failure"
+      },
+      "annotations": "tracking-failure.annotations.json",
+      "predictions": "tracking-failure.predictions.json"
+    }
+  ]
+}

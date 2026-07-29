@@ -1,0 +1,1112 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="FitForm Live — MoveNet 자세 추정 후처리 및 운동 판정 알고리즘 3페이지 포트폴리오"
+    />
+    <title>FitForm Live · 3 Page Portfolio</title>
+    <style>
+      :root {
+        --ink: #11140f;
+        --paper: #f5f3eb;
+        --white: #fffef9;
+        --signal: #ceff2f;
+        --blue: #335cff;
+        --muted: #65685f;
+        --line: #c9c9bf;
+        --danger: #e9553d;
+        --page-width: 210mm;
+        --page-height: 297mm;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        margin: 0;
+        background: #d8d8d2;
+        color: var(--ink);
+        font-family:
+          Pretendard, "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic",
+          system-ui, sans-serif;
+        word-break: keep-all;
+      }
+
+      a {
+        color: inherit;
+      }
+
+      .screen-tools {
+        position: sticky;
+        z-index: 20;
+        top: 0;
+        display: flex;
+        justify-content: center;
+        gap: 8px;
+        padding: 10px;
+        background: rgba(17, 20, 15, 0.94);
+        backdrop-filter: blur(10px);
+      }
+
+      .screen-tools a,
+      .screen-tools button {
+        padding: 8px 12px;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        background: transparent;
+        color: #fff;
+        font: inherit;
+        font-size: 12px;
+        text-decoration: none;
+        cursor: pointer;
+      }
+
+      .screen-tools button {
+        border-color: var(--signal);
+        background: var(--signal);
+        color: var(--ink);
+        font-weight: 800;
+      }
+
+      .document {
+        display: grid;
+        gap: 18px;
+        justify-content: center;
+        padding: 18px;
+      }
+
+      .page {
+        position: relative;
+        width: var(--page-width);
+        min-height: var(--page-height);
+        overflow: hidden;
+        padding: 15mm 16mm 13mm;
+        background:
+          linear-gradient(rgba(17, 20, 15, 0.045) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(17, 20, 15, 0.045) 1px, transparent 1px),
+          var(--paper);
+        background-size: 12mm 12mm;
+        box-shadow: 0 12px 42px rgba(0, 0, 0, 0.14);
+        display: flex;
+        flex-direction: column;
+      }
+
+      .page::after {
+        content: "";
+        position: absolute;
+        right: -25mm;
+        top: -25mm;
+        width: 70mm;
+        height: 70mm;
+        border-radius: 50%;
+        border: 15mm solid rgba(51, 92, 255, 0.08);
+        pointer-events: none;
+      }
+
+      .page-header,
+      .page-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-size: 9px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .page-header {
+        padding-bottom: 5mm;
+        border-bottom: 1px solid var(--ink);
+      }
+
+      .brand {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+      }
+
+      .brand::before {
+        content: "";
+        width: 10px;
+        height: 10px;
+        border: 1.5px solid var(--ink);
+        border-radius: 50%;
+        background: var(--signal);
+        box-shadow: 3px 3px 0 var(--ink);
+      }
+
+      .page-footer {
+        margin-top: auto;
+        padding-top: 4mm;
+        border-top: 1px solid var(--ink);
+        color: var(--muted);
+      }
+
+      .page-number {
+        color: var(--ink);
+        font-size: 14px;
+      }
+
+      .eyebrow {
+        margin: 0 0 3mm;
+        color: var(--blue);
+        font: 800 9px/1.3 ui-monospace, SFMono-Regular, Menlo, monospace;
+        letter-spacing: 0.1em;
+      }
+
+      h1,
+      h2,
+      h3,
+      p {
+        margin-top: 0;
+      }
+
+      h1 {
+        max-width: 166mm;
+        margin-bottom: 3mm;
+        font-size: 25px;
+        line-height: 1.24;
+        letter-spacing: -0.045em;
+      }
+
+      .lede {
+        max-width: 172mm;
+        margin-bottom: 0;
+        color: #3e423a;
+        font-size: 11px;
+        line-height: 1.7;
+      }
+
+      .title-block {
+        padding: 8mm 0 6mm;
+      }
+
+      .section-label {
+        margin-bottom: 3mm;
+        font: 800 8px/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+        letter-spacing: 0.1em;
+        color: var(--blue);
+      }
+
+      .pipeline {
+        display: grid;
+        grid-template-columns: repeat(8, minmax(0, 1fr));
+        gap: 0;
+        margin: 2mm 0 6mm;
+        border: 1px solid var(--ink);
+        background: var(--white);
+      }
+
+      .pipeline-step {
+        position: relative;
+        min-height: 31mm;
+        padding: 5mm 2.5mm 3mm;
+        border-right: 1px solid var(--ink);
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+      }
+
+      .pipeline-step:last-child {
+        border-right: 0;
+        background: var(--signal);
+      }
+
+      .pipeline-step.custom {
+        background: #eef1ff;
+      }
+
+      .pipeline-step:not(:last-child)::after {
+        content: "→";
+        position: absolute;
+        z-index: 2;
+        right: -3.1mm;
+        top: 3mm;
+        width: 6mm;
+        height: 6mm;
+        border: 1px solid var(--ink);
+        background: var(--ink);
+        color: #fff;
+        display: grid;
+        place-items: center;
+        font-size: 10px;
+      }
+
+      .pipeline-step small {
+        margin-bottom: auto;
+        color: var(--blue);
+        font: 800 7px/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+      }
+
+      .pipeline-step strong {
+        font-size: 10px;
+        line-height: 1.3;
+      }
+
+      .pipeline-ownership {
+        display: flex;
+        justify-content: space-between;
+        gap: 4mm;
+        margin: -4mm 0 6mm;
+        color: var(--muted);
+        font-size: 7.5px;
+      }
+
+      .pipeline-ownership span:last-child {
+        padding-right: 2mm;
+        color: var(--blue);
+        font-weight: 800;
+      }
+
+      .problem-result-grid {
+        display: grid;
+        grid-template-columns: 1.15fr 0.85fr;
+        gap: 5mm;
+      }
+
+      .panel {
+        border: 1px solid var(--ink);
+        background: rgba(255, 254, 249, 0.88);
+      }
+
+      .panel-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 3mm 4mm;
+        border-bottom: 1px solid var(--ink);
+        font-size: 9px;
+        font-weight: 800;
+      }
+
+      .panel-body {
+        padding: 4mm;
+      }
+
+      .problem-list,
+      .insight-list,
+      .scope-list {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+      }
+
+      .problem-list li,
+      .insight-list li,
+      .scope-list li {
+        position: relative;
+        padding: 2.6mm 0 2.6mm 5mm;
+        border-bottom: 1px solid var(--line);
+        color: #3d4039;
+        font-size: 9px;
+        line-height: 1.55;
+      }
+
+      .problem-list li:last-child,
+      .insight-list li:last-child,
+      .scope-list li:last-child {
+        border-bottom: 0;
+      }
+
+      .problem-list li::before,
+      .insight-list li::before,
+      .scope-list li::before {
+        content: "↳";
+        position: absolute;
+        left: 0;
+        color: var(--blue);
+        font-weight: 900;
+      }
+
+      .metrics {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2mm;
+      }
+
+      .metric {
+        min-height: 28mm;
+        padding: 3mm;
+        border: 1px solid var(--ink);
+        background: var(--ink);
+        color: #fff;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+      }
+
+      .metric:nth-child(2),
+      .metric:nth-child(3) {
+        background: var(--signal);
+        color: var(--ink);
+      }
+
+      .metric strong {
+        font-size: 22px;
+        line-height: 1;
+        letter-spacing: -0.06em;
+      }
+
+      .metric span {
+        font-size: 7px;
+        line-height: 1.4;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+      }
+
+      .takeaway {
+        margin-top: 5mm;
+        padding: 4mm 5mm;
+        border-left: 4px solid var(--blue);
+        background: var(--ink);
+        color: #fff;
+        font-size: 11px;
+        font-weight: 700;
+        line-height: 1.6;
+      }
+
+      .evaluation-grid {
+        display: grid;
+        grid-template-columns: 0.78fr 1.22fr;
+        gap: 5mm;
+        align-items: stretch;
+      }
+
+      .evaluation-flow {
+        display: grid;
+        gap: 2mm;
+      }
+
+      .flow-item {
+        position: relative;
+        min-height: 16mm;
+        padding: 3mm 4mm;
+        border: 1px solid var(--ink);
+        background: var(--white);
+        display: flex;
+        align-items: center;
+        gap: 3mm;
+      }
+
+      .flow-item:not(:last-child)::after {
+        content: "↓";
+        position: absolute;
+        z-index: 2;
+        bottom: -4mm;
+        left: 50%;
+        width: 7mm;
+        height: 5mm;
+        transform: translateX(-50%);
+        background: var(--ink);
+        color: #fff;
+        display: grid;
+        place-items: center;
+        font-size: 9px;
+      }
+
+      .flow-item b {
+        width: 7mm;
+        height: 7mm;
+        flex: 0 0 auto;
+        border-radius: 50%;
+        background: var(--signal);
+        display: grid;
+        place-items: center;
+        font-size: 7px;
+      }
+
+      .flow-item strong {
+        display: block;
+        margin-bottom: 1mm;
+        font-size: 9px;
+      }
+
+      .flow-item span {
+        display: block;
+        color: var(--muted);
+        font-size: 7.5px;
+        line-height: 1.35;
+      }
+
+      .ablation-table {
+        width: 100%;
+        border-collapse: collapse;
+        background: var(--white);
+        font-size: 8.5px;
+      }
+
+      .ablation-table th,
+      .ablation-table td {
+        padding: 4.2mm 3mm;
+        border: 1px solid var(--ink);
+        text-align: right;
+      }
+
+      .ablation-table th:first-child,
+      .ablation-table td:first-child {
+        text-align: left;
+      }
+
+      .ablation-table thead th {
+        background: var(--ink);
+        color: #fff;
+        font-size: 7px;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+
+      .ablation-table tbody tr:last-child {
+        background: var(--signal);
+        font-weight: 900;
+      }
+
+      .table-note {
+        margin: 2mm 0 0;
+        color: var(--muted);
+        font-size: 7px;
+        line-height: 1.45;
+      }
+
+      .interpretation {
+        margin-top: 6mm;
+        display: grid;
+        grid-template-columns: 0.9fr 1.1fr;
+        gap: 5mm;
+      }
+
+      .interpretation .panel-body {
+        min-height: 54mm;
+      }
+
+      .diagnostic {
+        padding: 5mm;
+        background: var(--ink);
+        color: #fff;
+      }
+
+      .diagnostic strong {
+        display: block;
+        margin: 2mm 0;
+        color: var(--signal);
+        font-size: 17px;
+        line-height: 1.25;
+        letter-spacing: -0.035em;
+      }
+
+      .diagnostic p {
+        margin-bottom: 0;
+        color: rgba(255, 255, 255, 0.75);
+        font-size: 8.5px;
+        line-height: 1.6;
+      }
+
+      .analysis-grid {
+        display: grid;
+        grid-template-columns: 1.25fr 0.75fr;
+        gap: 5mm;
+        align-items: start;
+      }
+
+      .graph-card {
+        padding: 3mm;
+        border: 1px solid var(--ink);
+        background: #fff;
+      }
+
+      .graph-card img {
+        display: block;
+        width: 100%;
+        height: auto;
+      }
+
+      .graph-card figcaption {
+        padding: 2mm 1mm 0;
+        color: var(--muted);
+        font-size: 7.5px;
+        line-height: 1.5;
+      }
+
+      .fsm-stack {
+        display: grid;
+        gap: 3mm;
+      }
+
+      .fsm-card {
+        padding: 4mm;
+        border: 1px solid var(--ink);
+        background: var(--white);
+      }
+
+      .fsm-card.improved {
+        background: var(--signal);
+      }
+
+      .fsm-card h3 {
+        margin-bottom: 3mm;
+        font-size: 11px;
+      }
+
+      .fsm-card code {
+        white-space: pre-line;
+        font: 700 8px/1.7 ui-monospace, SFMono-Regular, Menlo, monospace;
+      }
+
+      .result-row {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 2mm;
+      }
+
+      .evidence-result-row {
+        display: grid;
+        grid-template-columns: 1.25fr 0.75fr;
+        gap: 5mm;
+        margin: 4mm 0;
+        align-items: start;
+      }
+
+      .distribution-card {
+        margin: 0;
+        padding: 2mm;
+        border: 1px solid var(--ink);
+        background: #fff;
+      }
+
+      .distribution-card img {
+        display: block;
+        width: 100%;
+        height: auto;
+      }
+
+      .result-card {
+        padding: 3mm;
+        border: 1px solid var(--ink);
+        background: var(--ink);
+        color: #fff;
+      }
+
+      .result-card strong {
+        display: block;
+        margin-bottom: 1mm;
+        color: var(--signal);
+        font-size: 18px;
+        letter-spacing: -0.05em;
+      }
+
+      .result-card span {
+        font-size: 7.5px;
+        line-height: 1.35;
+      }
+
+      .result-card small {
+        display: block;
+        margin-top: 1mm;
+        color: rgba(255, 255, 255, 0.65);
+        font-size: 6.5px;
+        line-height: 1.35;
+      }
+
+      .normal-cycle-note {
+        margin: 1.5mm 0 0;
+        color: var(--muted);
+        font-size: 6.5px;
+        line-height: 1.4;
+      }
+
+      .page-three .title-block {
+        padding-top: 6mm;
+        padding-bottom: 4mm;
+      }
+
+      .page-three .analysis-grid {
+        align-items: start;
+      }
+
+      .page-three .graph-card {
+        margin: 0;
+        padding: 2mm;
+      }
+
+      .page-three .graph-card figcaption {
+        font-size: 6.5px;
+      }
+
+      .page-three .fsm-stack {
+        gap: 2mm;
+      }
+
+      .page-three .fsm-card {
+        padding: 2.6mm 3mm;
+      }
+
+      .page-three .fsm-card h3 {
+        margin-bottom: 1.5mm;
+        font-size: 9px;
+      }
+
+      .page-three .fsm-card code {
+        font-size: 6.7px;
+        line-height: 1.42;
+      }
+
+      .page-three .fsm-card .normal-cycle-note {
+        margin-top: 0.8mm;
+        font-size: 5.6px;
+      }
+
+      .page-three .evidence-result-row {
+        display: block;
+        margin: 3mm 0;
+      }
+
+      .page-three .distribution-card {
+        width: 100%;
+        padding: 2.5mm 3mm;
+      }
+
+      .page-three .distribution-card img {
+        width: 100%;
+        max-height: 52mm;
+        object-fit: contain;
+      }
+
+      .page-three .evidence-result-row > div {
+        margin-top: 2mm;
+      }
+
+      .page-three .result-row {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 1.2mm;
+      }
+
+      .page-three .result-card {
+        min-height: 0;
+        padding: 1.8mm 2.2mm;
+      }
+
+      .page-three .result-card strong {
+        margin-bottom: 0.5mm;
+        font-size: 14px;
+      }
+
+      .page-three .result-card span {
+        font-size: 6.5px;
+      }
+
+      .page-three .result-card small,
+      .page-three .normal-cycle-note {
+        font-size: 5.6px;
+        line-height: 1.3;
+      }
+
+      .page-three .implementation-scope {
+        gap: 3mm;
+      }
+
+      .page-three .implementation-scope .panel-head {
+        padding: 2mm 3mm;
+        font-size: 7.5px;
+      }
+
+      .page-three .implementation-scope .panel-body {
+        padding: 2.5mm 3mm;
+      }
+
+      .page-three .tag-list {
+        gap: 1mm;
+      }
+
+      .page-three .tag-list span {
+        padding: 1.4mm 2mm;
+        font-size: 6.5px;
+      }
+
+      .page-three .scope-list li {
+        padding-top: 1.4mm;
+        padding-bottom: 1.4mm;
+        font-size: 6.5px;
+      }
+
+      .page-three .links {
+        margin-top: 3mm;
+      }
+
+      .page-three .links a {
+        padding: 2mm 2.5mm;
+        font-size: 7px;
+      }
+
+      .implementation-scope {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 5mm;
+      }
+
+      .tag-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1.5mm;
+      }
+
+      .tag-list span {
+        padding: 2mm 2.5mm;
+        border: 1px solid var(--ink);
+        background: var(--white);
+        font-size: 7.5px;
+        font-weight: 700;
+      }
+
+      .links {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 2mm;
+        margin-top: 5mm;
+      }
+
+      .links a {
+        padding: 2.5mm 3mm;
+        border: 1px solid var(--ink);
+        background: var(--white);
+        font-size: 8px;
+        font-weight: 800;
+        text-decoration: none;
+      }
+
+      .links a:first-child {
+        background: var(--blue);
+        color: #fff;
+      }
+
+      @media (max-width: 900px) {
+        .document {
+          justify-content: start;
+          overflow-x: auto;
+        }
+      }
+
+      @media screen {
+        body:has(.page:target) .page:not(:target) {
+          display: none;
+        }
+      }
+
+      @media print {
+        @page {
+          size: A4 portrait;
+          margin: 0;
+        }
+
+        body {
+          background: #fff;
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
+        }
+
+        .screen-tools {
+          display: none;
+        }
+
+        .document {
+          display: block;
+          padding: 0;
+        }
+
+        .page {
+          width: 210mm;
+          height: 297mm;
+          min-height: 297mm;
+          break-after: page;
+          page-break-after: always;
+          box-shadow: none;
+        }
+
+        .page:last-child {
+          break-after: auto;
+          page-break-after: auto;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <nav class="screen-tools" aria-label="문서 도구">
+      <a href="#page-1">1. 구현</a>
+      <a href="#page-2">2. 검증</a>
+      <a href="#page-3">3. 개선</a>
+      <button type="button" onclick="window.print()">PDF로 저장</button>
+    </nav>
+
+    <main class="document">
+      <article class="page" id="page-1">
+        <header class="page-header">
+          <span class="brand">FitForm Live</span>
+          <span>Computer Vision · Algorithm Engineering</span>
+        </header>
+
+        <div class="title-block">
+          <p class="eyebrow">01 · WHAT I BUILT</p>
+          <h1>MoveNet 기반 자세 추정 결과의 후처리 및 운동 판정 알고리즘 개발</h1>
+          <p class="lede">
+            웹캠 영상에서 MoveNet으로 17개 관절 좌표를 추정하고,
+            confidence 검증·EMA 평활화·관절 각도 계산·시간 기반 상태 머신을 직접 구현해
+            운동 횟수를 판정했습니다.
+          </p>
+        </div>
+
+        <p class="section-label">CORE PIPELINE</p>
+        <section class="pipeline" aria-label="운동 판정 처리 파이프라인">
+          <div class="pipeline-step"><small>01</small><strong>Webcam</strong></div>
+          <div class="pipeline-step"><small>02 · PRETRAINED</small><strong>MoveNet</strong></div>
+          <div class="pipeline-step custom"><small>03 · CUSTOM</small><strong>17 Keypoints</strong></div>
+          <div class="pipeline-step custom"><small>04 · CUSTOM</small><strong>Confidence Gate</strong></div>
+          <div class="pipeline-step custom"><small>05 · CUSTOM</small><strong>EMA</strong></div>
+          <div class="pipeline-step custom"><small>06 · CUSTOM</small><strong>Joint Angle</strong></div>
+          <div class="pipeline-step custom"><small>07 · CUSTOM</small><strong>Time-based FSM</strong></div>
+          <div class="pipeline-step"><small>08 · OUTPUT</small><strong>Rep Count</strong></div>
+        </section>
+        <div class="pipeline-ownership">
+          <span>MoveNet: 사전학습 pose model</span>
+          <span>Custom algorithm: 관절 검증 → 좌표 안정화 → geometry → 운동 판정</span>
+        </div>
+
+        <div class="problem-result-grid">
+          <section class="panel">
+            <div class="panel-head"><span>문제 정의</span><span>PROBLEM</span></div>
+            <div class="panel-body">
+              <ul class="problem-list">
+                <li>좌표 흔들림과 낮은 confidence가 관절 각도 판정을 왜곡</li>
+                <li>관절 추적 실패 중 진행 상태가 유지되어 잘못된 전이가 발생</li>
+                <li>60°를 수축 시작과 완전 수축에 함께 사용해 경계 동작을 오인식</li>
+                <li>재촬영 입력으로는 알고리즘 설정을 동일 조건에서 비교하기 어려움</li>
+              </ul>
+            </div>
+          </section>
+
+          <section>
+            <p class="section-label">KEY RESULTS</p>
+            <div class="metrics">
+              <div class="metric"><strong>18/18</strong><span>3 fixtures × 6 configs<br />결과·이벤트 일치</span></div>
+              <div class="metric"><strong>9 → 0</strong><span>Confidence / EMA<br />추적 실패 중 count</span></div>
+              <div class="metric"><strong>3 → 0</strong><span>Full-contraction FSM<br />경계 동작 false positive</span></div>
+              <div class="metric"><strong>28</strong><span>자동화 테스트 통과</span></div>
+            </div>
+          </section>
+        </div>
+
+        <p class="takeaway">
+          MoveNet을 단순 연결한 것이 아니라, 모델 출력 이후의 운동 판정 알고리즘과
+          반복 가능한 평가 체계를 직접 구현했습니다.
+        </p>
+
+        <footer class="page-footer">
+          <span>FitForm Live · Submission Portfolio</span>
+          <span class="page-number">01</span>
+        </footer>
+      </article>
+
+      <article class="page" id="page-2">
+        <header class="page-header">
+          <span class="brand">FitForm Live</span>
+          <span>Deterministic Evaluation</span>
+        </header>
+
+        <div class="title-block">
+          <p class="eyebrow">02 · HOW I EVALUATED</p>
+          <h1>동일한 관절 시계열을 반복 재생해 알고리즘 요소별 효과를 비교</h1>
+          <p class="lede">
+            동작을 다시 촬영하지 않고 동일 입력에 설정만 바꿔 적용해,
+            결과 차이를 알고리즘 구성의 영향으로 해석할 수 있도록 했습니다.
+          </p>
+        </div>
+
+        <div class="evaluation-grid">
+          <section>
+            <p class="section-label">EVALUATION PIPELINE</p>
+            <div class="evaluation-flow">
+              <div class="flow-item"><b>1</b><div><strong>실제 웹캠 동작</strong><span>정상 · 경계 수축 · 강한 추적 실패</span></div></div>
+              <div class="flow-item"><b>2</b><div><strong>Pose JSON 기록</strong><span>좌표 · confidence · timestamp · config</span></div></div>
+              <div class="flow-item"><b>3</b><div><strong>Canonical Fixture · 고정 입력</strong><span>객관적 규칙으로 분석 구간을 추출하고 원본 SHA·범위·버전을 보존</span></div></div>
+              <div class="flow-item"><b>4</b><div><strong>Offline Runner · 재생 평가기</strong><span>같은 초기 상태와 timestamp로 저장 데이터를 다시 재생</span></div></div>
+              <div class="flow-item"><b>5</b><div><strong>6개 알고리즘 구성</strong><span>Validation · EMA · Hysteresis · Hold · Reset</span></div></div>
+              <div class="flow-item"><b>6</b><div><strong>결과·이벤트 비교</strong><span>rep·error·transition·reset과 상태 전이 결과의 일치 확인</span></div></div>
+            </div>
+          </section>
+
+          <section>
+            <p class="section-label">CUMULATIVE ABLATION</p>
+            <table class="ablation-table">
+              <thead>
+                <tr>
+                  <th>구성</th>
+                  <th>정상 절대 횟수 오차</th>
+                  <th>경계 FP</th>
+                  <th>실패 중 Count</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td>Baseline</td><td>8</td><td>4</td><td>9</td></tr>
+                <tr><td>Validation</td><td>6</td><td>4</td><td>2</td></tr>
+                <tr><td>EMA</td><td>6</td><td>3</td><td>0</td></tr>
+                <tr><td>+ Hold / Hysteresis</td><td>5</td><td>3</td><td>0</td></tr>
+                <tr><td>Full</td><td>3</td><td>3</td><td>0</td></tr>
+              </tbody>
+            </table>
+            <p class="table-note">
+              정상 절대 횟수 오차 = |canonical predicted reps − GT 10|. 표는 설명용 누적 구성을
+              압축했으며 Hold와 Hysteresis는 Stable FSM bundle로 묶었다. 원본 평가는
+              3 fixture × 6 configuration, 총 18개 조합의 결과와 상태 이벤트 일치를 확인했다.
+            </p>
+          </section>
+        </div>
+
+        <div class="interpretation">
+          <section class="panel">
+            <div class="panel-head"><span>결과 해석</span><span>FINDINGS</span></div>
+            <div class="panel-body">
+              <ul class="insight-list">
+                <li>Confidence 검증과 EMA가 추적 실패 중 오카운트를 9회에서 0회로 억제</li>
+                <li>경계 수축 false positive 3회는 Full 구성에서도 남음</li>
+                <li>입력 안정화가 아니라 운동 상태 정의의 문제라는 가설을 수립</li>
+              </ul>
+            </div>
+          </section>
+          <section class="diagnostic">
+            <p class="section-label">REP-EVENT DIAGNOSTICS</p>
+            <strong>모든 REP_COUNTED를<br />cycle 단위로 분해</strong>
+            <p>
+              최소·최대 각도, ROM, hold time, 이전 rep 간격, invalid duration,
+              reset, 브라우저 라벨 이벤트를 함께 비교해 정상 추가 cycle과 경계 오인식을 분리했습니다.
+            </p>
+          </section>
+        </div>
+
+        <p class="takeaway">
+          동일한 실제 입력을 고정했기 때문에, 구성별 차이를 촬영 편차가 아닌
+          후처리 알고리즘의 영향으로 해석할 수 있습니다.
+        </p>
+
+        <footer class="page-footer">
+          <span>Fixture → Runner → Ablation → Event Analysis</span>
+          <span class="page-number">02</span>
+        </footer>
+      </article>
+
+      <article class="page page-three" id="page-3">
+        <header class="page-header">
+          <span class="brand">FitForm Live</span>
+          <span>Root Cause → FSM Improvement</span>
+        </header>
+
+        <div class="title-block">
+          <p class="eyebrow">03 · WHAT I IMPROVED</p>
+          <h1>수축 시작과 완전 수축 기준을 분리해 경계 동작 오인식 제거</h1>
+          <p class="lede">
+            60°를 수축 진입으로 유지하고 약 36°의 탐색적 완전 수축 상태를 추가해,
+            같은 canonical 입력에서 정상 cycle은 유지하면서 경계 동작만 거부했습니다.
+          </p>
+        </div>
+
+        <div class="analysis-grid">
+          <figure class="graph-card">
+            <img
+              src="./assets/boundary-rep-analysis.svg"
+              alt="경계 수축 시계열과 기존 및 개선 상태 머신 판정 비교"
+            />
+            <figcaption>
+              동일한 각도 시계열에서 기존 FSM은 REP_COUNTED, 개선 FSM은
+              INCOMPLETE_CONTRACTION_REJECTED로 판정한다.
+            </figcaption>
+          </figure>
+
+          <div class="fsm-stack">
+            <section class="fsm-card">
+              <p class="section-label">CURRENT PRODUCTION BASELINE</p>
+              <h3>수축 진입 = 완전 수축</h3>
+              <code>READY
+→ angle ≤ 60°
+→ CONTRACTED
+→ angle ≥ 155°
+→ REP +1</code>
+            </section>
+            <section class="fsm-card improved">
+              <p class="section-label">VALIDATED ON CURRENT FIXTURES</p>
+              <h3>완전 수축 상태 분리</h3>
+              <code>EXTENDED
+→ ≤ 60°: CONTRACTING
+→ ≤ 약 36° + hold:
+  FULLY_CONTRACTED
+→ ≥ 155° + hold
+→ REP +1</code>
+              <p class="normal-cycle-note">Independent user · capture validation pending</p>
+            </section>
+          </div>
+        </div>
+
+        <div class="evidence-result-row">
+          <figure class="distribution-card">
+            <img
+              src="./assets/minimum-angle-distribution.svg"
+              alt="정상 라벨 정렬 cycle과 경계 cycle의 최소 각도 분포 및 36.4도 탐색 기준"
+            />
+          </figure>
+          <div>
+            <p class="section-label">REPLAY RESULTS</p>
+            <div class="result-row">
+              <div class="result-card">
+                <strong>13 → 13</strong>
+                <span>정상 canonical 감지 cycle 유지</span>
+                <small>경계 개선으로 기존 완전 ROM cycle을 추가 누락시키지 않음</small>
+              </div>
+              <div class="result-card"><strong>3 → 0</strong><span>경계 false positive</span></div>
+              <div class="result-card"><strong>9 → 0</strong><span>추적 실패 중 count</span></div>
+            </div>
+            <p class="normal-cycle-note">
+              정상 GT는 10회지만 추가 3개도 완전 ROM을 가져, 영상 없이 알고리즘 오류로
+              간주해 제거하지 않았습니다.
+            </p>
+          </div>
+        </div>
+
+        <div class="implementation-scope">
+          <section class="panel">
+            <div class="panel-head"><span>직접 구현 범위</span><span>OWNERSHIP</span></div>
+            <div class="panel-body">
+              <div class="tag-list">
+                <span>Pose inference integration</span><span>Keypoint validation</span>
+                <span>EMA &amp; geometry</span><span>Time-based FSM</span>
+                <span>Fixture &amp; offline runner</span><span>Ablation &amp; event analysis</span>
+              </div>
+            </div>
+          </section>
+          <section class="panel">
+            <div class="panel-head"><span>한계</span><span>LIMITATIONS</span></div>
+            <div class="panel-body">
+              <ul class="scope-list">
+                <li>약 36°는 현재 fixture에서 도출한 탐색값</li>
+                <li>독립 사용자·촬영 조건 검증 전 production 미적용</li>
+                <li>정상 추가 3 cycle은 영상 부재로 실제 의미 확정 불가</li>
+              </ul>
+            </div>
+          </section>
+        </div>
+
+        <nav class="links" aria-label="프로젝트 링크">
+          <a href="https://github.com/henryeffel/fitformlive">GitHub ↗</a>
+          <a href="./index.html">상세 HTML 포트폴리오 ↗</a>
+          <a href="../web/index.html">Live Demo ↗</a>
+        </nav>
+
+        <footer class="page-footer">
+          <span>Evidence-based Algorithm Iteration</span>
+          <span class="page-number">03</span>
+        </footer>
+      </article>
+    </main>
+  </body>
+</html>

@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="230" viewBox="0 0 720 230" role="img" aria-labelledby="title desc">
+  <title id="title">완전 수축 기준 후보의 근거</title>
+  <desc id="desc">정상 라벨 정렬 cycle 10개와 경계 cycle 3개의 최소 각도 분포, 36.4도 탐색 기준 및 기존 60도 기준 비교</desc>
+  <rect width="720" height="230" fill="#fffef9"/>
+  <text x="26" y="28" fill="#11140f" font-family="Arial, sans-serif" font-size="17" font-weight="700">완전 수축 기준 후보의 근거</text>
+  <text x="26" y="47" fill="#65685f" font-family="Arial, sans-serif" font-size="10">Minimum elbow angle by aligned rep cycle</text>
+
+  <line x1="110" y1="178" x2="660" y2="178" stroke="#11140f" stroke-width="1"/>
+  <g fill="#65685f" font-family="Arial, sans-serif" font-size="9" text-anchor="middle">
+    <text x="110" y="197">0°</text>
+    <text x="279" y="197">20°</text>
+    <text x="448" y="197">40°</text>
+    <text x="618" y="197">60°</text>
+  </g>
+  <g stroke="#c9c9bf" stroke-width="1">
+    <line x1="110" y1="174" x2="110" y2="182"/>
+    <line x1="279" y1="174" x2="279" y2="182"/>
+    <line x1="448" y1="174" x2="448" y2="182"/>
+    <line x1="618" y1="174" x2="618" y2="182"/>
+  </g>
+
+  <text x="26" y="91" fill="#11140f" font-family="Arial, sans-serif" font-size="11" font-weight="700">정상 라벨 정렬</text>
+  <text x="26" y="106" fill="#65685f" font-family="Arial, sans-serif" font-size="9">10 cycles · 16.2–28.9°</text>
+  <line x1="247" y1="96" x2="354" y2="96" stroke="#335cff" stroke-width="4" stroke-linecap="round" opacity=".35"/>
+  <g fill="#335cff" stroke="#fffef9" stroke-width="1.5">
+    <circle cx="247" cy="92" r="5"/><circle cx="249" cy="100" r="5"/>
+    <circle cx="250" cy="89" r="5"/><circle cx="252" cy="103" r="5"/>
+    <circle cx="264" cy="89" r="5"/><circle cx="264" cy="102" r="5"/>
+    <circle cx="265" cy="94" r="5"/>
+    <circle cx="276" cy="96" r="5"/><circle cx="279" cy="88" r="5"/>
+    <circle cx="354" cy="96" r="5"/>
+  </g>
+
+  <text x="26" y="143" fill="#11140f" font-family="Arial, sans-serif" font-size="11" font-weight="700">경계 수축</text>
+  <text x="26" y="158" fill="#65685f" font-family="Arial, sans-serif" font-size="9">3 cycles · 43.8–57.9°</text>
+  <line x1="481" y1="148" x2="600" y2="148" stroke="#e9553d" stroke-width="4" stroke-linecap="round" opacity=".35"/>
+  <g fill="#e9553d" stroke="#fffef9" stroke-width="1.5">
+    <circle cx="481" cy="148" r="6"/><circle cx="504" cy="148" r="6"/><circle cx="600" cy="148" r="6"/>
+  </g>
+
+  <line x1="418" y1="60" x2="418" y2="178" stroke="#11140f" stroke-width="1.5" stroke-dasharray="5 4"/>
+  <rect x="365" y="56" width="106" height="22" rx="2" fill="#ceff2f" stroke="#11140f"/>
+  <text x="418" y="71" fill="#11140f" font-family="Arial, sans-serif" font-size="9" font-weight="700" text-anchor="middle">탐색 기준 36.4°</text>
+
+  <line x1="618" y1="60" x2="618" y2="178" stroke="#11140f" stroke-width="2"/>
+  <text x="618" y="52" fill="#11140f" font-family="Arial, sans-serif" font-size="9" font-weight="700" text-anchor="middle">기존 기준 60°</text>
+
+  <text x="26" y="218" fill="#65685f" font-family="Arial, sans-serif" font-size="9">
+    36.4°는 두 관찰 범위 사이의 탐색적 중간값이며, 최적 threshold로 주장하지 않습니다.
+  </text>
+</svg>
