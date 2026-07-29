@@ -451,6 +451,8 @@
     <!-- TensorFlow.js + MoveNet -->
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.16.0/dist/tf.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/pose-detection"></script>
+    <script src="./js/pose-algorithms.js"></script>
+    <script src="./js/pose-fixture.js"></script>
     <script>
       window.openCvReady = false;
       window.openCvLoadError = false;
@@ -485,7 +487,7 @@
     </script>
     <script
       async
-      src="https://docs.opencv.org/4.10.0/opencv.js"
+      src="./vendor/opencv-4.10.0.js"
       onload="handleOpenCvScriptLoad()"
       onerror="handleOpenCvScriptError(event)"
     ></script>
@@ -627,6 +629,10 @@
                 실제 수행 횟수
                 <input id="true-reps-input" type="number" min="0" step="1" placeholder="10" style="width:100%; margin-top:4px; padding:7px; border-radius:8px; border:1px solid #374151; background:#020617; color:#e5e7eb;" />
               </label>
+              <label style="font-size:12px; color:#9ca3af;">
+                시도 횟수
+                <input id="attempted-reps-input" type="number" min="0" step="1" placeholder="5" style="width:100%; margin-top:4px; padding:7px; border-radius:8px; border:1px solid #374151; background:#020617; color:#e5e7eb;" />
+              </label>
             </div>
             <label style="display:block; font-size:12px; color:#9ca3af; margin-bottom:12px;">
               테스트 메모
@@ -636,6 +642,8 @@
             <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:12px;">
               <button id="export-json-btn" class="btn secondary">JSON 결과 저장</button>
               <button id="export-csv-btn" class="btn secondary">CSV 결과 저장</button>
+              <button id="start-fixture-btn" class="btn secondary">관절 기록 시작</button>
+              <button id="export-fixture-btn" class="btn secondary" disabled>관절 fixture 저장</button>
               <button id="reset-metrics-btn" class="btn secondary">성능 지표 초기화</button>
             </div>
           </div>
@@ -672,12 +680,17 @@
       const devLogEl = document.getElementById("dev-log");
       const exportJsonBtn = document.getElementById("export-json-btn");
       const exportCsvBtn = document.getElementById("export-csv-btn");
+      const startFixtureBtn = document.getElementById("start-fixture-btn");
+      const exportFixtureBtn = document.getElementById("export-fixture-btn");
       const resetMetricsBtn = document.getElementById("reset-metrics-btn");
       const testIdInput = document.getElementById("test-id-input");
       const testConditionSelect = document.getElementById(
         "test-condition-select"
       );
       const trueRepsInput = document.getElementById("true-reps-input");
+      const attemptedRepsInput = document.getElementById(
+        "attempted-reps-input"
+      );
       const testNotesInput = document.getElementById("test-notes-input");
       const qualityCanvas = document.createElement("canvas");
       const qualityCtx = qualityCanvas.getContext("2d", {
@@ -725,19 +738,29 @@
         transitionHoldMs: 180,
         invalidResetMs: 1000,
         thresholdHysteresis: 8,
-        qualityIntervalMs: 500,
-        qualityWidth: 320,
+        minAngularVelocityIntervalMs: 8,
+        maxAngularVelocityGapMs: 250,
+        maxAngularVelocityDegPerSec: 1000,
+        qualityIntervalMs: 1000,
+        qualityWidth: 240,
         minBrightness: 55,
         minSharpness: 80,
         maxPerformanceSamples: 3000,
         inferenceWarmupFrames: 5,
       };
 
-      const REP_PHASE = {
-        READY: "ready",
-        BOTTOM_HOLD: "bottom_hold",
-        RETURNING: "returning",
-      };
+      const ALGORITHM_VERSION = Object.freeze({
+        commit: "3bb86fc",
+        dirty: true,
+        module: "pose-algorithms-v1",
+      });
+
+      const {
+        REP_PHASE,
+        advanceRepState,
+        angleBetween,
+        calculateAngularVelocity,
+      } = window.FitFormAlgorithms;
 
       // --------------------------
       // 2. 운동 설정
@@ -1116,6 +1139,7 @@
         lastAngle: 0,
         angularVelocity: 0,
         lastAngleTime: 0,
+        rejectedAngularVelocitySamples: 0,
         fps: 0,
         lastFrameTime: performance.now(),
         running: false,
@@ -1152,6 +1176,10 @@
         countdownActive: false,
         countdownValue: 0,
         repOverlayTimer: null,
+        fixtureRecorder: null,
+        completedFixture: null,
+        fixtureTrackingInvalid: false,
+        fixtureResetRecorded: false,
         totalFrames: 0,
         goodFrames: 0,
         // Challenge mode state
@@ -1205,19 +1233,6 @@
         return [kp.x, kp.y];
       }
 
-      function angleBetween(a, b, c) {
-        const ab = [a[0] - b[0], a[1] - b[1]];
-        const cb = [c[0] - b[0], c[1] - b[1]];
-        const dot = ab[0] * cb[0] + ab[1] * cb[1];
-        const magAB = Math.hypot(ab[0], ab[1]);
-        const magCB = Math.hypot(cb[0], cb[1]);
-        if (magAB < 1e-6 || magCB < 1e-6) return null;
-        const cosine = dot / (magAB * magCB);
-        const rad = Math.acos(Math.min(Math.max(cosine, -1), 1));
-        const angle = (rad * 180) / Math.PI;
-        return Number.isFinite(angle) ? angle : null;
-      }
-
       function resetPoseAnalysis() {
         state.smoothedKeypoints = null;
         state.repPhase = REP_PHASE.READY;
@@ -1226,7 +1241,13 @@
         state.lastAngle = 0;
         state.angularVelocity = 0;
         state.lastAngleTime = 0;
+        state.rejectedAngularVelocitySamples = 0;
         state.invalidSince = 0;
+      }
+
+      function resetAngularVelocityBaseline() {
+        state.angularVelocity = 0;
+        state.lastAngleTime = 0;
       }
 
       function smoothKeypoints(keypoints) {
@@ -1295,36 +1316,22 @@
         if (!state.lastAngleTime || !Number.isFinite(state.lastAngle)) {
           state.angularVelocity = 0;
         } else {
-          const elapsedSeconds = (now - state.lastAngleTime) / 1000;
-          state.angularVelocity =
-            elapsedSeconds > 0 ? (angle - state.lastAngle) / elapsedSeconds : 0;
+          const elapsedMs = now - state.lastAngleTime;
+          const result = calculateAngularVelocity({
+            previousAngle: state.lastAngle,
+            currentAngle: angle,
+            elapsedMs,
+            minIntervalMs: POSE_CONFIG.minAngularVelocityIntervalMs,
+            maxGapMs: POSE_CONFIG.maxAngularVelocityGapMs,
+            maxVelocityDegPerSec: POSE_CONFIG.maxAngularVelocityDegPerSec,
+          });
+          state.angularVelocity = result.velocity;
+          if (result.rejected) {
+            state.rejectedAngularVelocitySamples += 1;
+          }
         }
         state.lastAngle = angle;
         state.lastAngleTime = now;
-      }
-
-      function holdTransition(candidate, condition, now) {
-        if (!condition) {
-          if (state.transitionCandidate === candidate) {
-            state.transitionCandidate = null;
-            state.transitionStartedAt = 0;
-          }
-          return false;
-        }
-
-        if (state.transitionCandidate !== candidate) {
-          state.transitionCandidate = candidate;
-          state.transitionStartedAt = now;
-          return false;
-        }
-
-        return now - state.transitionStartedAt >= POSE_CONFIG.transitionHoldMs;
-      }
-
-      function completeTransition(nextPhase) {
-        state.repPhase = nextPhase;
-        state.transitionCandidate = null;
-        state.transitionStartedAt = 0;
       }
 
       function resetFrameQuality() {
@@ -1431,9 +1438,8 @@
       function withFrameQualityFeedback(feedback) {
         if (!state.frameQuality.warning) return feedback;
         return {
-          label: "촬영 환경 확인",
-          detail: state.frameQuality.warning,
-          good: false,
+          ...feedback,
+          detail: `${feedback.detail} · 촬영 환경: ${state.frameQuality.warning}`,
         };
       }
 
@@ -1515,6 +1521,8 @@
         return {
           testId: testIdInput.value.trim() || null,
           condition: testConditionSelect.value,
+          attemptedReps: parseNonNegativeInteger(attemptedRepsInput),
+          completeReps: trueReps,
           trueReps,
           predictedReps: state.reps,
           absoluteError,
@@ -1562,6 +1570,8 @@
           performance: {
             fpsEma: state.performance.fpsEma || null,
             inferenceErrors: state.performance.inferenceErrors,
+            rejectedAngularVelocitySamples:
+              state.rejectedAngularVelocitySamples,
             excludedWarmupFrames:
               POSE_CONFIG.inferenceWarmupFrames -
               state.performance.inferenceWarmupRemaining,
@@ -1581,6 +1591,11 @@
             transitionHoldMs: POSE_CONFIG.transitionHoldMs,
             invalidResetMs: POSE_CONFIG.invalidResetMs,
             thresholdHysteresis: POSE_CONFIG.thresholdHysteresis,
+            minAngularVelocityIntervalMs:
+              POSE_CONFIG.minAngularVelocityIntervalMs,
+            maxAngularVelocityGapMs: POSE_CONFIG.maxAngularVelocityGapMs,
+            maxAngularVelocityDegPerSec:
+              POSE_CONFIG.maxAngularVelocityDegPerSec,
             qualityIntervalMs: POSE_CONFIG.qualityIntervalMs,
             minBrightness: POSE_CONFIG.minBrightness,
             minSharpness: POSE_CONFIG.minSharpness,
@@ -1607,6 +1622,133 @@
       function buildResultFilename(extension) {
         const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
         return `fitform-${state.currentKey}-${timestamp}.${extension}`;
+      }
+
+      function parseNonNegativeInteger(input) {
+        const value = Number.parseInt(input.value, 10);
+        return Number.isInteger(value) && value >= 0 ? value : null;
+      }
+
+      function fixtureConfigSnapshot() {
+        const exercise = EXERCISES[state.currentKey];
+        return {
+          minJointConfidence: POSE_CONFIG.minJointConfidence,
+          emaAlpha: POSE_CONFIG.emaAlpha,
+          transitionHoldMs: POSE_CONFIG.transitionHoldMs,
+          invalidResetMs: POSE_CONFIG.invalidResetMs,
+          thresholdHysteresis: POSE_CONFIG.thresholdHysteresis,
+          minAngularVelocityIntervalMs:
+            POSE_CONFIG.minAngularVelocityIntervalMs,
+          maxAngularVelocityGapMs: POSE_CONFIG.maxAngularVelocityGapMs,
+          maxAngularVelocityDegPerSec:
+            POSE_CONFIG.maxAngularVelocityDegPerSec,
+          thresholds: { ...exercise.thresholds },
+          angleJoints: [...exercise.angleJoints],
+        };
+      }
+
+      function startFixtureRecording() {
+        if (!state.running) {
+          alert("카메라를 먼저 시작해 주세요.");
+          return;
+        }
+        const testId = testIdInput.value.trim();
+        if (!testId) {
+          alert("테스트 ID를 입력해 주세요.");
+          testIdInput.focus();
+          return;
+        }
+        if (!state.workoutStarted) {
+          alert("운동 시작 후 카운트 분석이 활성화되면 기록을 시작해 주세요.");
+          return;
+        }
+        state.reps = 0;
+        state.validFrames = 0;
+        state.invalidFrames = 0;
+        resetPoseAnalysis();
+        hudReps.textContent = "0";
+        const now = performance.now();
+        state.fixtureRecorder = window.FitFormPoseFixture.createRecorder(
+          {
+            testId,
+            condition: testConditionSelect.value,
+            exercise: state.currentKey,
+            attemptedReps: parseNonNegativeInteger(attemptedRepsInput),
+            completeReps: parseNonNegativeInteger(trueRepsInput),
+            algorithmVersion: ALGORITHM_VERSION,
+            configAtCapture: fixtureConfigSnapshot(),
+            initialAlgorithmState: {
+              phase: state.repPhase,
+              transitionCandidate: state.transitionCandidate,
+              transitionStartedAtMs: 0,
+              reps: state.reps,
+              smoothedKeypoints: null,
+              invalidSinceMs: null,
+            },
+            analysisActiveAtCapture: state.workoutStarted,
+            source: {
+              width: videoEl.videoWidth,
+              height: videoEl.videoHeight,
+              mirrored: true,
+              coordinateSystem: "normalized",
+            },
+            notes: testNotesInput.value.trim() || null,
+          },
+          now
+        );
+        state.completedFixture = null;
+        state.fixtureTrackingInvalid = false;
+        startFixtureBtn.textContent = "관절 기록 중지";
+        exportFixtureBtn.disabled = true;
+        window.FitFormPoseFixture.recordEvent(
+          state.fixtureRecorder,
+          now,
+          "CAPTURE_STARTED"
+        );
+      }
+
+      function stopFixtureRecording() {
+        if (!state.fixtureRecorder?.active) return;
+        const analyzedFrames = state.validFrames + state.invalidFrames;
+        state.completedFixture = window.FitFormPoseFixture.finalizeRecorder(
+          state.fixtureRecorder,
+          {
+            endedAtMs: performance.now(),
+            validFrames: state.validFrames,
+            invalidFrames: state.invalidFrames,
+            validJointRate:
+              analyzedFrames > 0 ? state.validFrames / analyzedFrames : null,
+          }
+        );
+        const validation = window.FitFormPoseFixture.validateFixture(
+          state.completedFixture
+        );
+        startFixtureBtn.textContent = "관절 기록 시작";
+        exportFixtureBtn.disabled = !validation.valid;
+        if (!validation.valid) {
+          alert(`fixture 검증 실패:\n${validation.errors.join("\n")}`);
+        }
+      }
+
+      function toggleFixtureRecording() {
+        if (state.fixtureRecorder?.active) stopFixtureRecording();
+        else startFixtureRecording();
+      }
+
+      function exportPoseFixture() {
+        if (!state.completedFixture) return;
+        const validation = window.FitFormPoseFixture.validateFixture(
+          state.completedFixture
+        );
+        if (!validation.valid) {
+          alert(`fixture 검증 실패:\n${validation.errors.join("\n")}`);
+          return;
+        }
+        downloadTextFile(
+          `${state.completedFixture.testId}.json`,
+          JSON.stringify(state.completedFixture, null, 2),
+          "application/json;charset=utf-8"
+        );
       }
 
       function exportPerformanceJson() {
@@ -1642,6 +1784,8 @@
           valid_joint_rate: report.session.validJointRate,
           model_load_ms: report.model.loadMs,
           fps_ema: report.performance.fpsEma,
+          rejected_angular_velocity_samples:
+            report.performance.rejectedAngularVelocitySamples,
           excluded_warmup_frames: report.performance.excludedWarmupFrames,
           inference_count: inference.count,
           inference_avg_ms: inference.average,
@@ -1659,6 +1803,8 @@
           video_height: report.environment.videoHeight,
           test_id: report.validation.testId,
           test_condition: report.validation.condition,
+          attempted_reps: report.validation.attemptedReps,
+          complete_reps: report.validation.completeReps,
           true_reps: report.validation.trueReps,
           predicted_reps: report.validation.predictedReps,
           absolute_error: report.validation.absoluteError,
@@ -1780,6 +1926,7 @@
           `rep phase: ${state.repPhase}`,
           `angle: ${Number.isFinite(state.lastAngle) ? state.lastAngle.toFixed(1) : "-"}`,
           `angular velocity: ${state.angularVelocity.toFixed(1)} deg/s`,
+          `rejected angular velocity samples: ${state.rejectedAngularVelocitySamples}`,
           `fps (EMA): ${state.performance.fpsEma.toFixed(1)}`,
           `model load: ${formatMetric(state.performance.modelLoadMs)} ms`,
           `inference avg/p50/p95/max: ${formatMetric(inference.average)} / ${formatMetric(inference.p50)} / ${formatMetric(inference.p95)} / ${formatMetric(inference.max)} ms`,
@@ -1809,6 +1956,7 @@
           `quality warning: ${state.frameQuality.warning || "none"}`,
           `EMA alpha: ${POSE_CONFIG.emaAlpha}`,
           `min confidence: ${POSE_CONFIG.minJointConfidence}`,
+          `max angular velocity: ${POSE_CONFIG.maxAngularVelocityDegPerSec} deg/s`,
         ].join("\n");
       }
 
@@ -1856,31 +2004,34 @@
       // 4. 카운팅 & MoveNet
       // --------------------------
       function updateRepsForExercise(ex, angle, now) {
-        const { up, down } = ex.thresholds;
-        const hysteresis = POSE_CONFIG.thresholdHysteresis;
+        const result = advanceRepState(
+          {
+            phase: state.repPhase,
+            transitionCandidate: state.transitionCandidate,
+            transitionStartedAt: state.transitionStartedAt,
+            reps: state.reps,
+          },
+          angle,
+          now,
+          {
+            ...ex.thresholds,
+            hysteresis: POSE_CONFIG.thresholdHysteresis,
+            holdMs: POSE_CONFIG.transitionHoldMs,
+          }
+        );
 
-        if (
-          state.repPhase === REP_PHASE.READY &&
-          holdTransition("bottom", angle <= down, now)
-        ) {
-          completeTransition(REP_PHASE.BOTTOM_HOLD);
-          return;
-        }
+        state.repPhase = result.state.phase;
+        state.transitionCandidate = result.state.transitionCandidate;
+        state.transitionStartedAt = result.state.transitionStartedAt;
+        state.reps = result.state.reps;
 
-        if (
-          state.repPhase === REP_PHASE.BOTTOM_HOLD &&
-          angle >= down + hysteresis
-        ) {
-          completeTransition(REP_PHASE.RETURNING);
-          return;
-        }
-
-        if (
-          state.repPhase === REP_PHASE.RETURNING &&
-          holdTransition("top", angle >= up, now)
-        ) {
-          completeTransition(REP_PHASE.READY);
-          state.reps += 1;
+        if (result.repCounted) {
+          window.FitFormPoseFixture.recordEvent(
+            state.fixtureRecorder,
+            now,
+            "REP_COUNTED",
+            { rep: state.reps }
+          );
           handleRepCounted(state.reps);
 
           if (
@@ -1905,6 +2056,15 @@
       // 5. 메인 루프
       // --------------------------
       function finishFrame(frameStartedAt) {
+        try {
+          analyzeFrameQuality(performance.now());
+        } catch (error) {
+          state.frameQuality.status = "error";
+          state.frameQuality.error =
+            error instanceof Error ? error.message : String(error);
+          state.frameQuality.warning = null;
+          console.warn("OpenCV.js 품질 분석을 건너뜁니다.", error);
+        }
         const frameMs = performance.now() - frameStartedAt;
         addPerformanceSample(state.performance.frameSamples, frameMs);
         state.performance.processedFrames += 1;
@@ -1926,8 +2086,6 @@
             ? 0.15 * instantFps + 0.85 * state.performance.fpsEma
             : instantFps;
         state.fps = state.performance.fpsEma;
-        analyzeFrameQuality(now);
-
         let poses = [];
         const inferenceStartedAt = performance.now();
         try {
@@ -1959,16 +2117,52 @@
           const ex = EXERCISES[state.currentKey];
           const rawKeypoints = poses[0].keypoints;
           const validation = validateExerciseKeypoints(rawKeypoints, ex);
+          window.FitFormPoseFixture.recordFrame(state.fixtureRecorder, {
+            nowMs: now,
+            valid: validation.valid,
+            validationReason: validation.reason,
+            keypoints: rawKeypoints,
+            videoWidth: videoEl.videoWidth,
+            videoHeight: videoEl.videoHeight,
+            phase: state.repPhase,
+          });
+
+          if (!validation.valid && !state.fixtureTrackingInvalid) {
+            window.FitFormPoseFixture.recordEvent(
+              state.fixtureRecorder,
+              now,
+              "TRACKING_LOST"
+            );
+            state.fixtureTrackingInvalid = true;
+            state.fixtureResetRecorded = false;
+          } else if (validation.valid && state.fixtureTrackingInvalid) {
+            window.FitFormPoseFixture.recordEvent(
+              state.fixtureRecorder,
+              now,
+              "TRACKING_RECOVERED"
+            );
+            state.fixtureTrackingInvalid = false;
+            state.fixtureResetRecorded = false;
+          }
 
           if (!validation.valid) {
             state.invalidFrames += 1;
             state.lastValidationReason = validation.reason;
+            resetAngularVelocityBaseline();
             if (!state.invalidSince) state.invalidSince = now;
             if (now - state.invalidSince >= POSE_CONFIG.invalidResetMs) {
               state.repPhase = REP_PHASE.READY;
               state.transitionCandidate = null;
               state.transitionStartedAt = 0;
-              state.lastAngleTime = 0;
+              if (!state.fixtureResetRecorded) {
+                window.FitFormPoseFixture.recordEvent(
+                  state.fixtureRecorder,
+                  now,
+                  "STATE_RESET",
+                  { reason: "tracking_timeout" }
+                );
+                state.fixtureResetRecorded = true;
+              }
             }
 
             drawSkeleton(rawKeypoints);
@@ -1996,6 +2190,7 @@
             state.invalidFrames += 1;
             state.validFrames -= 1;
             state.lastValidationReason = "관절 간 거리가 너무 짧아 각도를 계산할 수 없습니다.";
+            resetAngularVelocityBaseline();
             updateHUD(null, {
               label: "각도 계산 실패",
               detail: state.lastValidationReason,
@@ -2036,14 +2231,41 @@
             updateHUD(angle, fb);
           }
         } else {
+          window.FitFormPoseFixture.recordFrame(state.fixtureRecorder, {
+            nowMs: now,
+            valid: false,
+            validationReason: "pose_not_detected",
+            keypoints: [],
+            videoWidth: videoEl.videoWidth,
+            videoHeight: videoEl.videoHeight,
+            phase: state.repPhase,
+          });
+          if (!state.fixtureTrackingInvalid) {
+            window.FitFormPoseFixture.recordEvent(
+              state.fixtureRecorder,
+              now,
+              "TRACKING_LOST"
+            );
+            state.fixtureTrackingInvalid = true;
+            state.fixtureResetRecorded = false;
+          }
           state.invalidFrames += 1;
           state.lastValidationReason = "화면에서 사람을 찾지 못했습니다.";
+          resetAngularVelocityBaseline();
           if (!state.invalidSince) state.invalidSince = now;
           if (now - state.invalidSince >= POSE_CONFIG.invalidResetMs) {
             state.repPhase = REP_PHASE.READY;
             state.transitionCandidate = null;
             state.transitionStartedAt = 0;
-            state.lastAngleTime = 0;
+            if (!state.fixtureResetRecorded) {
+              window.FitFormPoseFixture.recordEvent(
+                state.fixtureRecorder,
+                now,
+                "STATE_RESET",
+                { reason: "tracking_timeout" }
+              );
+              state.fixtureResetRecorded = true;
+            }
           }
           ctx.clearRect(0, 0, canvasEl.width, canvasEl.height);
           statusLabel.textContent = "No pose";
@@ -2099,6 +2321,7 @@
       }
 
       function stopCamera() {
+        stopFixtureRecording();
         state.running = false;
         if (state.animationId) cancelAnimationFrame(state.animationId);
         if (state.stream) {
@@ -2227,13 +2450,21 @@
 
       exportJsonBtn.addEventListener("click", exportPerformanceJson);
       exportCsvBtn.addEventListener("click", exportPerformanceCsv);
+      startFixtureBtn.addEventListener("click", toggleFixtureRecording);
+      exportFixtureBtn.addEventListener("click", exportPoseFixture);
       resetMetricsBtn.addEventListener("click", () => {
         resetPerformanceMetrics(true);
         state.validFrames = 0;
         state.invalidFrames = 0;
         updateDeveloperLog(true);
       });
-      [testIdInput, testConditionSelect, trueRepsInput, testNotesInput].forEach(
+      [
+        testIdInput,
+        testConditionSelect,
+        trueRepsInput,
+        attemptedRepsInput,
+        testNotesInput,
+      ].forEach(
         (element) => {
           element.addEventListener("input", () => updateDeveloperLog(true));
         }

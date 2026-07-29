@@ -1,0 +1,15 @@
+[
+  { "timeMs": 0, "angle": 160 },
+  { "timeMs": 100, "angle": 100 },
+  { "timeMs": 200, "angle": 55 },
+  { "timeMs": 400, "angle": 55 },
+  { "timeMs": 450, "angle": 75 },
+  { "timeMs": 550, "angle": 160 },
+  { "timeMs": 750, "angle": 160 },
+  { "timeMs": 900, "angle": 100 },
+  { "timeMs": 1000, "angle": 55 },
+  { "timeMs": 1200, "angle": 55 },
+  { "timeMs": 1250, "angle": 75 },
+  { "timeMs": 1350, "angle": 160 },
+  { "timeMs": 1550, "angle": 160 }
+]

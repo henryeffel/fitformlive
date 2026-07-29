@@ -1,0 +1,439 @@
+{
+  "experimentVersion": "1.0",
+  "fixturePath": "tests/fixtures/canonical/curl-boundary-contraction-01.derived.json",
+  "fixture": {
+    "testId": "curl-boundary-contraction-01",
+    "role": "threshold_sensitivity",
+    "sourceSha256": "1448fb1010891c708d18a842dc17153291c1315366cd8893b4ab4fcd40bd3c97"
+  },
+  "configuration": {
+    "id": "C_SMOOTHING",
+    "label": "Smoothing",
+    "features": {
+      "validation": true,
+      "ema": true,
+      "hysteresis": false,
+      "holdTime": false,
+      "invalidReset": false
+    },
+    "parameters": {
+      "minJointConfidence": 0.4,
+      "emaAlpha": 0.35,
+      "invalidResetMs": 1000,
+      "up": 155,
+      "down": 60,
+      "hysteresis": 0,
+      "holdMs": 0,
+      "angleJoints": [
+        6,
+        8,
+        10
+      ]
+    }
+  },
+  "metrics": {
+    "groundTruth": 0,
+    "predictedReps": 3,
+    "absoluteRepError": 3,
+    "overCount": 3,
+    "underCount": 0,
+    "validFrames": 1844,
+    "invalidFrames": 575,
+    "validJointRate": 0.7622984704423316,
+    "stateTransitions": 9,
+    "contractionCandidates": 3,
+    "confirmedContractions": 3,
+    "repCountEvents": 3,
+    "invalidResets": 0,
+    "trackingRecoveries": 52,
+    "countsDuringTrackingFailure": 0,
+    "invalidReasons": {
+      "low_confidence": 524,
+      "outside_frame": 51
+    }
+  },
+  "interpretation": {
+    "possibleDuplicateCounts": null,
+    "partialMotionFalsePositives": 3,
+    "trackingFailureFalseCounts": null,
+    "resetObserved": null
+  },
+  "events": [
+    {
+      "timestampMs": 967.0999999940395,
+      "type": "TRACKING_RECOVERED",
+      "invalidDurationMs": 962.7999999970198
+    },
+    {
+      "timestampMs": 1615.1999999955297,
+      "type": "TRACKING_RECOVERED",
+      "invalidDurationMs": 260
+    },
+    {
+      "timestampMs": 1728,
+      "type": "TRACKING_RECOVERED",
+      "invalidDurationMs": 64.20000000298023
+    },
+    {
+      "timestampMs": 4788,
+      "type": "TRACKING_RECOVERED",
+      "invalidDurationMs": 2706.5
+    },
+    {
+      "timestampMs": 8167.5,
+      "type": "TRACKING_RECOVERED",
+      "invalidDurationMs": 214.5
+    },
+    {
+      "timestampMs": 20700.59999999404,
+      "type": "TRACKING_RECOVERED",
+      "invalidDurationMs": 32.5
+    },
+    {
+      "timestampMs": 21627.79999999702,
+      "type": "TRACKING_RECOVERED",
+      "invalidDurationMs": 32.899999998509884
+    },
+    {
+      "timestampMs": 21820,
+      "type": "TRACKING_RECOVERED",
+      "invalidDurationMs": 46
+    },
+    {
+      "timestampMs": 22685.29999999702,
+      "type": "TRACKING_RECOVERED",
+      "invalidDurationMs": 32.5
+    },
+    {
+      "timestampMs": 22824.89999999851,
+      "type": "TRACKING_RECOVERED",
+      "invalidDurationMs": 32.80000000447035
+    },
+    {
+      "timestampMs": 22982.69999999553,
+      "type": "CONTRACTION_CANDIDATE",
+      "angle": 59.805116136136945
+    },
+    {
+      "timestampMs": 22982.69999999553,
+      "type": "CONTRACTION_CONFIRMED",
+      "angle": 59.805116136136945
+    },
+    {
+      "timestampMs": 22982.69999999553,
+      "type": "STATE_CHANGED",
+      "from": "ready",
+      "to": "bottom_hold",
+      "angle": 59.805116136136945
+    },
+    {
+      "timestampMs": 23386.89999999851,
+      "type": "STATE_CHANGED",
+      "from": "bottom_hold",
+      "to": "returning",
+      "angle": 60.41047322529093
+    },
+    {
+      "timestampMs": 23694.59999999404,
+      "type": "TRACKING_RECOVERED",
+      "invalidDurationMs": 51.399999998509884
+    },
+    {
+      "timestampMs": 23834,
+      "type": "TRACKING_RECOVERED",
+      "invalidDurationMs": 46.5
+    },
+    {
+      "timestampMs": 24438.5,
+      "type": "STATE_CHANGED",
+      "from": "returning",
+      "to": "ready",
+      "angle": 155.6607573088298
+    },
+    {
+      "timestampMs": 24438.5,
+      "type": "REP_COUNTED",
+      "rep": 1,
+      "duringTrackingFailure": false
+    },
+    {
+      "timestampMs": 24791.69999999553,
+      "type": "TRACKING_RECOVERED",
+      "invalidDurationMs": 17.399999998509884
+    },
+    {
+      "timestampMs": 25123.79999999702,
+      "type": "TRACKING_RECOVERED",
+      "invalidDurationMs": 55.70000000298023
+    },
+    {
+      "timestampMs": 25188.19999999553,
+      "type": "TRACKING_RECOVERED",
+      "invalidDurationMs": 31.5
+    },
+    {
+      "timestampMs": 25300.39999999851,
+      "type": "TRACKING_RECOVERED",
+      "invalidDurationMs": 30.30000000447035
+    },
+    {
+      "timestampMs": 25550,
+      "type": "TRACKING_RECOVERED",
+      "invalidDurationMs": 16.100000001490116
+    },
+    {
+      "timestampMs": 25694.39999999851,
+      "type": "TRACKING_RECOVERED",
+      "invalidDurationMs": 33.80000000447035
+    },
+    {
+      "timestampMs": 25927.89999999851,
+      "type": "TRACKING_RECOVERED",
+      "invalidDurationMs": 70.70000000298023
+    },
+    {
+      "timestampMs": 26025.79999999702,
+      "type": "TRACKING_RECOVERED",
+      "invalidDurationMs": 32.29999999701977
+    },
+    {
+      "timestampMs": 26105.59999999404,
+      "type": "TRACKING_RECOVERED",
+      "invalidDurationMs": 31.899999998509884
+    },
+    {
+      "timestampMs": 26859.5,
+      "type": "TRACKING_RECOVERED",
+      "invalidDurationMs": 31.700000002980232
+    },
+    {
+      "timestampMs": 27014.29999999702,
+      "type": "TRACKING_RECOVERED",
+      "invalidDurationMs": 107
+    },
+    {
+      "timestampMs": 27066.89999999851,
+      "type": "CONTRACTION_CANDIDATE",
+      "angle": 58.680092401010256
+    },
+    {
+      "timestampMs": 27066.89999999851,
+      "type": "CONTRACTION_CONFIRMED",
+      "angle": 58.680092401010256
+    },
+    {
+      "timestampMs": 27066.89999999851,
+      "type": "STATE_CHANGED",
+      "from": "ready",
+      "to": "bottom_hold",
+      "angle": 58.680092401010256
+    },
+    {
+      "timestampMs": 27170.89999999851,
+      "type": "TRACKING_RECOVERED",
+      "invalidDurationMs": 69.20000000298023
+    },
+    {
+      "timestampMs": 27325.59999999404,
+      "type": "TRACKING_RECOVERED",
+      "invalidDurationMs": 100.39999999850988
+    },
+    {
+      "timestampMs": 27435,
+      "type": "TRACKING_RECOVERED",
+      "invalidDurationMs": 75.20000000298023
+    },
+    {
+      "timestampMs": 27484.09999999404,
+      "type": "TRACKING_RECOVERED",
+      "invalidDurationMs": 31.299999997019768
+    },
+    {
+      "timestampMs": 27596.69999999553,
+      "type": "TRACKING_RECOVERED",
+      "invalidDurationMs": 47.399999998509884
+    },
+    {
+      "timestampMs": 27693.19999999553,
+      "type": "TRACKING_RECOVERED",
+      "invalidDurationMs": 79
+    },
+    {
+      "timestampMs": 27825.29999999702,
+      "type": "TRACKING_RECOVERED",
+      "invalidDurationMs": 99.5
+    },
+    {
+      "timestampMs": 27962.79999999702,
+      "type": "STATE_CHANGED",
+      "from": "bottom_hold",
+      "to": "returning",
+      "angle": 60.142190602129546
+    },
+    {
+      "timestampMs": 28822.29999999702,
+      "type": "STATE_CHANGED",
+      "from": "returning",
+      "to": "ready",
+      "angle": 155.17962992241107
+    },
+    {
+      "timestampMs": 28822.29999999702,
+      "type": "REP_COUNTED",
+      "rep": 2,
+      "duringTrackingFailure": false
+    },
+    {
+      "timestampMs": 29161.89999999851,
+      "type": "TRACKING_RECOVERED",
+      "invalidDurationMs": 64.80000000447035
+    },
+    {
+      "timestampMs": 29494,
+      "type": "TRACKING_RECOVERED",
+      "invalidDurationMs": 198.20000000298023
+    },
+    {
+      "timestampMs": 29557.29999999702,
+      "type": "TRACKING_RECOVERED",
+      "invalidDurationMs": 32.100000001490116
+    },
+    {
+      "timestampMs": 30793.09999999404,
+      "type": "TRACKING_RECOVERED",
+      "invalidDurationMs": 31.19999999552965
+    },
+    {
+      "timestampMs": 30902.79999999702,
+      "type": "TRACKING_RECOVERED",
+      "invalidDurationMs": 45.70000000298023
+    },
+    {
+      "timestampMs": 31490.19999999553,
+      "type": "TRACKING_RECOVERED",
+      "invalidDurationMs": 551.6999999955297
+    },
+    {
+      "timestampMs": 31490.19999999553,
+      "type": "CONTRACTION_CANDIDATE",
+      "angle": 51.36287409439748
+    },
+    {
+      "timestampMs": 31490.19999999553,
+      "type": "CONTRACTION_CONFIRMED",
+      "angle": 51.36287409439748
+    },
+    {
+      "timestampMs": 31490.19999999553,
+      "type": "STATE_CHANGED",
+      "from": "ready",
+      "to": "bottom_hold",
+      "angle": 51.36287409439748
+    },
+    {
+      "timestampMs": 31619.39999999851,
+      "type": "TRACKING_RECOVERED",
+      "invalidDurationMs": 96.60000000149012
+    },
+    {
+      "timestampMs": 31820.29999999702,
+      "type": "TRACKING_RECOVERED",
+      "invalidDurationMs": 19.100000001490116
+    },
+    {
+      "timestampMs": 31836,
+      "type": "STATE_CHANGED",
+      "from": "bottom_hold",
+      "to": "returning",
+      "angle": 60.31589094421686
+    },
+    {
+      "timestampMs": 32479.19999999553,
+      "type": "STATE_CHANGED",
+      "from": "returning",
+      "to": "ready",
+      "angle": 155.42251983757583
+    },
+    {
+      "timestampMs": 32479.19999999553,
+      "type": "REP_COUNTED",
+      "rep": 3,
+      "duringTrackingFailure": false
+    },
+    {
+      "timestampMs": 32826.09999999404,
+      "type": "TRACKING_RECOVERED",
+      "invalidDurationMs": 15
+    },
+    {
+      "timestampMs": 32941.09999999404,
+      "type": "TRACKING_RECOVERED",
+      "invalidDurationMs": 48.599999994039536
+    },
+    {
+      "timestampMs": 33198,
+      "type": "TRACKING_RECOVERED",
+      "invalidDurationMs": 15
+    },
+    {
+      "timestampMs": 34160.39999999851,
+      "type": "TRACKING_RECOVERED",
+      "invalidDurationMs": 32.100000001490116
+    },
+    {
+      "timestampMs": 34350.89999999851,
+      "type": "TRACKING_RECOVERED",
+      "invalidDurationMs": 77.70000000298023
+    },
+    {
+      "timestampMs": 35275.79999999702,
+      "type": "TRACKING_RECOVERED",
+      "invalidDurationMs": 892.6000000014901
+    },
+    {
+      "timestampMs": 35325.5,
+      "type": "TRACKING_RECOVERED",
+      "invalidDurationMs": 30.5
+    },
+    {
+      "timestampMs": 36704.09999999404,
+      "type": "TRACKING_RECOVERED",
+      "invalidDurationMs": 192
+    },
+    {
+      "timestampMs": 36767.59999999404,
+      "type": "TRACKING_RECOVERED",
+      "invalidDurationMs": 46.899999998509884
+    },
+    {
+      "timestampMs": 36961.59999999404,
+      "type": "TRACKING_RECOVERED",
+      "invalidDurationMs": 48.599999994039536
+    },
+    {
+      "timestampMs": 38429.19999999553,
+      "type": "TRACKING_RECOVERED",
+      "invalidDurationMs": 148.89999999850988
+    },
+    {
+      "timestampMs": 38613.09999999404,
+      "type": "TRACKING_RECOVERED",
+      "invalidDurationMs": 115.09999999403954
+    },
+    {
+      "timestampMs": 38796.79999999702,
+      "type": "TRACKING_RECOVERED",
+      "invalidDurationMs": 18.5
+    },
+    {
+      "timestampMs": 39192.59999999404,
+      "type": "TRACKING_RECOVERED",
+      "invalidDurationMs": 379
+    }
+  ],
+  "determinism": {
+    "run1Hash": "1672fbb4eb459bb14b731d19866af3ac9fa8b8b4f5402c157a7a6238d462bec1",
+    "run2Hash": "1672fbb4eb459bb14b731d19866af3ac9fa8b8b4f5402c157a7a6238d462bec1",
+    "equal": true
+  }
+}

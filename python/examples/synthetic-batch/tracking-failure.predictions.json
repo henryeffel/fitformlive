@@ -1,0 +1,22 @@
+{
+  "sessionId": "synthetic-tracking-failure-01",
+  "algorithmVersion": "synthetic-v1",
+  "configurationId": "example-config",
+  "events": [
+    {
+      "timestampMs": 1040,
+      "type": "REP_COUNTED",
+      "rep": 1
+    },
+    {
+      "timestampMs": 2200,
+      "type": "REP_COUNTED",
+      "rep": 2
+    },
+    {
+      "timestampMs": 4380,
+      "type": "REP_COUNTED",
+      "rep": 3
+    }
+  ]
+}

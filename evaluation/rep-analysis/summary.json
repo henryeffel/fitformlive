@@ -1,0 +1,846 @@
+{
+  "analysisVersion": "1.0",
+  "fullContractionThresholdAnalysis": {
+    "selectionBasis": "midpoint between maximum minimum-angle of browser-label-aligned normal cycles and minimum minimum-angle of boundary cycles",
+    "exploratoryOnly": true,
+    "normalAlignedCycleCount": 10,
+    "normalMinimumAngles": [
+      18.149815473899565,
+      16.49015716190148,
+      28.89718227424977,
+      19.97875266893803,
+      16.46323260052848,
+      16.233343483677924,
+      16.85095383376952,
+      18.272668865443887,
+      18.23060990836209,
+      19.60654002811549
+    ],
+    "boundaryMinimumAngles": [
+      57.9399815602495,
+      43.81859888882736,
+      46.588314872277486
+    ],
+    "normalUpperBound": 28.89718227424977,
+    "boundaryLowerBound": 43.81859888882736,
+    "separationExists": true,
+    "candidate": 36.35789058153856
+  },
+  "enhancedConfiguration": {
+    "contractStartAngle": 60,
+    "fullContractAngle": 36.35789058153856,
+    "fullExtendAngle": 155,
+    "hysteresis": 8,
+    "holdMs": 180
+  },
+  "enhancedResults": [
+    {
+      "fixture": {
+        "testId": "curl-normal-01",
+        "role": "normal_regression",
+        "sourceSha256": "55a20a1da1bc5d912b04a8cc8a7726ef33180719d5bcf0bc5b7bb64b4e10311f"
+      },
+      "result": {
+        "configuration": {
+          "contractStartAngle": 60,
+          "fullContractAngle": 36.35789058153856,
+          "fullExtendAngle": 155,
+          "hysteresis": 8,
+          "holdMs": 180
+        },
+        "predictedReps": 13,
+        "finalPhase": "returning",
+        "events": [
+          {
+            "timestampMs": 10783.80000000447,
+            "type": "STATE_CHANGED",
+            "from": "extended",
+            "to": "contracting",
+            "angle": 56.46443764377052
+          },
+          {
+            "timestampMs": 11075.90000000596,
+            "type": "FULL_CONTRACTION_CONFIRMED",
+            "angle": 26.862751860724174
+          },
+          {
+            "timestampMs": 11075.90000000596,
+            "type": "STATE_CHANGED",
+            "from": "contracting",
+            "to": "fully_contracted",
+            "angle": 26.862751860724174
+          },
+          {
+            "timestampMs": 12748.70000000298,
+            "type": "STATE_CHANGED",
+            "from": "fully_contracted",
+            "to": "returning",
+            "angle": 44.926405176956045
+          },
+          {
+            "timestampMs": 13861.20000000298,
+            "type": "REP_COUNTED",
+            "rep": 1,
+            "angle": 164.9110145608403
+          },
+          {
+            "timestampMs": 13861.20000000298,
+            "type": "STATE_CHANGED",
+            "from": "returning",
+            "to": "extended",
+            "angle": 164.9110145608403
+          },
+          {
+            "timestampMs": 15364.90000000596,
+            "type": "STATE_CHANGED",
+            "from": "extended",
+            "to": "contracting",
+            "angle": 56.743242478281644
+          },
+          {
+            "timestampMs": 15664.20000000298,
+            "type": "FULL_CONTRACTION_CONFIRMED",
+            "angle": 21.138604750929375
+          },
+          {
+            "timestampMs": 15664.20000000298,
+            "type": "STATE_CHANGED",
+            "from": "contracting",
+            "to": "fully_contracted",
+            "angle": 21.138604750929375
+          },
+          {
+            "timestampMs": 16502,
+            "type": "STATE_CHANGED",
+            "from": "fully_contracted",
+            "to": "returning",
+            "angle": 47.328003618108625
+          },
+          {
+            "timestampMs": 17489.40000000596,
+            "type": "REP_COUNTED",
+            "rep": 2,
+            "angle": 163.64386466126024
+          },
+          {
+            "timestampMs": 17489.40000000596,
+            "type": "STATE_CHANGED",
+            "from": "returning",
+            "to": "extended",
+            "angle": 163.64386466126024
+          },
+          {
+            "timestampMs": 19124.30000000447,
+            "type": "STATE_CHANGED",
+            "from": "extended",
+            "to": "contracting",
+            "angle": 50.21024460936894
+          },
+          {
+            "timestampMs": 19757,
+            "type": "FULL_CONTRACTION_CONFIRMED",
+            "angle": 31.079928141460762
+          },
+          {
+            "timestampMs": 19757,
+            "type": "STATE_CHANGED",
+            "from": "contracting",
+            "to": "fully_contracted",
+            "angle": 31.079928141460762
+          },
+          {
+            "timestampMs": 20116,
+            "type": "STATE_CHANGED",
+            "from": "fully_contracted",
+            "to": "returning",
+            "angle": 46.57832965654421
+          },
+          {
+            "timestampMs": 21256.40000000596,
+            "type": "REP_COUNTED",
+            "rep": 3,
+            "angle": 162.6594589895008
+          },
+          {
+            "timestampMs": 21256.40000000596,
+            "type": "STATE_CHANGED",
+            "from": "returning",
+            "to": "extended",
+            "angle": 162.6594589895008
+          },
+          {
+            "timestampMs": 22796.80000000447,
+            "type": "STATE_CHANGED",
+            "from": "extended",
+            "to": "contracting",
+            "angle": 55.15258730802627
+          },
+          {
+            "timestampMs": 23088.90000000596,
+            "type": "FULL_CONTRACTION_CONFIRMED",
+            "angle": 22.482563711267822
+          },
+          {
+            "timestampMs": 23088.90000000596,
+            "type": "STATE_CHANGED",
+            "from": "contracting",
+            "to": "fully_contracted",
+            "angle": 22.482563711267822
+          },
+          {
+            "timestampMs": 23823.20000000298,
+            "type": "STATE_CHANGED",
+            "from": "fully_contracted",
+            "to": "returning",
+            "angle": 45.77853765779724
+          },
+          {
+            "timestampMs": 24763.90000000596,
+            "type": "REP_COUNTED",
+            "rep": 4,
+            "angle": 164.31935309141426
+          },
+          {
+            "timestampMs": 24763.90000000596,
+            "type": "STATE_CHANGED",
+            "from": "returning",
+            "to": "extended",
+            "angle": 164.31935309141426
+          },
+          {
+            "timestampMs": 26773.80000000447,
+            "type": "STATE_CHANGED",
+            "from": "extended",
+            "to": "contracting",
+            "angle": 57.162344978255355
+          },
+          {
+            "timestampMs": 27032.5,
+            "type": "FULL_CONTRACTION_CONFIRMED",
+            "angle": 20.792691183732533
+          },
+          {
+            "timestampMs": 27032.5,
+            "type": "STATE_CHANGED",
+            "from": "contracting",
+            "to": "fully_contracted",
+            "angle": 20.792691183732533
+          },
+          {
+            "timestampMs": 27745.60000000149,
+            "type": "STATE_CHANGED",
+            "from": "fully_contracted",
+            "to": "returning",
+            "angle": 50.230163236157864
+          },
+          {
+            "timestampMs": 28483.80000000447,
+            "type": "REP_COUNTED",
+            "rep": 5,
+            "angle": 164.73047126280412
+          },
+          {
+            "timestampMs": 28483.80000000447,
+            "type": "STATE_CHANGED",
+            "from": "returning",
+            "to": "extended",
+            "angle": 164.73047126280412
+          },
+          {
+            "timestampMs": 30814.30000000447,
+            "type": "STATE_CHANGED",
+            "from": "extended",
+            "to": "contracting",
+            "angle": 58.47934184581213
+          },
+          {
+            "timestampMs": 31118.10000000149,
+            "type": "FULL_CONTRACTION_CONFIRMED",
+            "angle": 21.079316265823167
+          },
+          {
+            "timestampMs": 31118.10000000149,
+            "type": "STATE_CHANGED",
+            "from": "contracting",
+            "to": "fully_contracted",
+            "angle": 21.079316265823167
+          },
+          {
+            "timestampMs": 31791.40000000596,
+            "type": "STATE_CHANGED",
+            "from": "fully_contracted",
+            "to": "returning",
+            "angle": 46.06304320629631
+          },
+          {
+            "timestampMs": 32929.30000000447,
+            "type": "REP_COUNTED",
+            "rep": 6,
+            "angle": 164.08695104757905
+          },
+          {
+            "timestampMs": 32929.30000000447,
+            "type": "STATE_CHANGED",
+            "from": "returning",
+            "to": "extended",
+            "angle": 164.08695104757905
+          },
+          {
+            "timestampMs": 34363.60000000149,
+            "type": "STATE_CHANGED",
+            "from": "extended",
+            "to": "contracting",
+            "angle": 57.89691001928545
+          },
+          {
+            "timestampMs": 34868.30000000447,
+            "type": "FULL_CONTRACTION_CONFIRMED",
+            "angle": 24.86555060114964
+          },
+          {
+            "timestampMs": 34868.30000000447,
+            "type": "STATE_CHANGED",
+            "from": "contracting",
+            "to": "fully_contracted",
+            "angle": 24.86555060114964
+          },
+          {
+            "timestampMs": 35723.40000000596,
+            "type": "STATE_CHANGED",
+            "from": "fully_contracted",
+            "to": "returning",
+            "angle": 45.215965072997
+          },
+          {
+            "timestampMs": 37496.5,
+            "type": "STATE_RESET",
+            "from": "returning",
+            "to": "extended"
+          },
+          {
+            "timestampMs": 40214.20000000298,
+            "type": "STATE_CHANGED",
+            "from": "extended",
+            "to": "contracting",
+            "angle": 55.55462680096064
+          },
+          {
+            "timestampMs": 40586.90000000596,
+            "type": "FULL_CONTRACTION_CONFIRMED",
+            "angle": 19.097606514262527
+          },
+          {
+            "timestampMs": 40586.90000000596,
+            "type": "STATE_CHANGED",
+            "from": "contracting",
+            "to": "fully_contracted",
+            "angle": 19.097606514262527
+          },
+          {
+            "timestampMs": 41037.10000000149,
+            "type": "STATE_CHANGED",
+            "from": "fully_contracted",
+            "to": "returning",
+            "angle": 44.41037490276495
+          },
+          {
+            "timestampMs": 42777.90000000596,
+            "type": "STATE_RESET",
+            "from": "returning",
+            "to": "extended"
+          },
+          {
+            "timestampMs": 44071.80000000447,
+            "type": "STATE_CHANGED",
+            "from": "extended",
+            "to": "contracting",
+            "angle": 56.28355896694276
+          },
+          {
+            "timestampMs": 44378.5,
+            "type": "FULL_CONTRACTION_CONFIRMED",
+            "angle": 18.737248616845374
+          },
+          {
+            "timestampMs": 44378.5,
+            "type": "STATE_CHANGED",
+            "from": "contracting",
+            "to": "fully_contracted",
+            "angle": 18.737248616845374
+          },
+          {
+            "timestampMs": 44930.5,
+            "type": "STATE_CHANGED",
+            "from": "fully_contracted",
+            "to": "returning",
+            "angle": 46.624668428973315
+          },
+          {
+            "timestampMs": 46518.80000000447,
+            "type": "REP_COUNTED",
+            "rep": 7,
+            "angle": 161.07291856063435
+          },
+          {
+            "timestampMs": 46518.80000000447,
+            "type": "STATE_CHANGED",
+            "from": "returning",
+            "to": "extended",
+            "angle": 161.07291856063435
+          },
+          {
+            "timestampMs": 47137.10000000149,
+            "type": "STATE_CHANGED",
+            "from": "extended",
+            "to": "contracting",
+            "angle": 59.12709867179597
+          },
+          {
+            "timestampMs": 47517.80000000447,
+            "type": "FULL_CONTRACTION_CONFIRMED",
+            "angle": 20.204076207220908
+          },
+          {
+            "timestampMs": 47517.80000000447,
+            "type": "STATE_CHANGED",
+            "from": "contracting",
+            "to": "fully_contracted",
+            "angle": 20.204076207220908
+          },
+          {
+            "timestampMs": 48319.20000000298,
+            "type": "STATE_CHANGED",
+            "from": "fully_contracted",
+            "to": "returning",
+            "angle": 44.61270722811664
+          },
+          {
+            "timestampMs": 49272.60000000149,
+            "type": "REP_COUNTED",
+            "rep": 8,
+            "angle": 162.22790170824237
+          },
+          {
+            "timestampMs": 49272.60000000149,
+            "type": "STATE_CHANGED",
+            "from": "returning",
+            "to": "extended",
+            "angle": 162.22790170824237
+          },
+          {
+            "timestampMs": 50292.10000000149,
+            "type": "STATE_RESET",
+            "from": "extended",
+            "to": "extended"
+          },
+          {
+            "timestampMs": 52177.70000000298,
+            "type": "STATE_CHANGED",
+            "from": "extended",
+            "to": "contracting",
+            "angle": 56.01218664837457
+          },
+          {
+            "timestampMs": 52512.70000000298,
+            "type": "FULL_CONTRACTION_CONFIRMED",
+            "angle": 25.23528438430133
+          },
+          {
+            "timestampMs": 52512.70000000298,
+            "type": "STATE_CHANGED",
+            "from": "contracting",
+            "to": "fully_contracted",
+            "angle": 25.23528438430133
+          },
+          {
+            "timestampMs": 53119.10000000149,
+            "type": "STATE_CHANGED",
+            "from": "fully_contracted",
+            "to": "returning",
+            "angle": 45.980529926497496
+          },
+          {
+            "timestampMs": 55022.80000000447,
+            "type": "REP_COUNTED",
+            "rep": 9,
+            "angle": 161.49920745580613
+          },
+          {
+            "timestampMs": 55022.80000000447,
+            "type": "STATE_CHANGED",
+            "from": "returning",
+            "to": "extended",
+            "angle": 161.49920745580613
+          },
+          {
+            "timestampMs": 56172.30000000447,
+            "type": "STATE_CHANGED",
+            "from": "extended",
+            "to": "contracting",
+            "angle": 56.140781722839264
+          },
+          {
+            "timestampMs": 56630.20000000298,
+            "type": "FULL_CONTRACTION_CONFIRMED",
+            "angle": 17.25985589781778
+          },
+          {
+            "timestampMs": 56630.20000000298,
+            "type": "STATE_CHANGED",
+            "from": "contracting",
+            "to": "fully_contracted",
+            "angle": 17.25985589781778
+          },
+          {
+            "timestampMs": 57376.20000000298,
+            "type": "STATE_CHANGED",
+            "from": "fully_contracted",
+            "to": "returning",
+            "angle": 58.46713838444334
+          },
+          {
+            "timestampMs": 58565.20000000298,
+            "type": "STATE_RESET",
+            "from": "returning",
+            "to": "extended"
+          },
+          {
+            "timestampMs": 59958.5,
+            "type": "STATE_CHANGED",
+            "from": "extended",
+            "to": "contracting",
+            "angle": 57.52448546822276
+          },
+          {
+            "timestampMs": 60337.20000000298,
+            "type": "FULL_CONTRACTION_CONFIRMED",
+            "angle": 22.600935480385072
+          },
+          {
+            "timestampMs": 60337.20000000298,
+            "type": "STATE_CHANGED",
+            "from": "contracting",
+            "to": "fully_contracted",
+            "angle": 22.600935480385072
+          },
+          {
+            "timestampMs": 61040.40000000596,
+            "type": "STATE_CHANGED",
+            "from": "fully_contracted",
+            "to": "returning",
+            "angle": 46.758787698641974
+          },
+          {
+            "timestampMs": 61975.40000000596,
+            "type": "REP_COUNTED",
+            "rep": 10,
+            "angle": 163.30158323755313
+          },
+          {
+            "timestampMs": 61975.40000000596,
+            "type": "STATE_CHANGED",
+            "from": "returning",
+            "to": "extended",
+            "angle": 163.30158323755313
+          },
+          {
+            "timestampMs": 63520.40000000596,
+            "type": "STATE_CHANGED",
+            "from": "extended",
+            "to": "contracting",
+            "angle": 54.23628075356714
+          },
+          {
+            "timestampMs": 63851.10000000149,
+            "type": "FULL_CONTRACTION_CONFIRMED",
+            "angle": 21.14634746363175
+          },
+          {
+            "timestampMs": 63851.10000000149,
+            "type": "STATE_CHANGED",
+            "from": "contracting",
+            "to": "fully_contracted",
+            "angle": 21.14634746363175
+          },
+          {
+            "timestampMs": 64387.40000000596,
+            "type": "STATE_CHANGED",
+            "from": "fully_contracted",
+            "to": "returning",
+            "angle": 45.67545384779758
+          },
+          {
+            "timestampMs": 65231.40000000596,
+            "type": "REP_COUNTED",
+            "rep": 11,
+            "angle": 164.94535868499898
+          },
+          {
+            "timestampMs": 65231.40000000596,
+            "type": "STATE_CHANGED",
+            "from": "returning",
+            "to": "extended",
+            "angle": 164.94535868499898
+          },
+          {
+            "timestampMs": 66810.5,
+            "type": "STATE_CHANGED",
+            "from": "extended",
+            "to": "contracting",
+            "angle": 55.960421918194015
+          },
+          {
+            "timestampMs": 67091.70000000298,
+            "type": "FULL_CONTRACTION_CONFIRMED",
+            "angle": 19.61314854132461
+          },
+          {
+            "timestampMs": 67091.70000000298,
+            "type": "STATE_CHANGED",
+            "from": "contracting",
+            "to": "fully_contracted",
+            "angle": 19.61314854132461
+          },
+          {
+            "timestampMs": 67585.60000000149,
+            "type": "STATE_CHANGED",
+            "from": "fully_contracted",
+            "to": "returning",
+            "angle": 46.35081154141321
+          },
+          {
+            "timestampMs": 68591.5,
+            "type": "REP_COUNTED",
+            "rep": 12,
+            "angle": 164.49031956239818
+          },
+          {
+            "timestampMs": 68591.5,
+            "type": "STATE_CHANGED",
+            "from": "returning",
+            "to": "extended",
+            "angle": 164.49031956239818
+          },
+          {
+            "timestampMs": 69814.10000000149,
+            "type": "STATE_CHANGED",
+            "from": "extended",
+            "to": "contracting",
+            "angle": 58.444190221023796
+          },
+          {
+            "timestampMs": 70110.5,
+            "type": "FULL_CONTRACTION_CONFIRMED",
+            "angle": 21.361179479124928
+          },
+          {
+            "timestampMs": 70110.5,
+            "type": "STATE_CHANGED",
+            "from": "contracting",
+            "to": "fully_contracted",
+            "angle": 21.361179479124928
+          },
+          {
+            "timestampMs": 70780.90000000596,
+            "type": "STATE_CHANGED",
+            "from": "fully_contracted",
+            "to": "returning",
+            "angle": 45.61045337462634
+          },
+          {
+            "timestampMs": 71587.70000000298,
+            "type": "REP_COUNTED",
+            "rep": 13,
+            "angle": 165.5026827197659
+          },
+          {
+            "timestampMs": 71587.70000000298,
+            "type": "STATE_CHANGED",
+            "from": "returning",
+            "to": "extended",
+            "angle": 165.5026827197659
+          },
+          {
+            "timestampMs": 73184.40000000596,
+            "type": "STATE_CHANGED",
+            "from": "extended",
+            "to": "contracting",
+            "angle": 55.05184324717564
+          },
+          {
+            "timestampMs": 73638.40000000596,
+            "type": "FULL_CONTRACTION_CONFIRMED",
+            "angle": 32.81775228514912
+          },
+          {
+            "timestampMs": 73638.40000000596,
+            "type": "STATE_CHANGED",
+            "from": "contracting",
+            "to": "fully_contracted",
+            "angle": 32.81775228514912
+          },
+          {
+            "timestampMs": 73766.90000000596,
+            "type": "STATE_CHANGED",
+            "from": "fully_contracted",
+            "to": "returning",
+            "angle": 45.36990019119602
+          }
+        ]
+      }
+    },
+    {
+      "fixture": {
+        "testId": "curl-boundary-contraction-01",
+        "role": "threshold_sensitivity",
+        "sourceSha256": "1448fb1010891c708d18a842dc17153291c1315366cd8893b4ab4fcd40bd3c97"
+      },
+      "result": {
+        "configuration": {
+          "contractStartAngle": 60,
+          "fullContractAngle": 36.35789058153856,
+          "fullExtendAngle": 155,
+          "hysteresis": 8,
+          "holdMs": 180
+        },
+        "predictedReps": 0,
+        "finalPhase": "extended",
+        "events": [
+          {
+            "timestampMs": 3083.89999999851,
+            "type": "STATE_RESET",
+            "from": "extended",
+            "to": "extended"
+          },
+          {
+            "timestampMs": 22982.69999999553,
+            "type": "STATE_CHANGED",
+            "from": "extended",
+            "to": "contracting",
+            "angle": 59.805116136136945
+          },
+          {
+            "timestampMs": 24438.5,
+            "type": "INCOMPLETE_CONTRACTION_REJECTED",
+            "angle": 155.6607573088298
+          },
+          {
+            "timestampMs": 24438.5,
+            "type": "STATE_CHANGED",
+            "from": "contracting",
+            "to": "extended",
+            "angle": 155.6607573088298
+          },
+          {
+            "timestampMs": 27066.89999999851,
+            "type": "STATE_CHANGED",
+            "from": "extended",
+            "to": "contracting",
+            "angle": 58.680092401010256
+          },
+          {
+            "timestampMs": 28822.29999999702,
+            "type": "INCOMPLETE_CONTRACTION_REJECTED",
+            "angle": 155.17962992241107
+          },
+          {
+            "timestampMs": 28822.29999999702,
+            "type": "STATE_CHANGED",
+            "from": "contracting",
+            "to": "extended",
+            "angle": 155.17962992241107
+          },
+          {
+            "timestampMs": 31490.19999999553,
+            "type": "STATE_CHANGED",
+            "from": "extended",
+            "to": "contracting",
+            "angle": 51.36287409439748
+          },
+          {
+            "timestampMs": 32479.19999999553,
+            "type": "INCOMPLETE_CONTRACTION_REJECTED",
+            "angle": 155.42251983757583
+          },
+          {
+            "timestampMs": 32479.19999999553,
+            "type": "STATE_CHANGED",
+            "from": "contracting",
+            "to": "extended",
+            "angle": 155.42251983757583
+          }
+        ]
+      }
+    }
+  ],
+  "analyses": [
+    {
+      "fixture": {
+        "testId": "curl-normal-01",
+        "role": "normal_regression",
+        "sourceSha256": "55a20a1da1bc5d912b04a8cc8a7726ef33180719d5bcf0bc5b7bb64b4e10311f"
+      },
+      "configuration": "F_FULL",
+      "repCount": 13,
+      "cyclesWithNoNearbyBrowserLabel": 6,
+      "cyclesWithoutAlignedBrowserLabel": 3,
+      "cyclesWithResetFlag": 0,
+      "cyclesWithRecoveryFlag": 13,
+      "shortCycleFlags": 0,
+      "processedMinAngles": [
+        18.149815473899565,
+        16.49015716190148,
+        28.89718227424977,
+        19.97875266893803,
+        16.46323260052848,
+        16.233343483677924,
+        13.346740091265584,
+        12.97444720704123,
+        16.63073393616424,
+        16.85095383376952,
+        18.272668865443887,
+        18.23060990836209,
+        19.60654002811549
+      ],
+      "processedRom": [
+        146.76119908694074,
+        147.15370749935875,
+        133.76227671525103,
+        144.34060042247623,
+        148.26723866227564,
+        147.85360756390114,
+        147.72617846936876,
+        149.25345450120113,
+        144.8684735196419,
+        146.4506294037836,
+        146.6726898195551,
+        146.2597096540361,
+        145.8961426916504
+      ]
+    },
+    {
+      "fixture": {
+        "testId": "curl-boundary-contraction-01",
+        "role": "threshold_sensitivity",
+        "sourceSha256": "1448fb1010891c708d18a842dc17153291c1315366cd8893b4ab4fcd40bd3c97"
+      },
+      "configuration": "F_FULL",
+      "repCount": 3,
+      "cyclesWithNoNearbyBrowserLabel": 3,
+      "cyclesWithoutAlignedBrowserLabel": 3,
+      "cyclesWithResetFlag": 0,
+      "cyclesWithRecoveryFlag": 3,
+      "shortCycleFlags": 1,
+      "processedMinAngles": [
+        57.9399815602495,
+        43.81859888882736,
+        46.588314872277486
+      ],
+      "processedRom": [
+        102.77902745849184,
+        118.2273855769997,
+        112.55539519857635
+      ]
+    }
+  ]
+}

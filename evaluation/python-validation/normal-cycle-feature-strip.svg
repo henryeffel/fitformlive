@@ -1,0 +1,98 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="920" height="530" viewBox="0 0 920 530">
+<rect width="100%" height="100%" fill="#fffef9"/>
+<text x="28" y="32" font-family="Arial,sans-serif" font-size="19" font-weight="700" fill="#11140f">10 aligned vs 3 unmatched cycles</text>
+<circle cx="655" cy="27" r="5" fill="#335cff"/>
+<text x="666" y="31" font-family="Arial,sans-serif" font-size="10" fill="#11140f">aligned (n=10)</text>
+<circle cx="777" cy="27" r="5" fill="#e9553d"/>
+<text x="788" y="31" font-family="Arial,sans-serif" font-size="10" fill="#11140f">unmatched (n=3)</text>
+<text x="28" y="86" font-family="Arial,sans-serif" font-size="12" font-weight="700" fill="#11140f">Minimum angle</text>
+<text x="28" y="104" font-family="Arial,sans-serif" font-size="9" fill="#65685f">12.97–28.90 deg</text>
+<line x1="230" y1="92" x2="880" y2="92" stroke="#c9c9bf"/>
+<circle cx="456.96" cy="83" r="4.5" fill="#335cff" stroke="#fffef9" stroke-width="1"/>
+<circle cx="398.55" cy="85" r="4.5" fill="#335cff" stroke="#fffef9" stroke-width="1"/>
+<circle cx="835.17" cy="87" r="4.5" fill="#335cff" stroke="#fffef9" stroke-width="1"/>
+<circle cx="521.32" cy="83" r="4.5" fill="#335cff" stroke="#fffef9" stroke-width="1"/>
+<circle cx="397.60" cy="85" r="4.5" fill="#335cff" stroke="#fffef9" stroke-width="1"/>
+<circle cx="389.51" cy="87" r="4.5" fill="#335cff" stroke="#fffef9" stroke-width="1"/>
+<circle cx="411.25" cy="83" r="4.5" fill="#335cff" stroke="#fffef9" stroke-width="1"/>
+<circle cx="461.28" cy="85" r="4.5" fill="#335cff" stroke="#fffef9" stroke-width="1"/>
+<circle cx="459.80" cy="87" r="4.5" fill="#335cff" stroke="#fffef9" stroke-width="1"/>
+<circle cx="508.22" cy="83" r="4.5" fill="#335cff" stroke="#fffef9" stroke-width="1"/>
+<circle cx="287.93" cy="97" r="4.5" fill="#e9553d" stroke="#fffef9" stroke-width="1"/>
+<circle cx="274.83" cy="99" r="4.5" fill="#e9553d" stroke="#fffef9" stroke-width="1"/>
+<circle cx="403.50" cy="101" r="4.5" fill="#e9553d" stroke="#fffef9" stroke-width="1"/>
+<text x="230" y="123" text-anchor="start" font-family="Arial,sans-serif" font-size="8" fill="#65685f">11.70</text>
+<text x="880" y="123" text-anchor="end" font-family="Arial,sans-serif" font-size="8" fill="#65685f">30.17</text>
+<text x="28" y="178" font-family="Arial,sans-serif" font-size="12" font-weight="700" fill="#11140f">Observed ROM</text>
+<text x="28" y="196" font-family="Arial,sans-serif" font-size="9" fill="#65685f">133.76–149.25 deg</text>
+<line x1="230" y1="184" x2="880" y2="184" stroke="#c9c9bf"/>
+<circle cx="745.02" cy="175" r="4.5" fill="#335cff" stroke="#fffef9" stroke-width="1"/>
+<circle cx="759.22" cy="177" r="4.5" fill="#335cff" stroke="#fffef9" stroke-width="1"/>
+<circle cx="274.83" cy="179" r="4.5" fill="#335cff" stroke="#fffef9" stroke-width="1"/>
+<circle cx="657.47" cy="175" r="4.5" fill="#335cff" stroke="#fffef9" stroke-width="1"/>
+<circle cx="799.50" cy="177" r="4.5" fill="#335cff" stroke="#fffef9" stroke-width="1"/>
+<circle cx="784.54" cy="179" r="4.5" fill="#335cff" stroke="#fffef9" stroke-width="1"/>
+<circle cx="733.79" cy="175" r="4.5" fill="#335cff" stroke="#fffef9" stroke-width="1"/>
+<circle cx="741.82" cy="177" r="4.5" fill="#335cff" stroke="#fffef9" stroke-width="1"/>
+<circle cx="726.88" cy="179" r="4.5" fill="#335cff" stroke="#fffef9" stroke-width="1"/>
+<circle cx="713.73" cy="175" r="4.5" fill="#335cff" stroke="#fffef9" stroke-width="1"/>
+<circle cx="779.93" cy="189" r="4.5" fill="#e9553d" stroke="#fffef9" stroke-width="1"/>
+<circle cx="835.17" cy="191" r="4.5" fill="#e9553d" stroke="#fffef9" stroke-width="1"/>
+<circle cx="676.56" cy="193" r="4.5" fill="#e9553d" stroke="#fffef9" stroke-width="1"/>
+<text x="230" y="215" text-anchor="start" font-family="Arial,sans-serif" font-size="8" fill="#65685f">132.52</text>
+<text x="880" y="215" text-anchor="end" font-family="Arial,sans-serif" font-size="8" fill="#65685f">150.49</text>
+<text x="28" y="270" font-family="Arial,sans-serif" font-size="12" font-weight="700" fill="#11140f">Cycle duration</text>
+<text x="28" y="288" font-family="Arial,sans-serif" font-size="9" fill="#65685f">1483.40–2801.90 ms</text>
+<line x1="230" y1="276" x2="880" y2="276" stroke="#c9c9bf"/>
+<circle cx="835.17" cy="267" r="4.5" fill="#335cff" stroke="#fffef9" stroke-width="1"/>
+<circle cx="463.73" cy="269" r="4.5" fill="#335cff" stroke="#fffef9" stroke-width="1"/>
+<circle cx="281.63" cy="271" r="4.5" fill="#335cff" stroke="#fffef9" stroke-width="1"/>
+<circle cx="398.37" cy="267" r="4.5" fill="#335cff" stroke="#fffef9" stroke-width="1"/>
+<circle cx="274.83" cy="269" r="4.5" fill="#335cff" stroke="#fffef9" stroke-width="1"/>
+<circle cx="460.46" cy="271" r="4.5" fill="#335cff" stroke="#fffef9" stroke-width="1"/>
+<circle cx="420.68" cy="267" r="4.5" fill="#335cff" stroke="#fffef9" stroke-width="1"/>
+<circle cx="293.36" cy="269" r="4.5" fill="#335cff" stroke="#fffef9" stroke-width="1"/>
+<circle cx="318.56" cy="271" r="4.5" fill="#335cff" stroke="#fffef9" stroke-width="1"/>
+<circle cx="319.79" cy="267" r="4.5" fill="#335cff" stroke="#fffef9" stroke-width="1"/>
+<circle cx="602.36" cy="281" r="4.5" fill="#e9553d" stroke="#fffef9" stroke-width="1"/>
+<circle cx="473.55" cy="283" r="4.5" fill="#e9553d" stroke="#fffef9" stroke-width="1"/>
+<circle cx="773.55" cy="285" r="4.5" fill="#e9553d" stroke="#fffef9" stroke-width="1"/>
+<text x="230" y="307" text-anchor="start" font-family="Arial,sans-serif" font-size="8" fill="#65685f">1377.92</text>
+<text x="880" y="307" text-anchor="end" font-family="Arial,sans-serif" font-size="8" fill="#65685f">2907.38</text>
+<text x="28" y="362" font-family="Arial,sans-serif" font-size="12" font-weight="700" fill="#11140f">Peak angular velocity</text>
+<text x="28" y="380" font-family="Arial,sans-serif" font-size="9" fill="#65685f">328.07–850.78 deg/s</text>
+<line x1="230" y1="368" x2="880" y2="368" stroke="#c9c9bf"/>
+<circle cx="370.18" cy="359" r="4.5" fill="#335cff" stroke="#fffef9" stroke-width="1"/>
+<circle cx="364.66" cy="361" r="4.5" fill="#335cff" stroke="#fffef9" stroke-width="1"/>
+<circle cx="274.83" cy="363" r="4.5" fill="#335cff" stroke="#fffef9" stroke-width="1"/>
+<circle cx="410.57" cy="359" r="4.5" fill="#335cff" stroke="#fffef9" stroke-width="1"/>
+<circle cx="446.28" cy="361" r="4.5" fill="#335cff" stroke="#fffef9" stroke-width="1"/>
+<circle cx="293.32" cy="363" r="4.5" fill="#335cff" stroke="#fffef9" stroke-width="1"/>
+<circle cx="328.34" cy="359" r="4.5" fill="#335cff" stroke="#fffef9" stroke-width="1"/>
+<circle cx="441.96" cy="361" r="4.5" fill="#335cff" stroke="#fffef9" stroke-width="1"/>
+<circle cx="493.27" cy="363" r="4.5" fill="#335cff" stroke="#fffef9" stroke-width="1"/>
+<circle cx="553.19" cy="359" r="4.5" fill="#335cff" stroke="#fffef9" stroke-width="1"/>
+<circle cx="520.14" cy="373" r="4.5" fill="#e9553d" stroke="#fffef9" stroke-width="1"/>
+<circle cx="835.17" cy="375" r="4.5" fill="#e9553d" stroke="#fffef9" stroke-width="1"/>
+<circle cx="577.39" cy="377" r="4.5" fill="#e9553d" stroke="#fffef9" stroke-width="1"/>
+<text x="230" y="399" text-anchor="start" font-family="Arial,sans-serif" font-size="8" fill="#65685f">286.25</text>
+<text x="880" y="399" text-anchor="end" font-family="Arial,sans-serif" font-size="8" fill="#65685f">892.60</text>
+<text x="28" y="454" font-family="Arial,sans-serif" font-size="12" font-weight="700" fill="#11140f">Invalid frame ratio</text>
+<text x="28" y="472" font-family="Arial,sans-serif" font-size="9" fill="#65685f">0.09–0.58 ratio</text>
+<line x1="230" y1="460" x2="880" y2="460" stroke="#c9c9bf"/>
+<circle cx="448.30" cy="451" r="4.5" fill="#335cff" stroke="#fffef9" stroke-width="1"/>
+<circle cx="340.49" cy="453" r="4.5" fill="#335cff" stroke="#fffef9" stroke-width="1"/>
+<circle cx="444.22" cy="455" r="4.5" fill="#335cff" stroke="#fffef9" stroke-width="1"/>
+<circle cx="730.59" cy="451" r="4.5" fill="#335cff" stroke="#fffef9" stroke-width="1"/>
+<circle cx="428.50" cy="453" r="4.5" fill="#335cff" stroke="#fffef9" stroke-width="1"/>
+<circle cx="374.98" cy="455" r="4.5" fill="#335cff" stroke="#fffef9" stroke-width="1"/>
+<circle cx="362.84" cy="451" r="4.5" fill="#335cff" stroke="#fffef9" stroke-width="1"/>
+<circle cx="274.83" cy="453" r="4.5" fill="#335cff" stroke="#fffef9" stroke-width="1"/>
+<circle cx="433.75" cy="455" r="4.5" fill="#335cff" stroke="#fffef9" stroke-width="1"/>
+<circle cx="442.77" cy="451" r="4.5" fill="#335cff" stroke="#fffef9" stroke-width="1"/>
+<circle cx="668.14" cy="465" r="4.5" fill="#e9553d" stroke="#fffef9" stroke-width="1"/>
+<circle cx="467.62" cy="467" r="4.5" fill="#e9553d" stroke="#fffef9" stroke-width="1"/>
+<circle cx="835.17" cy="469" r="4.5" fill="#e9553d" stroke="#fffef9" stroke-width="1"/>
+<text x="230" y="491" text-anchor="start" font-family="Arial,sans-serif" font-size="8" fill="#65685f">0.05</text>
+<text x="880" y="491" text-anchor="end" font-family="Arial,sans-serif" font-size="8" fill="#65685f">0.62</text>
+</svg>

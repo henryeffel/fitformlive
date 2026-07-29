@@ -27,12 +27,12 @@ Microsoft AI School 8기 팀 프로젝트로 시작했으며, 현재 저장소�
 
 ```text
 Webcam frame
-  → OpenCV.js frame-quality analysis
   → MoveNet pose estimation
   → Required-joint confidence and boundary validation
   → EMA landmark smoothing
   → Joint-angle and angular-velocity calculation
   → Time-based repetition state machine
+  → OpenCV.js frame-quality analysis
   → Pose feedback and performance metrics
   → JSON/CSV evaluation result
 ```
@@ -80,7 +80,7 @@ READY
 
 ### OpenCV.js 영상 품질 분석
 
-MoveNet 입력 영상의 품질을 약 500ms 간격으로 분석합니다.
+MoveNet 입력 영상의 품질을 약 1000ms 간격으로 분석합니다.
 
 ```text
 RGBA frame
@@ -121,6 +121,13 @@ RGBA frame
 
 별도의 빌드 과정은 필요하지 않습니다. 웹캠 권한과 CDN 리소스 로딩을 위해 파일을 직접 열지 말고 로컬 HTTP 서버를 사용합니다.
 
+알고리즘 기술 포트폴리오는 프로젝트 루트에서 서버를 실행한 뒤
+`http://localhost:8766/portfolio/`에서 확인할 수 있습니다.
+
+```powershell
+python -m http.server 8766 --directory .
+```
+
 ### Python 사용
 
 ```powershell
@@ -155,7 +162,7 @@ http://localhost:8000
 - TensorFlow.js 4.16.0
 - TensorFlow.js pose-detection
 - MoveNet SinglePose Lightning
-- OpenCV.js 4.10.0
+- 프로젝트에 고정된 OpenCV.js 4.10.0
 
 ## 제한적 기능 검증
 
@@ -169,9 +176,22 @@ http://localhost:8000
 - 저조도·흐림·관절 가림 조건에서의 동작
 - 평균 및 P95 추론 지연시간
 
-수동 테스트 절차는 [MANUAL_TEST_PROTOCOL.md](./docs/MANUAL_TEST_PROTOCOL.md), 결과 양식은 [test-results-template.csv](./evaluation/test-results-template.csv)를 참고합니다.
+빠르게 테스트하려면 [QUICK_TEST_GUIDE.md](./docs/QUICK_TEST_GUIDE.md), 상세한 조건별 절차는 [MANUAL_TEST_PROTOCOL.md](./docs/MANUAL_TEST_PROTOCOL.md), 결과 양식은 [test-results-template.csv](./evaluation/test-results-template.csv)를 참고합니다.
 
 실제 결과 파일은 환경 정보와 사용자 메모를 포함할 수 있어 기본적으로 Git 추적에서 제외합니다.
+
+## 자동 회귀 테스트
+
+브라우저 앱과 자동 테스트가 동일한 `web/js/pose-algorithms.js` 모듈을 사용합니다.
+각도·각속도·반복 횟수 상태 머신을 변경하면 다음 명령으로 기존 판정 조건이 유지되는지 확인할 수 있습니다.
+
+```powershell
+npm install
+npm.cmd test
+```
+
+현재 단위 및 고정 입력 시퀀스 테스트 10개가 구성되어 있습니다.
+합성 fixture와 실제 카메라 측정 결과를 구분하며, 후속 단계에서 익명 관절 좌표 데이터셋으로 확장할 예정입니다.
 
 ## 기술 스택
 
@@ -181,6 +201,7 @@ http://localhost:8000
 | TensorFlow.js | 브라우저 내 MoveNet 추론 |
 | MoveNet Lightning | 17개 인체 관절 좌표 추정 |
 | OpenCV.js | grayscale 밝기와 Laplacian 선명도 분석 |
+| Vitest | 각도·각속도·상태 머신 자동 회귀 테스트 |
 | Canvas API | 카메라 프레임 및 스켈레톤 렌더링 |
 | MediaDevices API | 브라우저 웹캠 입력 |
 
@@ -196,16 +217,28 @@ fitformlive/
 │  ├─ results/
 │  └─ test-results-template.csv
 ├─ images/
+├─ tests/
+│  ├─ fixtures/
+│  ├─ integration/
+│  └─ unit/
 ├─ web/
+│  ├─ js/
+│  │  └─ pose-algorithms.js
+│  ├─ vendor/
 │  └─ index.html
+├─ package.json
 └─ README.md
 ```
 
-현재 애플리케이션은 빠른 프로토타이핑을 위해 `web/index.html`에 UI와 JavaScript가 함께 있습니다. 후속 작업에서는 알고리즘과 UI를 모듈 단위로 분리할 예정입니다.
+브라우저 제어와 UI는 `web/index.html`에 유지하고,
+재현 가능한 검증이 필요한 핵심 계산과 상태 머신은 `web/js/pose-algorithms.js`로 분리했습니다.
+
+OpenCV.js는 외부 문서 서버의 직접 파일 접근 정책에 영향을 받지 않도록 `web/vendor/opencv-4.10.0.js`에 버전을 고정하여 동일 출처에서 제공합니다. 배포 파일의 출처와 SHA-256은 [vendor NOTICE](./web/vendor/NOTICE.md)에 기록되어 있습니다.
 
 ## 설계 문서
 
 - [영상처리 알고리즘 개발 계획](./docs/VIDEO_ALGORITHM_DEVELOPMENT_PLAN.md)
+- [빠른 테스트 가이드](./docs/QUICK_TEST_GUIDE.md)
 - [수동 기능 검증 프로토콜](./docs/MANUAL_TEST_PROTOCOL.md)
 - [Phase 0 작업 로그](./docs/PHASE_0_WORK_LOG.md)
 - [Phase 1 작업 로그](./docs/PHASE_1_WORK_LOG.md)
@@ -213,6 +246,13 @@ fitformlive/
 - [Phase 3 작업 로그](./docs/PHASE_3_WORK_LOG.md)
 - [Phase 4 작업 로그](./docs/PHASE_4_WORK_LOG.md)
 - [Phase 5 작업 로그](./docs/PHASE_5_WORK_LOG.md)
+- [Phase 6 작업 로그](./docs/PHASE_6_WORK_LOG.md)
+- [Phase 7 작업 로그](./docs/PHASE_7_WORK_LOG.md)
+- [Phase 8 작업 로그](./docs/PHASE_8_WORK_LOG.md)
+- [OpenCV.js 디버깅 및 재검증 로그](./docs/OPENCV_DEBUG_TEST_LOG_2026-07-28.md)
+- [Right Arm Curl 정상 조건 검증 결과](./docs/CURL_NORMAL_VALIDATION_2026-07-28.md)
+- [Algorithm + 포트폴리오 개선점](./docs/ALGORITHM_PORTFOLIO_IMPROVEMENTS.md)
+- [영상 알고리즘 HTML 포트폴리오](./portfolio/index.html)
 
 ## 알려진 한계
 

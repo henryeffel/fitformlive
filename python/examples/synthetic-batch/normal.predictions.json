@@ -1,0 +1,17 @@
+{
+  "sessionId": "synthetic-normal-01",
+  "algorithmVersion": "synthetic-v1",
+  "configurationId": "example-config",
+  "events": [
+    {
+      "timestampMs": 1160,
+      "type": "REP_COUNTED",
+      "rep": 1
+    },
+    {
+      "timestampMs": 2550,
+      "type": "REP_COUNTED",
+      "rep": 2
+    }
+  ]
+}

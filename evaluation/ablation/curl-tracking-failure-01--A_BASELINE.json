@@ -1,0 +1,472 @@
+{
+  "experimentVersion": "1.0",
+  "fixturePath": "tests/fixtures/canonical/curl-tracking-failure-01.derived.json",
+  "fixture": {
+    "testId": "curl-tracking-failure-01",
+    "role": "failure_safety",
+    "sourceSha256": "f1128c5ebc116f1bd5d4bf0f6a58dec8ea5f8666dc2810a39adc02c75934e1d2"
+  },
+  "configuration": {
+    "id": "A_BASELINE",
+    "label": "Baseline",
+    "features": {
+      "validation": false,
+      "ema": false,
+      "hysteresis": false,
+      "holdTime": false,
+      "invalidReset": false
+    },
+    "parameters": {
+      "minJointConfidence": 0.4,
+      "emaAlpha": 0.35,
+      "invalidResetMs": 1000,
+      "up": 155,
+      "down": 60,
+      "hysteresis": 0,
+      "holdMs": 0,
+      "angleJoints": [
+        6,
+        8,
+        10
+      ]
+    }
+  },
+  "metrics": {
+    "groundTruth": 3,
+    "predictedReps": 11,
+    "absoluteRepError": 8,
+    "overCount": 8,
+    "underCount": 0,
+    "validFrames": 2240,
+    "invalidFrames": 0,
+    "validJointRate": 1,
+    "stateTransitions": 33,
+    "contractionCandidates": 11,
+    "confirmedContractions": 11,
+    "repCountEvents": 11,
+    "invalidResets": 0,
+    "trackingRecoveries": 0,
+    "countsDuringTrackingFailure": 9,
+    "invalidReasons": {}
+  },
+  "interpretation": {
+    "possibleDuplicateCounts": null,
+    "partialMotionFalsePositives": null,
+    "trackingFailureFalseCounts": 9,
+    "resetObserved": false
+  },
+  "events": [
+    {
+      "timestampMs": 15517.89999999851,
+      "type": "CONTRACTION_CANDIDATE",
+      "angle": 23.978228180882525
+    },
+    {
+      "timestampMs": 15517.89999999851,
+      "type": "CONTRACTION_CONFIRMED",
+      "angle": 23.978228180882525
+    },
+    {
+      "timestampMs": 15517.89999999851,
+      "type": "STATE_CHANGED",
+      "from": "ready",
+      "to": "bottom_hold",
+      "angle": 23.978228180882525
+    },
+    {
+      "timestampMs": 16672,
+      "type": "STATE_CHANGED",
+      "from": "bottom_hold",
+      "to": "returning",
+      "angle": 80.54202844104677
+    },
+    {
+      "timestampMs": 16771.79999999702,
+      "type": "STATE_CHANGED",
+      "from": "returning",
+      "to": "ready",
+      "angle": 156.90693789930586
+    },
+    {
+      "timestampMs": 16771.79999999702,
+      "type": "REP_COUNTED",
+      "rep": 1,
+      "duringTrackingFailure": false
+    },
+    {
+      "timestampMs": 18459.5,
+      "type": "CONTRACTION_CANDIDATE",
+      "angle": 6.419115721635337
+    },
+    {
+      "timestampMs": 18459.5,
+      "type": "CONTRACTION_CONFIRMED",
+      "angle": 6.419115721635337
+    },
+    {
+      "timestampMs": 18459.5,
+      "type": "STATE_CHANGED",
+      "from": "ready",
+      "to": "bottom_hold",
+      "angle": 6.419115721635337
+    },
+    {
+      "timestampMs": 19700,
+      "type": "STATE_CHANGED",
+      "from": "bottom_hold",
+      "to": "returning",
+      "angle": 82.47846183190543
+    },
+    {
+      "timestampMs": 19887,
+      "type": "STATE_CHANGED",
+      "from": "returning",
+      "to": "ready",
+      "angle": 155.92111716291598
+    },
+    {
+      "timestampMs": 19887,
+      "type": "REP_COUNTED",
+      "rep": 2,
+      "duringTrackingFailure": true
+    },
+    {
+      "timestampMs": 21610.69999999553,
+      "type": "CONTRACTION_CANDIDATE",
+      "angle": 4.299946967875994
+    },
+    {
+      "timestampMs": 21610.69999999553,
+      "type": "CONTRACTION_CONFIRMED",
+      "angle": 4.299946967875994
+    },
+    {
+      "timestampMs": 21610.69999999553,
+      "type": "STATE_CHANGED",
+      "from": "ready",
+      "to": "bottom_hold",
+      "angle": 4.299946967875994
+    },
+    {
+      "timestampMs": 22610.69999999553,
+      "type": "STATE_CHANGED",
+      "from": "bottom_hold",
+      "to": "returning",
+      "angle": 72.51944912750837
+    },
+    {
+      "timestampMs": 22877,
+      "type": "STATE_CHANGED",
+      "from": "returning",
+      "to": "ready",
+      "angle": 158.17332538998264
+    },
+    {
+      "timestampMs": 22877,
+      "type": "REP_COUNTED",
+      "rep": 3,
+      "duringTrackingFailure": true
+    },
+    {
+      "timestampMs": 24621.79999999702,
+      "type": "CONTRACTION_CANDIDATE",
+      "angle": 20.762215476744235
+    },
+    {
+      "timestampMs": 24621.79999999702,
+      "type": "CONTRACTION_CONFIRMED",
+      "angle": 20.762215476744235
+    },
+    {
+      "timestampMs": 24621.79999999702,
+      "type": "STATE_CHANGED",
+      "from": "ready",
+      "to": "bottom_hold",
+      "angle": 20.762215476744235
+    },
+    {
+      "timestampMs": 25637.29999999702,
+      "type": "STATE_CHANGED",
+      "from": "bottom_hold",
+      "to": "returning",
+      "angle": 75.65068066687432
+    },
+    {
+      "timestampMs": 25816.29999999702,
+      "type": "STATE_CHANGED",
+      "from": "returning",
+      "to": "ready",
+      "angle": 157.25929128632578
+    },
+    {
+      "timestampMs": 25816.29999999702,
+      "type": "REP_COUNTED",
+      "rep": 4,
+      "duringTrackingFailure": true
+    },
+    {
+      "timestampMs": 27404.89999999851,
+      "type": "CONTRACTION_CANDIDATE",
+      "angle": 16.236460193688274
+    },
+    {
+      "timestampMs": 27404.89999999851,
+      "type": "CONTRACTION_CONFIRMED",
+      "angle": 16.236460193688274
+    },
+    {
+      "timestampMs": 27404.89999999851,
+      "type": "STATE_CHANGED",
+      "from": "ready",
+      "to": "bottom_hold",
+      "angle": 16.236460193688274
+    },
+    {
+      "timestampMs": 28414.09999999404,
+      "type": "STATE_CHANGED",
+      "from": "bottom_hold",
+      "to": "returning",
+      "angle": 68.39005353586816
+    },
+    {
+      "timestampMs": 28610.19999999553,
+      "type": "STATE_CHANGED",
+      "from": "returning",
+      "to": "ready",
+      "angle": 155.64560497556784
+    },
+    {
+      "timestampMs": 28610.19999999553,
+      "type": "REP_COUNTED",
+      "rep": 5,
+      "duringTrackingFailure": true
+    },
+    {
+      "timestampMs": 30679.19999999553,
+      "type": "CONTRACTION_CANDIDATE",
+      "angle": 54.5594148624072
+    },
+    {
+      "timestampMs": 30679.19999999553,
+      "type": "CONTRACTION_CONFIRMED",
+      "angle": 54.5594148624072
+    },
+    {
+      "timestampMs": 30679.19999999553,
+      "type": "STATE_CHANGED",
+      "from": "ready",
+      "to": "bottom_hold",
+      "angle": 54.5594148624072
+    },
+    {
+      "timestampMs": 30780.09999999404,
+      "type": "STATE_CHANGED",
+      "from": "bottom_hold",
+      "to": "returning",
+      "angle": 73.18723981055102
+    },
+    {
+      "timestampMs": 30880.39999999851,
+      "type": "STATE_CHANGED",
+      "from": "returning",
+      "to": "ready",
+      "angle": 168.91683222014763
+    },
+    {
+      "timestampMs": 30880.39999999851,
+      "type": "REP_COUNTED",
+      "rep": 6,
+      "duringTrackingFailure": false
+    },
+    {
+      "timestampMs": 30913.79999999702,
+      "type": "CONTRACTION_CANDIDATE",
+      "angle": 14.792402826257467
+    },
+    {
+      "timestampMs": 30913.79999999702,
+      "type": "CONTRACTION_CONFIRMED",
+      "angle": 14.792402826257467
+    },
+    {
+      "timestampMs": 30913.79999999702,
+      "type": "STATE_CHANGED",
+      "from": "ready",
+      "to": "bottom_hold",
+      "angle": 14.792402826257467
+    },
+    {
+      "timestampMs": 31376.79999999702,
+      "type": "STATE_CHANGED",
+      "from": "bottom_hold",
+      "to": "returning",
+      "angle": 74.83697251741627
+    },
+    {
+      "timestampMs": 31688.89999999851,
+      "type": "STATE_CHANGED",
+      "from": "returning",
+      "to": "ready",
+      "angle": 157.84874511271354
+    },
+    {
+      "timestampMs": 31688.89999999851,
+      "type": "REP_COUNTED",
+      "rep": 7,
+      "duringTrackingFailure": true
+    },
+    {
+      "timestampMs": 33929,
+      "type": "CONTRACTION_CANDIDATE",
+      "angle": 58.10687021804236
+    },
+    {
+      "timestampMs": 33929,
+      "type": "CONTRACTION_CONFIRMED",
+      "angle": 58.10687021804236
+    },
+    {
+      "timestampMs": 33929,
+      "type": "STATE_CHANGED",
+      "from": "ready",
+      "to": "bottom_hold",
+      "angle": 58.10687021804236
+    },
+    {
+      "timestampMs": 33948.89999999851,
+      "type": "STATE_CHANGED",
+      "from": "bottom_hold",
+      "to": "returning",
+      "angle": 151.1195821729531
+    },
+    {
+      "timestampMs": 34594.79999999702,
+      "type": "STATE_CHANGED",
+      "from": "returning",
+      "to": "ready",
+      "angle": 173.55412493463282
+    },
+    {
+      "timestampMs": 34594.79999999702,
+      "type": "REP_COUNTED",
+      "rep": 8,
+      "duringTrackingFailure": true
+    },
+    {
+      "timestampMs": 35360.09999999404,
+      "type": "CONTRACTION_CANDIDATE",
+      "angle": 35.55568749789305
+    },
+    {
+      "timestampMs": 35360.09999999404,
+      "type": "CONTRACTION_CONFIRMED",
+      "angle": 35.55568749789305
+    },
+    {
+      "timestampMs": 35360.09999999404,
+      "type": "STATE_CHANGED",
+      "from": "ready",
+      "to": "bottom_hold",
+      "angle": 35.55568749789305
+    },
+    {
+      "timestampMs": 35606.19999999553,
+      "type": "STATE_CHANGED",
+      "from": "bottom_hold",
+      "to": "returning",
+      "angle": 61.457726849078774
+    },
+    {
+      "timestampMs": 35640.29999999702,
+      "type": "STATE_CHANGED",
+      "from": "returning",
+      "to": "ready",
+      "angle": 160.5751032541046
+    },
+    {
+      "timestampMs": 35640.29999999702,
+      "type": "REP_COUNTED",
+      "rep": 9,
+      "duringTrackingFailure": true
+    },
+    {
+      "timestampMs": 35686.19999999553,
+      "type": "CONTRACTION_CANDIDATE",
+      "angle": 37.140856603544705
+    },
+    {
+      "timestampMs": 35686.19999999553,
+      "type": "CONTRACTION_CONFIRMED",
+      "angle": 37.140856603544705
+    },
+    {
+      "timestampMs": 35686.19999999553,
+      "type": "STATE_CHANGED",
+      "from": "ready",
+      "to": "bottom_hold",
+      "angle": 37.140856603544705
+    },
+    {
+      "timestampMs": 35733.39999999851,
+      "type": "STATE_CHANGED",
+      "from": "bottom_hold",
+      "to": "returning",
+      "angle": 75.63253227651536
+    },
+    {
+      "timestampMs": 36039.69999999553,
+      "type": "STATE_CHANGED",
+      "from": "returning",
+      "to": "ready",
+      "angle": 166.63217976586586
+    },
+    {
+      "timestampMs": 36039.69999999553,
+      "type": "REP_COUNTED",
+      "rep": 10,
+      "duringTrackingFailure": true
+    },
+    {
+      "timestampMs": 36156.29999999702,
+      "type": "CONTRACTION_CANDIDATE",
+      "angle": 58.98891321807947
+    },
+    {
+      "timestampMs": 36156.29999999702,
+      "type": "CONTRACTION_CONFIRMED",
+      "angle": 58.98891321807947
+    },
+    {
+      "timestampMs": 36156.29999999702,
+      "type": "STATE_CHANGED",
+      "from": "ready",
+      "to": "bottom_hold",
+      "angle": 58.98891321807947
+    },
+    {
+      "timestampMs": 36191.39999999851,
+      "type": "STATE_CHANGED",
+      "from": "bottom_hold",
+      "to": "returning",
+      "angle": 67.86777727782817
+    },
+    {
+      "timestampMs": 36499.19999999553,
+      "type": "STATE_CHANGED",
+      "from": "returning",
+      "to": "ready",
+      "angle": 168.46111332311764
+    },
+    {
+      "timestampMs": 36499.19999999553,
+      "type": "REP_COUNTED",
+      "rep": 11,
+      "duringTrackingFailure": true
+    }
+  ],
+  "determinism": {
+    "run1Hash": "e1652368664908cd81527635c23ed56857793d6906ac2906c30bfe5b908d4376",
+    "run2Hash": "e1652368664908cd81527635c23ed56857793d6906ac2906c30bfe5b908d4376",
+    "equal": true
+  }
+}

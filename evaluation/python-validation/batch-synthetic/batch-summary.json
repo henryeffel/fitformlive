@@ -1,0 +1,39 @@
+{
+  "evaluationVersion": "1.0",
+  "manifest": "C:\\Users\\Henry\\Desktop\\projects\\fitformlive\\python\\examples\\synthetic-batch\\manifest.json",
+  "sessionCount": 2,
+  "toleranceMs": 250.0,
+  "dataProvenance": "synthetic-example-only",
+  "conditionResults": [
+    {
+      "condition.movementSpeed": "normal",
+      "condition.tracking": "failure",
+      "sessionCount": 1,
+      "groundTruthRepCount": 2,
+      "predictedRepCount": 3,
+      "absoluteRepCountError": 1,
+      "truePositive": 2,
+      "falsePositive": 1,
+      "falseNegative": 0,
+      "precision": 0.6666666666666666,
+      "recall": 1.0,
+      "f1": 0.8,
+      "predictionsDuringTrackingFailure": 1
+    },
+    {
+      "condition.movementSpeed": "normal",
+      "condition.tracking": "stable",
+      "sessionCount": 1,
+      "groundTruthRepCount": 2,
+      "predictedRepCount": 2,
+      "absoluteRepCountError": 0,
+      "truePositive": 2,
+      "falsePositive": 0,
+      "falseNegative": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "predictionsDuringTrackingFailure": 0
+    }
+  ]
+}

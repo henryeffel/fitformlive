@@ -1,5 +1,10 @@
 .agents/
 .codex/
+node_modules/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
 jd.png
 evaluation/results/*
 !evaluation/results/.gitkeep

@@ -1,0 +1,29 @@
+{
+  "schemaVersion": "1.0",
+  "sessionId": "synthetic-tracking-failure-01",
+  "cycles": [
+    {
+      "startMs": 400,
+      "endMs": 1100,
+      "completionMs": 1000,
+      "label": "valid_rep",
+      "annotator": "synthetic-example",
+      "note": "Not a human annotation."
+    },
+    {
+      "startMs": 1700,
+      "endMs": 3100,
+      "label": "tracking_failure",
+      "annotator": "synthetic-example",
+      "note": "Synthetic failure interval."
+    },
+    {
+      "startMs": 3600,
+      "endMs": 4400,
+      "completionMs": 4300,
+      "label": "valid_rep",
+      "annotator": "synthetic-example",
+      "note": "Recovery rep."
+    }
+  ]
+}
