@@ -1,0 +1,72 @@
+{
+  "schemaVersion": "1.0",
+  "generatedAt": "2026-07-30",
+  "scope": "P5 target-arm diagonal development evaluation",
+  "reviewProvenance": {
+    "candidateApproval": "human-01",
+    "missedCycleAudit": "AI-assisted full-video review using 1-second contact sheets and synchronized target-arm angle traces",
+    "warning": "Candidate-derived completion timestamps are not independent latency ground truth. Count-level TP/FP/FN is the supported result."
+  },
+  "samples": [
+    {
+      "testId": "curl-diagnal-sample",
+      "targetArm": "right",
+      "groundTruthValidReps": 7,
+      "predictedReps": 7,
+      "truePositive": 7,
+      "falsePositive": 0,
+      "falseNegative": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "reviewFinding": "Seven completed target-right cycles; no additional completed target-right cycle found."
+    },
+    {
+      "testId": "curl-diagnal-sample2",
+      "targetArm": "left",
+      "groundTruthValidReps": 3,
+      "predictedReps": 3,
+      "truePositive": 3,
+      "falsePositive": 0,
+      "falseNegative": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "reviewFinding": "Three completed target-left cycles. A fourth target-left motion is truncated by the video end and labeled partial_rep."
+    },
+    {
+      "testId": "curl-diagnal-sample3",
+      "targetArm": "left",
+      "groundTruthValidReps": 4,
+      "predictedReps": 4,
+      "truePositive": 4,
+      "falsePositive": 0,
+      "falseNegative": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "reviewFinding": "Four completed target-left cycles; no additional completed target-left cycle found."
+    },
+    {
+      "testId": "curl-diagnal-sample4",
+      "targetArm": "left",
+      "groundTruthValidReps": 8,
+      "predictedReps": 1,
+      "truePositive": 1,
+      "falsePositive": 0,
+      "falseNegative": 7,
+      "precision": 1.0,
+      "recall": 0.125,
+      "reviewFinding": "Eight completed target-left cycles. Seven fail the frozen contraction/hold path."
+    }
+  ],
+  "aggregate": {
+    "groundTruthValidReps": 22,
+    "predictedReps": 15,
+    "truePositive": 15,
+    "falsePositive": 0,
+    "falseNegative": 7,
+    "precision": 1.0,
+    "recall": 0.6818181818,
+    "f1": 0.8108108108,
+    "absoluteRepCountError": 7
+  },
+  "conclusion": "P5 is complete at count level. Frozen production is precise on this development set but recall is view/subject-sensitive, with all seven false negatives concentrated in sample4. Do not tune thresholds on these same samples and report the AI-assisted audit provenance."
+}

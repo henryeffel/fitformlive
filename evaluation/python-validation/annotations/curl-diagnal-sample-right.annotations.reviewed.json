@@ -1,0 +1,62 @@
+{
+  "schemaVersion": "1.0",
+  "sessionId": "curl-diagnal-sample-right",
+  "cycles": [
+    {
+      "startMs": 1233.3,
+      "endMs": 4933.3,
+      "completionMs": 2733.3333333333335,
+      "label": "valid_rep",
+      "annotator": "human-01",
+      "note": "human-approved production_rep-1; full-video AI-assisted target-right audit"
+    },
+    {
+      "startMs": 4933.3,
+      "endMs": 9300.0,
+      "completionMs": 7133.333333333333,
+      "label": "valid_rep",
+      "annotator": "human-01",
+      "note": "human-approved production_rep-2; full-video AI-assisted target-right audit"
+    },
+    {
+      "startMs": 9300.0,
+      "endMs": 13666.7,
+      "completionMs": 11466.666666666666,
+      "label": "valid_rep",
+      "annotator": "human-01",
+      "note": "human-approved production_rep-3; full-video AI-assisted target-right audit"
+    },
+    {
+      "startMs": 13666.7,
+      "endMs": 18000.0,
+      "completionMs": 15866.666666666668,
+      "label": "valid_rep",
+      "annotator": "human-01",
+      "note": "human-approved production_rep-4; full-video AI-assisted target-right audit"
+    },
+    {
+      "startMs": 18000.0,
+      "endMs": 22400.0,
+      "completionMs": 20133.333333333332,
+      "label": "valid_rep",
+      "annotator": "human-01",
+      "note": "human-approved production_rep-5; full-video AI-assisted target-right audit"
+    },
+    {
+      "startMs": 22400.0,
+      "endMs": 26800.0,
+      "completionMs": 24666.666666666668,
+      "label": "valid_rep",
+      "annotator": "human-01",
+      "note": "human-approved production_rep-6; full-video AI-assisted target-right audit"
+    },
+    {
+      "startMs": 26800.0,
+      "endMs": 29433.3,
+      "completionMs": 28933.333333333332,
+      "label": "valid_rep",
+      "annotator": "human-01",
+      "note": "human-approved production_rep-7; full-video AI-assisted target-right audit"
+    }
+  ]
+}

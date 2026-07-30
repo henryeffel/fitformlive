@@ -6,12 +6,14 @@
 | --- | --- | --- |
 | P1 Dataset Schema and Validator | 완료 | `PHASE_P1_P2_PYTHON_VALIDATION_LOG.md` |
 | P2 Cycle Feature Analyzer | 완료 | `PHASE_P1_P2_PYTHON_VALIDATION_LOG.md` |
-| P3 Video Synchronization and Annotation | P3-A 완료 | trace annotation UI 완료, 영상 동기화 P3-B 보류 |
-| P4 Batch Evaluation | 엔진 완료 | 합성 E2E 검증 완료, 실제 cycle-level GT 적용 대기 |
-| P5 Robustness and Independent Validation | 일부 완료 | 기존 fixture in-sample sweep 완료, 독립 검증 보류 |
+| P3 Video Synchronization and Annotation | 완료 | 영상·pose 동기화 및 cycle annotation UI 완료 |
+| P4 Batch Evaluation | 완료 | 실제 annotation/prediction TP·FP·FN 평가 적용 |
+| P5 Robustness and External Development Validation | 완료 | in-sample sweep 및 external diagonal sample1~4 개발 평가 |
 
-P5의 현재 결과는 `PHASE_P5_ROBUSTNESS_LOG.md`에 기록했다. 신규 세션이 없으므로
-independent validation은 완료되지 않았다.
+P5 count-level 결과는
+`evaluation/python-validation/video-session-comparison/external-diagonal-target-arm-p5-final.json`
+에 기록했다. candidate approval과 AI-assisted 전체 영상 누락 audit를 결합했으며,
+새 subject를 사용하는 최종 holdout 평가는 개발 평가와 별도 후속 단계로 유지한다.
 
 ## 문서 목적
 

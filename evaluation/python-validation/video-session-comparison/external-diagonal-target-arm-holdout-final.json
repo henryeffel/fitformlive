@@ -1,0 +1,69 @@
+{
+  "schemaVersion": "1.0",
+  "generatedAt": "2026-07-30",
+  "scope": "Frozen target-arm diagonal holdout evaluation",
+  "protocol": {
+    "targetArm": "anatomical left preregistered for all samples before inference",
+    "configuration": "MoveNet Lightning, 15fps, confidence 0.4, EMA 0.35, extension 155deg, contraction 60deg, hold 180ms",
+    "changesAfterReview": "none",
+    "sampleExclusion": "none"
+  },
+  "reviewProvenance": {
+    "groundTruth": "AI-assisted full-video review with 0.5/1-second contact sheets",
+    "navigationAid": "Synchronized target-left angle trace used to locate candidate cycle regions",
+    "warning": "Completion timestamps are trace-assisted and are not independent latency ground truth. Count-level TP/FP/FN is the supported result."
+  },
+  "samples": [
+    {
+      "testId": "curl-diagnal-test",
+      "movement": "bilateral/alternating",
+      "targetArm": "left",
+      "groundTruthValidReps": 7,
+      "predictedReps": 5,
+      "truePositive": 5,
+      "falsePositive": 0,
+      "falseNegative": 2,
+      "validJointRate": 0.9937106918,
+      "precision": 1.0,
+      "recall": 0.7142857143
+    },
+    {
+      "testId": "curl-diagnal-test2",
+      "movement": "alternating",
+      "targetArm": "left",
+      "groundTruthValidReps": 7,
+      "predictedReps": 7,
+      "truePositive": 7,
+      "falsePositive": 0,
+      "falseNegative": 0,
+      "validJointRate": 0.9876033058,
+      "precision": 1.0,
+      "recall": 1.0
+    },
+    {
+      "testId": "curl-diagnal-test3",
+      "movement": "simultaneous bilateral",
+      "targetArm": "left",
+      "groundTruthValidReps": 11,
+      "predictedReps": 5,
+      "truePositive": 5,
+      "falsePositive": 0,
+      "falseNegative": 6,
+      "validJointRate": 0.8285714286,
+      "precision": 1.0,
+      "recall": 0.4545454545
+    }
+  ],
+  "aggregate": {
+    "groundTruthValidReps": 25,
+    "predictedReps": 17,
+    "truePositive": 17,
+    "falsePositive": 0,
+    "falseNegative": 8,
+    "precision": 1.0,
+    "recall": 0.68,
+    "f1": 0.8095238095,
+    "absoluteRepCountError": 8
+  },
+  "conclusion": "The preregistered frozen holdout preserved precision but confirmed limited recall across new diagonal subjects. No sample was removed and no threshold was tuned after inference."
+}

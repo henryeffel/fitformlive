@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 import sys
+import tempfile
 from pathlib import Path
 
 import pandas as pd
@@ -31,6 +33,24 @@ from fitform_eval.models import (  # noqa: E402
     AnnotationDocument,
     CycleAnnotation,
 )
+from fitform_eval.review_candidates import (  # noqa: E402
+    approve_candidate_rows,
+    candidate_rows,
+    load_review_candidates,
+)
+from fitform_eval import video_sync as video_sync_module  # noqa: E402
+
+decode_video_frame = video_sync_module.decode_video_frame
+external_analysis_arms = video_sync_module.external_analysis_arms
+external_analysis_to_trace_payload = (
+    video_sync_module.external_analysis_to_trace_payload
+)
+fixture_to_trace_payload = video_sync_module.fixture_to_trace_payload
+is_external_video_analysis = video_sync_module.is_external_video_analysis
+is_video_fixture = video_sync_module.is_video_fixture
+nearest_trace_frame = video_sync_module.nearest_trace_frame
+render_pose_overlay = video_sync_module.render_pose_overlay
+release_video_frame_cache = video_sync_module.release_video_frame_cache
 
 
 LABELS = [
@@ -86,21 +106,32 @@ st.set_page_config(
 
 st.title("FitForm Cycle Annotation")
 st.caption(
-    "Trace 기반 annotation workflow · 영상 없는 현재 단계에서는 동작의 물리적 의미를 "
-    "확정하지 않습니다."
+    "영상과 관절 timestamp를 같은 세션 시간축에서 탐색하고 cycle-level ground truth를 "
+    "작성합니다."
 )
 
 with st.sidebar:
     st.header("입력")
     trace_upload = st.file_uploader(
-        "JS trace JSON",
+        "세션 JSON 또는 JS trace JSON",
         type=["json"],
-        help="evaluation/rep-analysis/*--F_FULL.trace.json",
+        help="브라우저에서 저장한 schema 1.2 세션 JSON 또는 기존 trace JSON",
+    )
+    video_upload = st.file_uploader(
+        "세션 영상 · schema 1.2에서 권장",
+        type=["webm", "mp4", "mov"],
+        key="video-upload",
     )
     annotation_upload = st.file_uploader(
         "기존 annotation JSON · 선택",
         type=["json"],
         key="annotation-upload",
+    )
+    candidate_upload = st.file_uploader(
+        "Review candidate JSON · optional",
+        type=["json"],
+        key="candidate-upload",
+        help="video:compare가 생성한 *.review-candidate.json",
     )
     annotator = st.text_input(
         "Annotator",
@@ -116,13 +147,46 @@ with st.sidebar:
 
 if trace_upload is None:
     st.info(
-        "JS trace JSON을 올리면 angle timeline, REP_COUNTED 이벤트와 annotation 편집기가 "
-        "표시됩니다."
+        "세션 JSON을 올리면 timeline과 annotation 편집기가 표시됩니다. 함께 저장한 "
+        "WebM을 추가하면 영상 프레임과 skeleton overlay를 탐색할 수 있습니다."
     )
     st.stop()
 
 try:
-    trace_payload = load_trace_payload(trace_upload.getvalue())
+    uploaded_payload = json.loads(trace_upload.getvalue().decode("utf-8"))
+    video_fixture = uploaded_payload if is_video_fixture(uploaded_payload) else None
+    external_fixture = (
+        uploaded_payload if is_external_video_analysis(uploaded_payload) else None
+    )
+    if video_fixture:
+        trace_payload = fixture_to_trace_payload(uploaded_payload)
+    elif external_fixture:
+        available_arms = external_analysis_arms(external_fixture)
+        suggested_arm = (
+            external_fixture["externalAnalysis"]
+            .get("selection", {})
+            .get("selectedArm")
+        )
+        default_arm_index = (
+            available_arms.index(suggested_arm)
+            if suggested_arm in available_arms
+            else 0
+        )
+        annotation_arm = st.selectbox(
+            "Annotation arm",
+            available_arms,
+            index=default_arm_index,
+            help=(
+                "외부 영상은 팔별 production trace를 독립적으로 검토합니다. "
+                "양팔 교대 영상에서는 왼팔과 오른팔 annotation을 각각 저장하세요."
+            ),
+        )
+        trace_payload = external_analysis_to_trace_payload(
+            external_fixture,
+            arm=annotation_arm,
+        )
+    else:
+        trace_payload = load_trace_payload(uploaded_payload)
     session_id = trace_session_id(trace_payload)
     document = initialize_uploaded_annotations(session_id, annotation_upload)
 except (ValueError, ValidationError, json.JSONDecodeError) as error:
@@ -137,12 +201,176 @@ predictions = predictions_from_trace(
 )
 rep_events = trace_rep_events(trace_payload)
 duration_ms = float(trace["timestampMs"].max())
+automatic_candidate_document = None
+if external_fixture and rep_events:
+    automatic_candidate_document = load_review_candidates(
+        {
+            "testId": session_id,
+            "labelStatus": "machine_generated_review_candidate",
+            "warning": (
+                "Production events are navigation aids only. Approve each row "
+                "only after checking the synchronized video."
+            ),
+            "productionRepTimestampsMs": [
+                event.timestampMs for event in rep_events
+            ],
+        }
+    )
 
 summary_columns = st.columns(4)
 summary_columns[0].metric("Session", session_id)
 summary_columns[1].metric("Trace frames", f"{len(trace_payload['trace']):,}")
 summary_columns[2].metric("Predicted reps", len(rep_events))
 summary_columns[3].metric("Annotations", len(document.cycles))
+
+if candidate_upload is not None or automatic_candidate_document is not None:
+    st.subheader("Machine candidates → human review")
+    st.warning(
+        "후보는 자동 생성값입니다. 영상을 확인하고 approve를 직접 선택한 행만 "
+        "human annotation으로 저장됩니다."
+    )
+    try:
+        candidate_document = (
+            load_review_candidates(candidate_upload.getvalue())
+            if candidate_upload is not None
+            else automatic_candidate_document
+        )
+        if candidate_document.testId != session_id:
+            raise ValueError(
+                f"candidate testId {candidate_document.testId} "
+                f"!= sessionId {session_id}"
+            )
+        available_sources = sorted(
+            {item.source for item in candidate_document.candidates}
+        )
+        if not available_sources:
+            st.info("이 파일에는 검토할 후보 timestamp가 없습니다.")
+        else:
+            candidate_source = st.selectbox(
+                "Candidate source",
+                available_sources,
+                help=(
+                    "production과 exploratory 후보는 중복될 수 있으므로 "
+                    "한 source씩 검수하세요."
+                ),
+            )
+            review_rows = candidate_rows(
+                candidate_document,
+                duration_ms=duration_ms,
+                source=candidate_source,
+            )
+            reviewed = st.data_editor(
+                pd.DataFrame(review_rows),
+                hide_index=True,
+                use_container_width=True,
+                disabled=["candidateId", "source", "timestampMs"],
+                column_config={
+                    "approve": st.column_config.CheckboxColumn(
+                        "Human approved",
+                        help="영상 확인 후에만 선택",
+                    ),
+                    "label": st.column_config.SelectboxColumn(
+                        "Label",
+                        options=LABELS,
+                        required=True,
+                    ),
+                },
+                key=f"candidate-review::{session_id}::{candidate_source}",
+            )
+            approved_count = int(reviewed["approve"].fillna(False).sum())
+            st.caption(
+                f"현재 사람이 승인한 후보: {approved_count}개 · "
+                "체크만으로 상단 Annotations 숫자는 바뀌지 않습니다."
+            )
+            approved_preview = None
+            if approved_count:
+                approved_preview = approve_candidate_rows(
+                    document,
+                    reviewed.to_dict("records"),
+                    annotator=annotator,
+                )
+                st.download_button(
+                    f"Download {approved_count} reviewed annotations",
+                    data=annotation_json(approved_preview),
+                    file_name=f"{session_id}.annotations.json",
+                    mime="application/json",
+                    use_container_width=True,
+                    key=(
+                        f"candidate-download::{session_id}::"
+                        f"{candidate_source}"
+                    ),
+                    help=(
+                        "체크한 후보를 즉시 human annotation JSON으로 "
+                        "다운로드합니다."
+                    ),
+                )
+            if st.button(
+                "Add approved rows to annotations",
+                type="primary",
+                key=f"candidate-approve::{session_id}::{candidate_source}",
+            ):
+                if approved_count == 0:
+                    st.warning("승인한 후보가 없습니다.")
+                else:
+                    document = approved_preview
+                    store_document(document)
+                    st.success(
+                        f"사람이 승인한 {approved_count}개 annotation을 저장했습니다."
+                    )
+                    st.rerun()
+    except (ValueError, ValidationError, json.JSONDecodeError) as error:
+        st.error(f"Candidate review 실패: {error}")
+
+if video_upload is not None:
+    st.subheader("Synchronized video")
+    target_ms = st.slider(
+        "영상·관절 탐색 위치 · ms",
+        min_value=0.0,
+        max_value=max(duration_ms, 1.0),
+        value=0.0,
+        step=10.0,
+    )
+    try:
+        suffix = Path(video_upload.name).suffix or ".webm"
+        video_bytes = video_upload.getvalue()
+        upload_key = hashlib.sha256(video_bytes).hexdigest()
+        cached_upload = st.session_state.get("annotation_video_upload")
+        if not cached_upload or cached_upload["key"] != upload_key:
+            if cached_upload:
+                old_path = Path(cached_upload["path"])
+                release_video_frame_cache(str(old_path))
+                old_path.unlink(missing_ok=True)
+            with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as temporary:
+                temporary.write(video_bytes)
+                temporary_path = Path(temporary.name)
+            st.session_state["annotation_video_upload"] = {
+                "key": upload_key,
+                "path": str(temporary_path),
+            }
+        else:
+            temporary_path = Path(cached_upload["path"])
+        video_frame, decoded_at_ms = decode_video_frame(
+            str(temporary_path),
+            target_ms,
+        )
+        trace_frame = nearest_trace_frame(trace_payload, target_ms)
+        overlay = render_pose_overlay(video_frame, trace_frame)
+        st.image(overlay, channels="BGR", use_container_width=True)
+        sync_delta_ms = float(trace_frame["timestampMs"]) - decoded_at_ms
+        st.caption(
+            f"video {decoded_at_ms:.1f}ms · pose {float(trace_frame['timestampMs']):.1f}ms "
+            f"· sync delta {sync_delta_ms:+.1f}ms"
+        )
+    except (ValueError, ImportError) as error:
+        st.error(f"영상 동기화 실패: {error}")
+elif video_fixture:
+    expected_video = video_fixture["capture"]["video"]["filename"]
+    st.info(f"이 세션과 함께 저장한 `{expected_video}` 파일을 업로드해 주세요.")
+elif external_fixture:
+    expected_video = external_fixture["externalAnalysis"]["source"]["filename"]
+    st.info(
+        f"외부 분석과 같은 원본 영상 `{expected_video}` 파일을 업로드해 주세요."
+    )
 
 st.subheader("Angle timeline")
 chart = trace[["timestampMs", "rawAngle", "processedAngle"]].copy()
@@ -271,11 +499,21 @@ else:
 
 download_columns = st.columns(2)
 download_columns[0].download_button(
-    "annotations.json 다운로드",
+    (
+        "annotations.json 다운로드"
+        if document.cycles
+        else "annotation을 먼저 추가하세요"
+    ),
     data=annotation_json(document),
     file_name=f"{session_id}.annotations.json",
     mime="application/json",
     use_container_width=True,
+    disabled=not document.cycles,
+    help=(
+        None
+        if document.cycles
+        else "빈 annotation 파일의 다운로드를 막았습니다."
+    ),
 )
 download_columns[1].download_button(
     "predictions.json 다운로드",

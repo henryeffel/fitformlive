@@ -6,10 +6,11 @@
     root.FitFormPoseFixture = api;
   }
 })(typeof globalThis !== "undefined" ? globalThis : this, function createApi() {
-  const SCHEMA_VERSION = "1.1";
+  const SCHEMA_VERSION = "1.2";
   const SUPPORTED_SCHEMA_VERSIONS = Object.freeze([
     "1.0",
     "1.1",
+    "1.2",
     "1.1-derived",
   ]);
   const DEFAULT_JITTER_THRESHOLD_MS = 250;
@@ -54,6 +55,10 @@
       timestampMs,
       valid: Boolean(input.valid),
       validationReason: input.validationReason || null,
+      rawAngle: finiteOrNull(input.rawAngle),
+      processedAngle: finiteOrNull(input.processedAngle),
+      repCount: Number.isInteger(input.repCount) ? input.repCount : 0,
+      phase: input.phase || null,
       keypoints: normalizeKeypoints(
         input.keypoints,
         input.videoWidth,
@@ -122,6 +127,7 @@
       testId: recorder.metadata.testId,
       condition: recorder.metadata.condition,
       exercise: recorder.metadata.exercise,
+      targetArm: recorder.metadata.targetArm || null,
       groundTruth: {
         attemptedReps: recorder.metadata.attemptedReps,
         completeReps: recorder.metadata.completeReps,
@@ -140,6 +146,7 @@
           recorder.frames.length > 0
             ? validFrames / recorder.frames.length
             : null,
+        video: result.video || null,
       },
       notes: recorder.metadata.notes || null,
       frames: recorder.frames,
@@ -160,6 +167,13 @@
     }
     if (!fixture?.testId) errors.push("testId is required");
     if (!fixture?.exercise) errors.push("exercise is required");
+    if (
+      fixture?.targetArm !== undefined &&
+      fixture?.targetArm !== null &&
+      !["left", "right"].includes(fixture.targetArm)
+    ) {
+      errors.push("targetArm must be left or right");
+    }
     if (!Array.isArray(fixture?.frames) || fixture.frames.length === 0) {
       errors.push("frames must contain at least one frame");
     } else {
@@ -186,10 +200,17 @@
     if (!fixture?.configAtCapture) errors.push("configAtCapture is required");
     if (
       (fixture?.schemaVersion === "1.1" ||
+        fixture?.schemaVersion === "1.2" ||
         fixture?.schemaVersion === "1.1-derived") &&
       !fixture?.initialAlgorithmState
     ) {
       errors.push("initialAlgorithmState is required for schema 1.1");
+    }
+    if (fixture?.schemaVersion === "1.2") {
+      const video = fixture?.capture?.video;
+      if (!video?.filename || !video?.mimeType) {
+        errors.push("capture.video filename and mimeType are required for schema 1.2");
+      }
     }
     return { valid: errors.length === 0, errors };
   }

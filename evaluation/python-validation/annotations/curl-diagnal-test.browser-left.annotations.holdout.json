@@ -1,0 +1,13 @@
+{
+  "schemaVersion": "1.0",
+  "sessionId": "curl-diagnal-test.browser-left",
+  "cycles": [
+    {"startMs": 0.0, "endMs": 2133.3, "completionMs": 2133.3, "label": "valid_rep", "annotator": "ai-assisted-audit", "note": "holdout full-video review; angle trace used only for cycle navigation"},
+    {"startMs": 2200.0, "endMs": 5266.7, "completionMs": 5266.7, "label": "valid_rep", "annotator": "ai-assisted-audit", "note": "holdout full-video review; angle trace used only for cycle navigation"},
+    {"startMs": 5333.4, "endMs": 8466.7, "completionMs": 8466.7, "label": "valid_rep", "annotator": "ai-assisted-audit", "note": "holdout full-video review; angle trace used only for cycle navigation"},
+    {"startMs": 8533.4, "endMs": 14400.0, "completionMs": 14400.0, "label": "valid_rep", "annotator": "ai-assisted-audit", "note": "holdout full-video review; angle trace used only for cycle navigation"},
+    {"startMs": 14466.7, "endMs": 20133.3, "completionMs": 20133.3, "label": "valid_rep", "annotator": "ai-assisted-audit", "note": "holdout full-video review; angle trace used only for cycle navigation"},
+    {"startMs": 20200.0, "endMs": 25933.3, "completionMs": 25933.3, "label": "valid_rep", "annotator": "ai-assisted-audit", "note": "holdout full-video review; angle trace used only for cycle navigation"},
+    {"startMs": 26000.0, "endMs": 31600.0, "completionMs": 31600.0, "label": "valid_rep", "annotator": "ai-assisted-audit", "note": "holdout full-video review; angle trace used only for cycle navigation"}
+  ]
+}

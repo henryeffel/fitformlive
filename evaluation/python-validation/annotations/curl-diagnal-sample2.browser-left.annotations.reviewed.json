@@ -1,0 +1,38 @@
+{
+  "schemaVersion": "1.0",
+  "sessionId": "curl-diagnal-sample2.browser-left",
+  "cycles": [
+    {
+      "startMs": 6500.0,
+      "endMs": 11966.7,
+      "completionMs": 8000.0,
+      "label": "valid_rep",
+      "annotator": "human-01",
+      "note": "human-approved production_rep-1; full-video AI-assisted target-left audit"
+    },
+    {
+      "startMs": 11966.7,
+      "endMs": 20133.3,
+      "completionMs": 15933.333333333334,
+      "label": "valid_rep",
+      "annotator": "human-01",
+      "note": "human-approved production_rep-2; full-video AI-assisted target-left audit"
+    },
+    {
+      "startMs": 20133.3,
+      "endMs": 24833.3,
+      "completionMs": 24333.333333333332,
+      "label": "valid_rep",
+      "annotator": "human-01",
+      "note": "human-approved production_rep-3; full-video AI-assisted target-left audit"
+    },
+    {
+      "startMs": 29300.0,
+      "endMs": 32133.3,
+      "completionMs": null,
+      "label": "partial_rep",
+      "annotator": "ai-assisted-review-01",
+      "note": "target-left curl begins but video ends before full return; excluded from valid-rep count"
+    }
+  ]
+}

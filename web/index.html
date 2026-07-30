@@ -452,7 +452,10 @@
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.16.0/dist/tf.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/pose-detection"></script>
     <script src="./js/pose-algorithms.js"></script>
+    <script src="./js/target-arm.js"></script>
     <script src="./js/pose-fixture.js"></script>
+    <script src="./js/video-session-recorder.js"></script>
+    <script src="./js/session-file-storage.js"></script>
     <script>
       window.openCvReady = false;
       window.openCvLoadError = false;
@@ -526,6 +529,13 @@
                     <span id="current-exercise-name">Right Arm Curl</span>
                   </div>
                   <button id="open-exercise-picker" class="btn secondary" style="margin-left: 8px;">수행 동작 선택</button>
+                  <label id="target-arm-control" style="margin-left:8px; font-size:12px; color:#cbd5e1;">
+                    분석 팔
+                    <select id="target-arm-select" style="margin-left:4px; padding:6px; border-radius:8px; border:1px solid #374151; background:#020617; color:#e5e7eb;">
+                      <option value="right">오른팔</option>
+                      <option value="left">왼팔</option>
+                    </select>
+                  </label>
                 </div>
 
                 <div style="display: flex; gap: 8px; align-items: center;">
@@ -640,11 +650,16 @@
             </label>
             <pre id="dev-log" style="max-height:260px; overflow:auto; font-size:12px; background:#020617; padding:10px; border-radius:8px; border:1px solid rgba(31,41,55,0.9);"></pre>
             <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:12px;">
+              <button id="select-recording-directory-btn" class="btn secondary">촬영 저장 폴더 선택</button>
               <button id="export-json-btn" class="btn secondary">JSON 결과 저장</button>
               <button id="export-csv-btn" class="btn secondary">CSV 결과 저장</button>
-              <button id="start-fixture-btn" class="btn secondary">관절 기록 시작</button>
-              <button id="export-fixture-btn" class="btn secondary" disabled>관절 fixture 저장</button>
+              <button id="start-fixture-btn" class="btn secondary">영상·관절 기록 시작</button>
+              <button id="export-fixture-btn" class="btn secondary" disabled>세션 JSON 저장</button>
+              <button id="export-video-btn" class="btn secondary" disabled>세션 영상 저장</button>
               <button id="reset-metrics-btn" class="btn secondary">성능 지표 초기화</button>
+            </div>
+            <div id="recording-directory-status" style="margin-top:8px; font-size:12px; color:#9ca3af;">
+              저장 폴더 미선택 · Downloads fallback
             </div>
           </div>
         </div>
@@ -677,11 +692,20 @@
       const exercisePickerOverlay = document.getElementById("exercise-picker-overlay");
       const exercisePickerPanel = document.getElementById("exercise-picker-panel");
       const openExercisePickerBtn = document.getElementById("open-exercise-picker");
+      const targetArmSelect = document.getElementById("target-arm-select");
+      const targetArmControl = document.getElementById("target-arm-control");
       const devLogEl = document.getElementById("dev-log");
       const exportJsonBtn = document.getElementById("export-json-btn");
       const exportCsvBtn = document.getElementById("export-csv-btn");
       const startFixtureBtn = document.getElementById("start-fixture-btn");
       const exportFixtureBtn = document.getElementById("export-fixture-btn");
+      const exportVideoBtn = document.getElementById("export-video-btn");
+      const selectRecordingDirectoryBtn = document.getElementById(
+        "select-recording-directory-btn"
+      );
+      const recordingDirectoryStatus = document.getElementById(
+        "recording-directory-status"
+      );
       const resetMetricsBtn = document.getElementById("reset-metrics-btn");
       const testIdInput = document.getElementById("test-id-input");
       const testConditionSelect = document.getElementById(
@@ -761,6 +785,11 @@
         angleBetween,
         calculateAngularVelocity,
       } = window.FitFormAlgorithms;
+      const {
+        angleJointsForArm,
+        exerciseKeyForArm,
+        targetArmFromExercise,
+      } = window.FitFormTargetArm;
 
       // --------------------------
       // 2. 운동 설정
@@ -771,7 +800,8 @@
           type: "기구운동",
           shortDesc:
             "오른팔로 덤벨을 들어 이두근을 집중적으로 단련합니다.",
-          angleJoints: [KEY.rightShoulder, KEY.rightElbow, KEY.rightWrist],
+          targetArm: "right",
+          angleJoints: angleJointsForArm("right"),
           thresholds: { up: 155, down: 60 },
           start: {
             hint: "오른팔을 옆으로 내려 완전히 편 상태로 덤벨을 들고 서세요.",
@@ -806,7 +836,8 @@
           name: "Left Arm Curl",
           type: "기구운동",
           shortDesc: "왼팔 이두근을 강화하는 단일 관절 덤벨 운동입니다.",
-          angleJoints: [KEY.leftShoulder, KEY.leftElbow, KEY.leftWrist],
+          targetArm: "left",
+          angleJoints: angleJointsForArm("left"),
           thresholds: { up: 155, down: 60 },
           start: {
             hint: "왼팔을 옆으로 내려 완전히 편 상태로 덤벨을 들고 서세요.",
@@ -1036,7 +1067,7 @@
           },
         },
       };
-      const SUPPORTED_EXERCISE_KEYS = ["right_curl", "squat"];
+      const SUPPORTED_EXERCISE_KEYS = ["right_curl", "left_curl", "squat"];
 
       // --------------------------
       // 2.5. 운동 선택기 helpers
@@ -1045,6 +1076,31 @@
         if (!currentExerciseNameEl) return;
         const ex = EXERCISES[state.currentKey];
         currentExerciseNameEl.textContent = ex ? ex.name : "-";
+        if (targetArmControl) {
+          targetArmControl.style.display =
+            targetArmFromExercise(state.currentKey) ? "inline-flex" : "none";
+        }
+      }
+
+      function applyTargetArm(targetArm) {
+        if (state.workoutStarted || state.countdownActive || state.fixtureRecorder) {
+          if (targetArmSelect) targetArmSelect.value = state.targetArm;
+          return false;
+        }
+        state.targetArm = targetArm;
+        state.currentKey = exerciseKeyForArm(targetArm);
+        resetCounter();
+        const exercise = EXERCISES[state.currentKey];
+        hudExercise.textContent = exercise.name;
+        statusLabel.textContent = "Set start position";
+        statusDetail.textContent = exercise.start.hint;
+        updateCurrentExerciseLabel();
+        updateDeveloperLog(true);
+        return true;
+      }
+
+      function setTargetArmControlLocked(locked) {
+        if (targetArmSelect) targetArmSelect.disabled = Boolean(locked);
       }
 
       function openExercisePicker() {
@@ -1113,6 +1169,10 @@
 
       function selectExerciseAndStart(key) {
         state.currentKey = key;
+        state.targetArm = targetArmFromExercise(key, state.targetArm);
+        if (targetArmSelect && state.targetArm) {
+          targetArmSelect.value = state.targetArm;
+        }
 
         resetCounter();
         state.workoutStarted = false;
@@ -1131,6 +1191,7 @@
 
       const state = {
         currentKey: "right_curl",
+        targetArm: "right",
         currentMode: "training",
         reps: 0,
         repPhase: REP_PHASE.READY,
@@ -1178,6 +1239,9 @@
         repOverlayTimer: null,
         fixtureRecorder: null,
         completedFixture: null,
+        videoSessionRecorder: null,
+        completedVideo: null,
+        recordingDirectoryHandle: null,
         fixtureTrackingInvalid: false,
         fixtureResetRecorded: false,
         totalFrames: 0,
@@ -1546,6 +1610,7 @@
           schemaVersion: 1,
           generatedAt: new Date().toISOString(),
           exercise: state.currentKey,
+          targetArm: state.targetArm,
           mode: state.currentMode,
           session: {
             durationMs: state.performance.sessionStartedAt
@@ -1586,6 +1651,7 @@
             warning: state.frameQuality.warning,
           },
           configuration: {
+            targetArm: state.targetArm,
             minJointConfidence: POSE_CONFIG.minJointConfidence,
             emaAlpha: POSE_CONFIG.emaAlpha,
             transitionHoldMs: POSE_CONFIG.transitionHoldMs,
@@ -1644,7 +1710,26 @@
             POSE_CONFIG.maxAngularVelocityDegPerSec,
           thresholds: { ...exercise.thresholds },
           angleJoints: [...exercise.angleJoints],
+          targetArm: state.targetArm,
         };
+      }
+
+      async function selectRecordingDirectory() {
+        try {
+          const handle =
+            await window.FitFormSessionFileStorage.chooseDirectory(window);
+          await window.FitFormSessionFileStorage.ensureWritePermission(handle);
+          state.recordingDirectoryHandle = handle;
+          recordingDirectoryStatus.textContent =
+            `저장 폴더: ${handle.name} · 기록 종료 시 JSON과 WebM 자동 저장`;
+          recordingDirectoryStatus.style.color = "#86efac";
+        } catch (error) {
+          if (error.name === "AbortError") return;
+          state.recordingDirectoryHandle = null;
+          recordingDirectoryStatus.textContent =
+            `폴더 직접 저장 불가 · Downloads fallback: ${error.message}`;
+          recordingDirectoryStatus.style.color = "#fca5a5";
+        }
       }
 
       function startFixtureRecording() {
@@ -1673,6 +1758,7 @@
             testId,
             condition: testConditionSelect.value,
             exercise: state.currentKey,
+            targetArm: state.targetArm,
             attemptedReps: parseNonNegativeInteger(attemptedRepsInput),
             completeReps: parseNonNegativeInteger(trueRepsInput),
             algorithmVersion: ALGORITHM_VERSION,
@@ -1697,9 +1783,23 @@
           now
         );
         state.completedFixture = null;
+        state.completedVideo = null;
         state.fixtureTrackingInvalid = false;
-        startFixtureBtn.textContent = "관절 기록 중지";
+        try {
+          state.videoSessionRecorder =
+            window.FitFormVideoSessionRecorder.createSessionRecorder(
+              state.stream,
+              { startedAtMs: now }
+            );
+          state.videoSessionRecorder.start();
+        } catch (error) {
+          state.fixtureRecorder = null;
+          alert(`영상 recorder 시작 실패: ${error.message}`);
+          return;
+        }
+        startFixtureBtn.textContent = "영상·관절 기록 중지";
         exportFixtureBtn.disabled = true;
+        exportVideoBtn.disabled = true;
         window.FitFormPoseFixture.recordEvent(
           state.fixtureRecorder,
           now,
@@ -1707,8 +1807,17 @@
         );
       }
 
-      function stopFixtureRecording() {
+      async function stopFixtureRecording() {
         if (!state.fixtureRecorder?.active) return;
+        let videoResult;
+        try {
+          videoResult = await state.videoSessionRecorder.stop();
+        } catch (error) {
+          alert(`영상 recorder 종료 실패: ${error.message}`);
+          return;
+        }
+        const videoFilename = `${state.fixtureRecorder.metadata.testId}.webm`;
+        state.completedVideo = videoResult.blob;
         const analyzedFrames = state.validFrames + state.invalidFrames;
         state.completedFixture = window.FitFormPoseFixture.finalizeRecorder(
           state.fixtureRecorder,
@@ -1718,24 +1827,47 @@
             invalidFrames: state.invalidFrames,
             validJointRate:
               analyzedFrames > 0 ? state.validFrames / analyzedFrames : null,
+            video: {
+              ...videoResult.metadata,
+              filename: videoFilename,
+              width: videoEl.videoWidth,
+              height: videoEl.videoHeight,
+              mirrored: true,
+            },
           }
         );
         const validation = window.FitFormPoseFixture.validateFixture(
           state.completedFixture
         );
-        startFixtureBtn.textContent = "관절 기록 시작";
+        startFixtureBtn.textContent = "영상·관절 기록 시작";
         exportFixtureBtn.disabled = !validation.valid;
+        exportVideoBtn.disabled = !validation.valid || !state.completedVideo;
         if (!validation.valid) {
           alert(`fixture 검증 실패:\n${validation.errors.join("\n")}`);
+        } else if (state.recordingDirectoryHandle) {
+          try {
+            const saved = await window.FitFormSessionFileStorage.saveSession(
+              state.recordingDirectoryHandle,
+              state.completedFixture,
+              state.completedVideo
+            );
+            recordingDirectoryStatus.textContent =
+              `저장 완료: ${saved.jsonFilename}, ${saved.videoFilename}`;
+            recordingDirectoryStatus.style.color = "#86efac";
+          } catch (error) {
+            recordingDirectoryStatus.textContent =
+              `직접 저장 실패 · 저장 버튼으로 Downloads 사용 가능: ${error.message}`;
+            recordingDirectoryStatus.style.color = "#fca5a5";
+          }
         }
       }
 
-      function toggleFixtureRecording() {
-        if (state.fixtureRecorder?.active) stopFixtureRecording();
+      async function toggleFixtureRecording() {
+        if (state.fixtureRecorder?.active) await stopFixtureRecording();
         else startFixtureRecording();
       }
 
-      function exportPoseFixture() {
+      async function exportPoseFixture() {
         if (!state.completedFixture) return;
         const validation = window.FitFormPoseFixture.validateFixture(
           state.completedFixture
@@ -1744,20 +1876,63 @@
           alert(`fixture 검증 실패:\n${validation.errors.join("\n")}`);
           return;
         }
-        downloadTextFile(
-          `${state.completedFixture.testId}.json`,
-          JSON.stringify(state.completedFixture, null, 2),
-          "application/json;charset=utf-8"
-        );
+        const filename = `${state.completedFixture.testId}.json`;
+        const contents = JSON.stringify(state.completedFixture, null, 2);
+        if (state.recordingDirectoryHandle) {
+          await window.FitFormSessionFileStorage.writeFile(
+            state.recordingDirectoryHandle,
+            filename,
+            contents
+          );
+          recordingDirectoryStatus.textContent = `저장 완료: ${filename}`;
+        } else {
+          downloadTextFile(
+            filename,
+            contents,
+            "application/json;charset=utf-8"
+          );
+        }
       }
 
-      function exportPerformanceJson() {
+      async function exportSessionVideo() {
+        if (!state.completedFixture || !state.completedVideo) return;
+        if (state.recordingDirectoryHandle) {
+          const filename = state.completedFixture.capture.video.filename;
+          await window.FitFormSessionFileStorage.writeFile(
+            state.recordingDirectoryHandle,
+            filename,
+            state.completedVideo
+          );
+          recordingDirectoryStatus.textContent = `저장 완료: ${filename}`;
+          return;
+        }
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(state.completedVideo);
+        link.download = state.completedFixture.capture.video.filename;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+      }
+
+      async function exportPerformanceJson() {
         const report = buildPerformanceReport();
-        downloadTextFile(
-          buildResultFilename("json"),
-          JSON.stringify(report, null, 2),
-          "application/json;charset=utf-8"
-        );
+        const filename = buildResultFilename("json");
+        const contents = JSON.stringify(report, null, 2);
+        if (state.recordingDirectoryHandle) {
+          await window.FitFormSessionFileStorage.writeFile(
+            state.recordingDirectoryHandle,
+            filename,
+            contents
+          );
+          recordingDirectoryStatus.textContent = `저장 완료: ${filename}`;
+        } else {
+          downloadTextFile(
+            filename,
+            contents,
+            "application/json;charset=utf-8"
+          );
+        }
       }
 
       function escapeCsv(value) {
@@ -1768,13 +1943,14 @@
           : text;
       }
 
-      function exportPerformanceCsv() {
+      async function exportPerformanceCsv() {
         const report = buildPerformanceReport();
         const inference = report.performance.inferenceMs;
         const frame = report.performance.frameMs;
         const row = {
           generated_at: report.generatedAt,
           exercise: report.exercise,
+          target_arm: report.targetArm,
           mode: report.mode,
           duration_ms: report.session.durationMs,
           reps: report.session.reps,
@@ -1817,11 +1993,22 @@
           headers.join(","),
           headers.map((header) => escapeCsv(row[header])).join(","),
         ].join("\n");
-        downloadTextFile(
-          buildResultFilename("csv"),
-          `\uFEFF${csv}`,
-          "text/csv;charset=utf-8"
-        );
+        const filename = buildResultFilename("csv");
+        const contents = `\uFEFF${csv}`;
+        if (state.recordingDirectoryHandle) {
+          await window.FitFormSessionFileStorage.writeFile(
+            state.recordingDirectoryHandle,
+            filename,
+            contents
+          );
+          recordingDirectoryStatus.textContent = `저장 완료: ${filename}`;
+        } else {
+          downloadTextFile(
+            filename,
+            contents,
+            "text/csv;charset=utf-8"
+          );
+        }
       }
 
       const SKELETON_CONNECTIONS = [
@@ -2125,6 +2312,8 @@
             videoWidth: videoEl.videoWidth,
             videoHeight: videoEl.videoHeight,
             phase: state.repPhase,
+            processedAngle: state.lastAngleTime ? state.lastAngle : null,
+            repCount: state.reps,
           });
 
           if (!validation.valid && !state.fixtureTrackingInvalid) {
@@ -2239,6 +2428,8 @@
             videoWidth: videoEl.videoWidth,
             videoHeight: videoEl.videoHeight,
             phase: state.repPhase,
+            processedAngle: state.lastAngleTime ? state.lastAngle : null,
+            repCount: state.reps,
           });
           if (!state.fixtureTrackingInvalid) {
             window.FitFormPoseFixture.recordEvent(
@@ -2320,9 +2511,16 @@
         }
       }
 
-      function stopCamera() {
-        stopFixtureRecording();
+      async function stopCamera() {
+        await stopFixtureRecording();
         state.running = false;
+        state.workoutStarted = false;
+        state.countdownActive = false;
+        if (state.countdownTimerId) {
+          clearInterval(state.countdownTimerId);
+          state.countdownTimerId = null;
+        }
+        setTargetArmControlLocked(false);
         if (state.animationId) cancelAnimationFrame(state.animationId);
         if (state.stream) {
           state.stream.getTracks().forEach((t) => t.stop());
@@ -2361,6 +2559,7 @@
         }
 
         resetCounter(true);
+        setTargetArmControlLocked(true);
         state.countdownActive = true;
         state.countdownValue = 5;
         statusLabel.textContent = "시작 준비";
@@ -2413,6 +2612,7 @@
 
         state.workoutStarted = false;
         state.countdownActive = false;
+        setTargetArmControlLocked(false);
         resetPoseAnalysis();
 
         if (countdownEl) {
@@ -2448,10 +2648,19 @@
         resetCounter();
       });
 
+      targetArmSelect.addEventListener("change", () => {
+        applyTargetArm(targetArmSelect.value);
+      });
+
       exportJsonBtn.addEventListener("click", exportPerformanceJson);
       exportCsvBtn.addEventListener("click", exportPerformanceCsv);
+      selectRecordingDirectoryBtn.addEventListener(
+        "click",
+        selectRecordingDirectory
+      );
       startFixtureBtn.addEventListener("click", toggleFixtureRecording);
       exportFixtureBtn.addEventListener("click", exportPoseFixture);
+      exportVideoBtn.addEventListener("click", exportSessionVideo);
       resetMetricsBtn.addEventListener("click", () => {
         resetPerformanceMetrics(true);
         state.validFrames = 0;
@@ -2494,6 +2703,7 @@
       }
 
       hudExercise.textContent = EXERCISES[state.currentKey].name;
+      targetArmSelect.value = state.targetArm;
       updateCurrentExerciseLabel();
 
       // --------------------------

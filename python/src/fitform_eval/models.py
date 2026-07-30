@@ -131,8 +131,16 @@ class AnnotationDocument(BaseModel):
     @model_validator(mode="after")
     def intervals_must_not_overlap(self) -> "AnnotationDocument":
         ordered = sorted(self.cycles, key=lambda item: (item.startMs, item.endMs))
-        for previous, current in zip(ordered, ordered[1:]):
-            if current.startMs < previous.endMs:
+        for index, previous in enumerate(ordered):
+            for current in ordered[index + 1 :]:
+                if current.startMs >= previous.endMs:
+                    break
+                labels = {previous.label, current.label}
+                contextual_overlap = (
+                    "tracking_failure" in labels and len(labels) > 1
+                )
+                if contextual_overlap:
+                    continue
                 raise ValueError(
                     "annotation intervals overlap: "
                     f"{previous.startMs}-{previous.endMs} and "

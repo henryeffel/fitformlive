@@ -42,7 +42,11 @@ const DEFINITIONS = Object.freeze([
 ]);
 
 function sha256(buffer) {
-  return crypto.createHash("sha256").update(buffer).digest("hex");
+  const canonicalBytes = Buffer.from(
+    buffer.toString("utf8").replace(/\r\n/g, "\n"),
+    "utf8"
+  );
+  return crypto.createHash("sha256").update(canonicalBytes).digest("hex");
 }
 
 function frameAngle(frame, config) {

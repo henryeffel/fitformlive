@@ -1,0 +1,76 @@
+{
+  "evaluationVersion": "1.0",
+  "purpose": "External development-subject comparison without changing frozen FSM thresholds",
+  "samples": [
+    {
+      "testId": "curl-front-sample",
+      "view": "front",
+      "durationMs": 31066.667,
+      "sampledFrames": 467,
+      "processingElapsedMs": 73800,
+      "selection": {
+        "selectedArm": null,
+        "classification": "alternating_requires_dual_fsm"
+      },
+      "arms": {
+        "left": {
+          "validJointRate": 0.946,
+          "meanRequiredJointConfidence": 0.714,
+          "minimumEstimatedAngle": 3.32,
+          "maximumEstimatedAngle": 179.82,
+          "estimatedRom": 176.50,
+          "productionPredictedReps": 7,
+          "exploratoryPredictedReps": 4
+        },
+        "right": {
+          "validJointRate": 0.906,
+          "meanRequiredJointConfidence": 0.681,
+          "minimumEstimatedAngle": 0.04,
+          "maximumEstimatedAngle": 179.98,
+          "estimatedRom": 179.93,
+          "productionPredictedReps": 7,
+          "exploratoryPredictedReps": 6
+        }
+      }
+    },
+    {
+      "testId": "curl-diagnal-sample",
+      "view": "diagonal",
+      "durationMs": 30000,
+      "sampledFrames": 451,
+      "processingElapsedMs": 39500,
+      "selection": {
+        "selectedArm": "right",
+        "classification": "single_moving_arm"
+      },
+      "arms": {
+        "left": {
+          "validJointRate": 0.373,
+          "meanRequiredJointConfidence": 0.554,
+          "minimumEstimatedAngle": 62.48,
+          "maximumEstimatedAngle": 150.87,
+          "estimatedRom": 88.39,
+          "productionPredictedReps": 0,
+          "exploratoryPredictedReps": 0
+        },
+        "right": {
+          "validJointRate": 1.0,
+          "meanRequiredJointConfidence": 0.758,
+          "minimumEstimatedAngle": 49.74,
+          "maximumEstimatedAngle": 179.71,
+          "estimatedRom": 129.97,
+          "productionPredictedReps": 7,
+          "exploratoryPredictedReps": 0
+        }
+      }
+    }
+  ],
+  "interpretation": [
+    "The front-view sample contains alternating bilateral motion, so the runner correctly avoids collapsing it to one selected arm.",
+    "Production detects seven repetitions on each arm in the front-view sample, while the stricter exploratory threshold misses some repetitions.",
+    "Production detects seven right-arm repetitions in the diagonal sample, while the stricter exploratory threshold detects none.",
+    "The frozen production threshold generalizes better than the exploratory full-contraction threshold on these two samples.",
+    "Near-zero front-view angle estimates indicate 2D projection degeneracy and must not be interpreted as anatomical elbow flexion.",
+    "No threshold will be changed until cycle-level human annotation and additional development subjects are available."
+  ]
+}

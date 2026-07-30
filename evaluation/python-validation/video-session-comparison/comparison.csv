@@ -1,0 +1,6 @@
+testId,condition,completeReps,recordedProduction,captureParityReplay,exploratoryFullContraction,captureParityDelta,exploratoryAbsoluteError,diagnosticValidJointRate,replayParity,sourceRepairs
+curl-fast-01,fast_motion,10,1,1,0,0,10,0.33242506811989103,true,
+curl-fast-02,fast_motion,10,10,10,10,0,0,0.9935851746258019,true,
+curl-normal-pytest-01,normal,10,10,10,10,0,0,0.9102787456445993,true,
+curl-occlusion-01,occlusion,5,3,3,3,0,2,0.6359649122807017,true,
+curl-partial-01,partial_range,0,2,2,0,0,0,0.7809847198641766,true,

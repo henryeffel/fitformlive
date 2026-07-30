@@ -1,0 +1,74 @@
+{
+  "evaluationVersion": "1.0",
+  "algorithmVersion": "external-production-frozen",
+  "matchingToleranceMs": 500,
+  "reviewProtocol": {
+    "type": "prediction_assisted_human_review",
+    "annotator": "human-01",
+    "candidateSource": "production_rep",
+    "candidateApprovalRequired": true,
+    "independentCompletionTimestamp": false,
+    "fullVideoNegativeSearchRecorded": false
+  },
+  "sessions": [
+    {
+      "sessionId": "curl-front-sample-left",
+      "view": "front",
+      "arm": "left",
+      "validJointRate": 0.946,
+      "groundTruthValidReps": 7,
+      "predictedReps": 7,
+      "truePositive": 7,
+      "falsePositive": 0,
+      "falseNegative": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    {
+      "sessionId": "curl-front-sample-right",
+      "view": "front",
+      "arm": "right",
+      "validJointRate": 0.906,
+      "groundTruthValidReps": 7,
+      "predictedReps": 7,
+      "truePositive": 7,
+      "falsePositive": 0,
+      "falseNegative": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    {
+      "sessionId": "curl-diagnal-sample-right",
+      "view": "diagonal",
+      "arm": "right",
+      "validJointRate": 1.0,
+      "groundTruthValidReps": 7,
+      "predictedReps": 7,
+      "truePositive": 7,
+      "falsePositive": 0,
+      "falseNegative": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    }
+  ],
+  "aggregate": {
+    "groundTruthValidReps": 21,
+    "predictedReps": 21,
+    "truePositive": 21,
+    "falsePositive": 0,
+    "falseNegative": 0,
+    "microPrecision": 1.0,
+    "microRecall": 1.0,
+    "microF1": 1.0
+  },
+  "interpretationLimits": [
+    "All 21 production candidates were explicitly approved by a human reviewer.",
+    "The result supports candidate precision on these front and diagonal samples.",
+    "Completion timestamps were initialized from prediction timestamps, so zero latency is not an independent latency measurement.",
+    "Because review started from production candidates and no separate full-video negative search was recorded, recall and false-negative claims remain provisional.",
+    "Diagonal-left is excluded because it is not the primary moving arm and production generated zero candidates."
+  ]
+}

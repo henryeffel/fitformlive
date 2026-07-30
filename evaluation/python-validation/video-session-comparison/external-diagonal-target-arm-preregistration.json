@@ -1,0 +1,36 @@
+{
+  "protocolVersion": "1.0",
+  "registeredAt": "2026-07-30",
+  "scope": "target-arm diagonal development evaluation",
+  "selectionPolicy": [
+    "Target arm is fixed before MoveNet/FSM results for samples 2-4 are inspected.",
+    "Selection is based on camera visibility, not on predicted repetition count.",
+    "The non-target arm may move but is excluded from the target-arm FSM."
+  ],
+  "samples": [
+    {
+      "testId": "curl-diagnal-sample",
+      "targetArm": "right",
+      "role": "existing_development",
+      "reason": "Existing reviewed target-arm result."
+    },
+    {
+      "testId": "curl-diagnal-sample2",
+      "targetArm": "left",
+      "role": "development",
+      "reason": "Anatomical left shoulder, elbow and wrist are visibly exposed in the diagonal view."
+    },
+    {
+      "testId": "curl-diagnal-sample3",
+      "targetArm": "left",
+      "role": "development",
+      "reason": "Anatomical left arm is closer to the camera and less overlapped by the torso."
+    },
+    {
+      "testId": "curl-diagnal-sample4",
+      "targetArm": "left",
+      "role": "development",
+      "reason": "Anatomical left arm has the clearest shoulder-elbow-wrist chain in the contact-sheet review."
+    }
+  ]
+}

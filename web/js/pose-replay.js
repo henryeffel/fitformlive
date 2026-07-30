@@ -223,7 +223,109 @@
     };
   }
 
+  function replayCapturedProcessing(fixture, overrides = {}) {
+    const captureConfig = fixture.configAtCapture || {};
+    const thresholds = captureConfig.thresholds || {};
+    const config = {
+      up: overrides.up ?? thresholds.up ?? 155,
+      down: overrides.down ?? thresholds.down ?? 60,
+      hysteresis:
+        overrides.hysteresis ??
+        captureConfig.thresholdHysteresis ??
+        8,
+      holdMs:
+        overrides.holdMs ?? captureConfig.transitionHoldMs ?? 180,
+    };
+    const initialState = fixture.initialAlgorithmState;
+    let state = initialState
+      ? {
+          phase: initialState.phase || REP_PHASE.READY,
+          transitionCandidate: initialState.transitionCandidate || null,
+          transitionStartedAt: initialState.transitionStartedAtMs || 0,
+          reps: initialState.reps || 0,
+        }
+      : createRepState();
+    const resetTimestamps = (fixture.events || [])
+      .filter((event) => event.type === "STATE_RESET")
+      .map((event) => event.timestampMs)
+      .sort((a, b) => a - b);
+    let resetIndex = 0;
+    let consumedFrames = 0;
+    let skippedFrames = 0;
+    const events = [];
+
+    for (const frame of fixture.frames || []) {
+      const now = frame.timestampMs;
+      while (
+        resetIndex < resetTimestamps.length &&
+        resetTimestamps[resetIndex] <= now
+      ) {
+        const previousPhase = state.phase;
+        state = { ...createRepState(), reps: state.reps };
+        events.push({
+          timestampMs: resetTimestamps[resetIndex],
+          type: "STATE_RESET",
+          from: previousPhase,
+          to: state.phase,
+        });
+        resetIndex += 1;
+      }
+      if (frame.valid !== true || !Number.isFinite(frame.processedAngle)) {
+        skippedFrames += 1;
+        continue;
+      }
+      consumedFrames += 1;
+      const previousPhase = state.phase;
+      const result = advanceRepState(
+        state,
+        frame.processedAngle,
+        now,
+        config
+      );
+      state = result.state;
+      if (state.phase !== previousPhase) {
+        events.push({
+          timestampMs: now,
+          type: "STATE_CHANGED",
+          from: previousPhase,
+          to: state.phase,
+          angle: frame.processedAngle,
+        });
+      }
+      if (result.repCounted) {
+        events.push({
+          timestampMs: now,
+          type: "REP_COUNTED",
+          rep: state.reps,
+        });
+      }
+    }
+
+    const recordedReps = (fixture.events || []).filter(
+      (event) => event.type === "REP_COUNTED"
+    ).length;
+    return {
+      testId: fixture.testId,
+      mode: "capture_parity",
+      angleSource: "frames[].processedAngle",
+      predictedReps: state.reps,
+      recordedReps,
+      parity: {
+        matchesRecorded: state.reps === recordedReps,
+        delta: state.reps - recordedReps,
+      },
+      consumedFrames,
+      skippedFrames,
+      configuration: config,
+      events,
+      limitations: [
+        "Replays captured processing outputs; it does not recompute MoveNet, EMA, or angular-velocity filtering.",
+      ],
+    };
+  }
+
   return {
+    replayCapturedProcessing,
     replayFixture,
     smoothKeypoints,
     validateRequiredKeypoints,

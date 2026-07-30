@@ -195,6 +195,26 @@ predicted reps: 0
 
 - `JSON 결과 저장`: 설정, 환경, 원본 지연시간 샘플 포함
 - `CSV 결과 저장`: 테스트 한 건의 요약
+- `영상·관절 기록 시작/중지`: 같은 세션 시간축으로 WebM과 keypoint를 기록
+- `세션 JSON 저장`: schema 1.2 keypoint·FSM event·영상 metadata
+- `세션 영상 저장`: 세션 JSON의 `capture.video.filename`과 이름이 같은 WebM
+
+P3-B 촬영은 운동 시작 후 테스트 ID를 입력하고 `영상·관절 기록 시작`을 누른다.
+촬영 전에 `촬영 저장 폴더 선택`을 눌러 프로젝트의 `data/recordings/raw`를 선택한다.
+동작이 끝나 기록을 중지하면 JSON과 WebM이 해당 폴더에 자동 저장된다. 두 파일의 기본
+이름은 같은 test ID를 사용한다.
+
+Chrome/Edge가 폴더 직접 저장을 지원하지 않거나 권한이 거부되면 기존 저장 버튼이
+Downloads fallback으로 동작한다.
+
+```powershell
+cd python
+python -m pip install -e ".[annotation]"
+python -m streamlit run app\annotation_app.py
+```
+
+사이드바에 세션 JSON과 WebM을 함께 올리고 `영상·관절 탐색 위치`를 움직여 skeleton과
+실제 동작이 일치하는지 확인한다.
 
 다운로드한 파일을 다음 폴더에 복사할 수 있다.
 
@@ -202,7 +222,8 @@ predicted reps: 0
 evaluation/results/
 ```
 
-실제 결과 파일은 Git 추적에서 제외되어 있다. 개인 얼굴이 포함된 영상은 저장소에 커밋하지 않는다.
+`data/recordings/raw`, `annotations`, `processed`의 실제 결과 파일은 Git 추적에서
+제외되어 있다. 개인 얼굴이 포함된 영상은 저장소에 커밋하지 않는다.
 
 ## 8. 시간이 부족할 때의 최소 범위
 
