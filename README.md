@@ -59,14 +59,16 @@ Microsoft AI School 8기 팀 프로젝트로 시작했으며, 이후 실시간 �
 | 자체 정상·빠른 동작 | 각각 10/10 카운트 |
 | 부분 동작 | production FP 2, exploratory FSM FP 0 |
 | 가림 세션 | 5회 중 3회 검출, 가림 중 FP 0 |
-| External diagonal | GT 22, TP 15, FP 0, FN 7 |
-| Count-level metric | Precision 1.000, Recall 0.682, F1 0.811 |
+| External development | GT 22, TP 15, FP 0, FN 7 |
+| Frozen holdout | GT 25, TP 17, FP 0, FN 8 |
+| Holdout count-level metric | Precision 1.000, Recall 0.680, F1 0.810 |
 | Replay parity | 브라우저 기록과 capture-parity replay 일치 |
 | 자동 검증 | JavaScript 45개, Python 28개 테스트 통과 |
 
-외부 결과는 **개발용 diagonal 영상 4개**의 count-level 평가입니다. 사람의
-candidate 승인과 AI-assisted 전체 영상 누락 검수를 결합했으며, 새로운
-subject-disjoint holdout의 최종 일반화 성능을 의미하지 않습니다.
+개발용 diagonal 영상 4개와 설정 동결 후 추가한 **새 사용자 holdout 영상
+3개**를 분리해 평가했습니다. Holdout은 모든 영상에서 추론 전 해부학적
+왼팔을 등록했고, 결과 확인 후 threshold 변경이나 sample 제외를 하지 않았습니다.
+정답은 AI-assisted 전체 영상 검수이므로 count-level 결과만 성능 근거로 사용합니다.
 
 ## Demo
 
@@ -255,8 +257,27 @@ Cycle review
 External development
   → preregistered target arm + frozen threshold
 Final holdout
-  → new subject, frozen configuration (next step)
+  → new subject, preregistered arm, frozen configuration
 ```
+
+## Frozen diagonal holdout
+
+| Sample | Movement | Target | GT | Prediction | TP | FP | FN | Recall |
+| --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| test1 | bilateral/alternating | left | 7 | 5 | 5 | 0 | 2 | 0.714 |
+| test2 | alternating | left | 7 | 7 | 7 | 0 | 0 | 1.000 |
+| test3 | simultaneous bilateral | left | 11 | 5 | 5 | 0 | 6 | 0.455 |
+| **합계** | - | - | **25** | **17** | **17** | **0** | **8** | **0.680** |
+
+새 사용자에서도 false positive는 발견되지 않았지만, test3의 target-left
+joint valid rate가 82.9%로 낮아지고 일부 cycle이 `155° 복귀` 또는
+`60° + 180ms` 경로를 완전히 충족하지 못했습니다. 따라서 고정 설정은
+정밀도 1.000을 유지했지만 재현율 0.680에 머물렀습니다. 이 결과를 보고
+threshold를 재조정하면 holdout의 의미가 사라지므로 v1 결과는 그대로 보존합니다.
+
+원본 요약은
+[`external-diagonal-target-arm-holdout-final.json`](evaluation/python-validation/video-session-comparison/external-diagonal-target-arm-holdout-final.json)에
+있습니다.
 
 ```powershell
 npm install
@@ -319,9 +340,10 @@ candidate review와 cycle annotation을 사용할 수 있습니다.
 
 ## 현재 한계와 다음 과제
 
-- External diagonal 결과는 4개 개발 영상이며 최종 일반화 성능이 아닙니다.
+- Frozen diagonal holdout은 3개 영상·25회 규모여서 넓은 모집단을 대표하지 않습니다.
 - sample4에서 GT 8회 중 7회를 놓쳐 고정 절대각·hold 기준의 한계가 확인됐습니다.
-- 새로운 subject를 사용한 frozen holdout 평가가 필요합니다.
+- Holdout에서도 GT 25회 중 8회를 놓쳐 높은 precision과 낮은 recall의
+  trade-off가 재현됐습니다.
 - strict front·side와 양팔 합산 count는 지원하지 않습니다.
 - 2D 관절각은 카메라 방향, 원근과 keypoint 겹침의 영향을 받습니다.
 - 단일 인체만 추정합니다.

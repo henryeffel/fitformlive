@@ -19,8 +19,16 @@ FitFormLive의 기능 구현과 자체 촬영 검증은 거의 완료됐다. 현
 - strict side/front는 범위 밖 diagnostic으로 유지
 - 동일 개발 영상에 맞춘 threshold 재조정은 하지 않음
 
-남은 검증은 frozen 설정을 새로운 subject-disjoint diagonal 영상에 한 번 적용하는
-최종 holdout 평가다. 이는 현재 개발 결과와 분리해 보고한다.
+새로운 subject의 diagonal 영상 3개를 사용한 frozen holdout 평가도 완료했다.
+이는 개발 결과와 분리해 보고한다.
+
+- 추론 전 target arm: 세 영상 모두 해부학적 left로 사전 등록
+- 설정 변경 및 sample 제외: 없음
+- GT 25, prediction 17, TP 17, FP 0, FN 8
+- count-level precision 1.000, recall 0.680, F1 0.810
+
+이 결과는 오검출 억제는 유지됐지만 사용자·동작별 수축 유지와 복귀각 차이,
+tracking 유효률 저하 때문에 recall 한계도 재현됐음을 보여준다.
 
 ## 2026-07-30 MVP 범위 결정
 

@@ -1480,6 +1480,57 @@ JobOps Radar와 LEED Cost Predictor README와도 정보 구조와 시각적 톤�
 
 ---
 
+## D-032. 새 사용자 3개 영상을 설정 동결 holdout으로 평가
+
+### 문제
+
+개발용 external diagonal 영상 4개에서 precision 1.0, recall 0.682를 얻었지만,
+동일 영상을 검수하고 구현을 완성하는 데 사용했으므로 이 수치를 최종 일반화
+성능으로 해석할 수 없었다. 새 영상의 결과를 본 뒤 target arm이나 threshold를
+선택하면 사후 과적합 위험도 생긴다.
+
+### 해결방안
+
+- Downloads의 `curl-diagnal-test`, `test2`, `test3`을 별도 holdout으로 고정했다.
+- 영상 contact sheet만 보고 추론 전에 세 영상의 target arm을 모두 해부학적
+  `left`로 사전 등록하고 파일 hash와 설정을 preregistration JSON에 저장했다.
+- MoveNet Lightning, 15fps, confidence 0.4, EMA 0.35, extension 155°, contraction
+  60°, hold 180ms를 그대로 사용했다.
+- 결과가 낮은 영상을 포함해 세 영상 모두 평가했으며 threshold를 변경하지 않았다.
+- 0.5초 및 1초 contact sheet 전체 검수와 target-left angle trace 탐색을 결합해
+  실제 완료 cycle을 기록했다.
+- trace-assisted completion timestamp는 독립 latency 정답이 아니므로 count-level
+  TP/FP/FN만 확정 성능으로 사용했다.
+
+### 결과
+
+| Sample | 동작 | GT | Pred | TP | FP | FN | Recall |
+|---|---|---:|---:|---:|---:|---:|---:|
+| test1 | bilateral/alternating | 7 | 5 | 5 | 0 | 2 | 0.714 |
+| test2 | alternating | 7 | 7 | 7 | 0 | 0 | 1.000 |
+| test3 | simultaneous bilateral | 11 | 5 | 5 | 0 | 6 | 0.455 |
+| 합계 | - | 25 | 17 | 17 | 0 | 8 | 0.680 |
+
+Aggregate precision은 1.000, recall은 0.680, F1은 0.810이다. test3의
+target-left joint valid rate는 82.9%였고, 일부 실제 cycle은 60° 수축 유지나
+155° 복귀 상태 전이를 완전히 충족하지 못했다. 개발 평가와 거의 같은
+high-precision/limited-recall 패턴이 새 사용자에서도 재현됐다.
+
+### 선택 이유
+
+좋은 결과가 나온 영상만 선택하거나 holdout을 보고 기준을 완화하면 일반화 근거가
+약해진다. 낮은 recall을 그대로 보존하면 현재 v1의 실제 계약과 개선 우선순위가
+명확해진다. 다음 알고리즘 개선은 이 세 영상을 다시 최종 test로 사용하지 않고
+development 데이터로 전환한 뒤, 새로운 holdout을 별도로 확보해야 한다.
+
+재현 가능한 결과는 다음 파일에 저장했다.
+
+- `evaluation/python-validation/video-session-comparison/external-diagonal-holdout-preregistration.json`
+- `evaluation/python-validation/video-session-comparison/external-diagonal-target-arm-holdout-final.json`
+- `evaluation/python-validation/annotations/curl-diagnal-test*.annotations.holdout.json`
+
+---
+
 앞으로 다음 조건에 해당하는 변경은 이 문서에 기록한다.
 
 - production 카운트 결과가 바뀌는 threshold 또는 FSM 변경

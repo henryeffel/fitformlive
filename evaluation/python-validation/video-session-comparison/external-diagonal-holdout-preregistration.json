@@ -1,0 +1,60 @@
+{
+  "protocolVersion": "1.0",
+  "registeredAt": "2026-07-30",
+  "registeredBeforeInference": true,
+  "scope": "frozen target-arm diagonal subject-disjoint holdout",
+  "eligibility": {
+    "cameraView": "diagonal",
+    "targetArmVisible": true,
+    "subjectsDistinctFromDevelopmentSet": true,
+    "singlePerson": true
+  },
+  "frozenConfiguration": {
+    "model": "MoveNet SINGLEPOSE_LIGHTNING",
+    "runtime": "TensorFlow.js 4.16.0",
+    "samplingFps": 15,
+    "targetArm": "left",
+    "minimumJointConfidence": 0.4,
+    "emaAlpha": 0.35,
+    "extensionDegrees": 155,
+    "contractionDegrees": 60,
+    "transitionHoldMs": 180,
+    "invalidResetMs": 1000,
+    "thresholdChangeAllowed": false
+  },
+  "selectionPolicy": [
+    "All target arms were fixed from contact-sheet visibility before MoveNet or FSM results were inspected.",
+    "Anatomical left corresponds to the image-right arm for these front-facing subjects.",
+    "Simultaneous or alternating opposite-arm movement is allowed but is not counted.",
+    "No sample may be removed because of a poor prediction result."
+  ],
+  "samples": [
+    {
+      "testId": "curl-diagnal-test",
+      "filename": "curl-diagnal-test.mp4",
+      "sizeBytes": 3348413,
+      "sha256": "76ab7532f0a35e7e1d7ee2291aa362894d782849834e1ae0d87086401127d669",
+      "targetArm": "left",
+      "movement": "bilateral",
+      "reason": "Anatomical left shoulder-elbow-wrist chain is continuously visible in the diagonal view."
+    },
+    {
+      "testId": "curl-diagnal-test2",
+      "filename": "curl-diagnal-test2.mp4",
+      "sizeBytes": 2863960,
+      "sha256": "ad68b48300e794db6235042200334a7775ebc3af2dcd029b68922d7af018675b",
+      "targetArm": "left",
+      "movement": "alternating",
+      "reason": "Anatomical left arm is fully visible and separated from the torso throughout the contact-sheet review."
+    },
+    {
+      "testId": "curl-diagnal-test3",
+      "filename": "curl-diagnal-test3.mp4",
+      "sizeBytes": 2828891,
+      "sha256": "c59bd687b6caedb23bdef2e4f95e461325d01701f6d301d94b214b8c817912aa",
+      "targetArm": "left",
+      "movement": "simultaneous_bilateral",
+      "reason": "Both arms are visible; anatomical left is fixed before inference for a single target-arm result."
+    }
+  ]
+}
