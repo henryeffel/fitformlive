@@ -1,0 +1,70 @@
+{
+  "schemaVersion": "1.0",
+  "sessionId": "curl-diagnal-sample4.browser-left",
+  "cycles": [
+    {
+      "startMs": 1000.0,
+      "endMs": 4200.0,
+      "completionMs": 4200.0,
+      "label": "valid_rep",
+      "annotator": "human-01",
+      "note": "completion corrected from 2540ms using synchronized video/angle review"
+    },
+    {
+      "startMs": 4340.0,
+      "endMs": 7466.7,
+      "completionMs": 7466.7,
+      "label": "valid_rep",
+      "annotator": "human-01",
+      "note": "second curl; completion corrected using synchronized video/angle review"
+    },
+    {
+      "startMs": 7533.0,
+      "endMs": 10533.3,
+      "completionMs": 10533.3,
+      "label": "valid_rep",
+      "annotator": "human-01",
+      "note": "third curl; completion corrected using synchronized video/angle review"
+    },
+    {
+      "startMs": 10600.0,
+      "endMs": 13866.7,
+      "completionMs": 13866.7,
+      "label": "valid_rep",
+      "annotator": "human-01",
+      "note": "4th; completion corrected using synchronized video/angle review"
+    },
+    {
+      "startMs": 14133.0,
+      "endMs": 17060.0,
+      "completionMs": 17060.0,
+      "label": "valid_rep",
+      "annotator": "human-01",
+      "note": "5th; completion corrected using synchronized video/angle review"
+    },
+    {
+      "startMs": 17067.0,
+      "endMs": 20466.7,
+      "completionMs": 20466.7,
+      "label": "valid_rep",
+      "annotator": "human-01",
+      "note": "6th; completion corrected using synchronized video/angle review"
+    },
+    {
+      "startMs": 20600.0,
+      "endMs": 26666.7,
+      "completionMs": 26666.7,
+      "label": "valid_rep",
+      "annotator": "human-01",
+      "note": "7th; completion corrected using synchronized video/angle review"
+    },
+    {
+      "startMs": 27067.0,
+      "endMs": 29933.3,
+      "completionMs": 29933.3,
+      "label": "valid_rep",
+      "annotator": "human-01",
+      "note": "8th; completion corrected using synchronized video/angle review"
+    }
+  ]
+}

@@ -1,0 +1,90 @@
+{
+  "schemaVersion": "1.0",
+  "generatedAt": "2026-07-30",
+  "scope": "target-arm diagonal development evaluation",
+  "preregistration": "external-diagonal-target-arm-preregistration.json",
+  "configuration": {
+    "model": "MoveNet SINGLEPOSE_LIGHTNING",
+    "runtime": "TensorFlow.js 4.16.0",
+    "samplingFps": 15,
+    "productionThresholds": {
+      "extensionDegrees": 155,
+      "contractionDegrees": 60,
+      "transitionHoldMs": 180,
+      "minimumJointConfidence": 0.4
+    }
+  },
+  "interpretationPolicy": [
+    "Only the preregistered target arm is included in the comparison.",
+    "Predicted repetitions are machine-generated candidates, not ground truth.",
+    "Samples 2-4 require independent human cycle review before recall or precision is reported.",
+    "No threshold was changed after inspecting these results."
+  ],
+  "samples": [
+    {
+      "testId": "curl-diagnal-sample",
+      "role": "existing_development",
+      "targetArm": "right",
+      "frameCount": 451,
+      "validJointRate": 1.0,
+      "meanRequiredJointConfidence": 0.758,
+      "minimumAngleDegrees": 49.74,
+      "maximumAngleDegrees": 179.71,
+      "romDegrees": 129.97,
+      "productionCandidates": 7,
+      "exploratoryCandidates": 0,
+      "reviewStatus": "previously_human_approved_candidates",
+      "approvedCandidateCount": 7
+    },
+    {
+      "testId": "curl-diagnal-sample2",
+      "role": "development",
+      "targetArm": "left",
+      "frameCount": 483,
+      "validJointRate": 0.9772,
+      "meanRequiredJointConfidence": 0.7127,
+      "minimumAngleDegrees": 44.07,
+      "maximumAngleDegrees": 175.66,
+      "romDegrees": 131.6,
+      "productionCandidates": 3,
+      "exploratoryCandidates": 0,
+      "reviewStatus": "pending_independent_human_cycle_review"
+    },
+    {
+      "testId": "curl-diagnal-sample3",
+      "role": "development",
+      "targetArm": "left",
+      "frameCount": 483,
+      "validJointRate": 0.8923,
+      "meanRequiredJointConfidence": 0.7454,
+      "minimumAngleDegrees": 39.9,
+      "maximumAngleDegrees": 173.13,
+      "romDegrees": 133.23,
+      "productionCandidates": 4,
+      "exploratoryCandidates": 0,
+      "reviewStatus": "pending_independent_human_cycle_review"
+    },
+    {
+      "testId": "curl-diagnal-sample4",
+      "role": "development",
+      "targetArm": "left",
+      "frameCount": 500,
+      "validJointRate": 0.968,
+      "meanRequiredJointConfidence": 0.7103,
+      "minimumAngleDegrees": 58.8,
+      "maximumAngleDegrees": 172.78,
+      "romDegrees": 113.98,
+      "productionCandidates": 1,
+      "exploratoryCandidates": 0,
+      "reviewStatus": "pending_independent_human_cycle_review"
+    }
+  ],
+  "automatedSummary": {
+    "sampleCount": 4,
+    "frameCount": 1917,
+    "productionCandidateCount": 15,
+    "reviewedSampleCount": 1,
+    "pendingHumanReviewSampleCount": 3,
+    "thresholdChangeAuthorized": false
+  }
+}

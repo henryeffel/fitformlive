@@ -72,15 +72,17 @@ python -m fitform_eval.cli evaluate-batch `
 `examples/synthetic-batch`는 evaluator 동작 검증용 합성 데이터다. 실제 사용자 성능 근거로
 사용하지 않는다.
 
-Trace 기반 cycle annotation UI:
+영상 동기화 cycle annotation UI:
 
 ```powershell
+python -m pip install -e ".[annotation]"
 python -m streamlit run app\annotation_app.py
 ```
 
 입력:
 
-- JavaScript `F_FULL.trace.json`
+- 브라우저에서 함께 저장한 schema 1.2 세션 JSON과 WebM
+- 또는 기존 JavaScript `F_FULL.trace.json`
 - 기존 `annotations.json` 선택
 
 출력:
@@ -89,8 +91,23 @@ python -m streamlit run app\annotation_app.py
 - trace에서 추출한 `predictions.json`
 - 현재 annotation에 대한 P4 quick evaluation
 
-영상이 없는 현재 단계에서는 angle timeline과 event timestamp를 사용한다. UI가 생성한
-label은 영상 기반 행동 의미를 확정한 ground truth로 간주하지 않는다.
+schema 1.2 세션에서는 millisecond 슬라이더로 OpenCV video frame과 가장 가까운
+keypoint frame을 찾고 skeleton, angle, FSM phase, rep count를 겹쳐 표시한다. 기존
+trace만 올린 경우에는 angle timeline과 event timestamp 기반 workflow로 동작한다.
+
+외부 MP4 분석 결과 annotation:
+
+1. `web/external-video.html`에서 받은
+   `*.external-analysis.json`을 세션 JSON 입력에 올린다.
+2. 같은 원본 MP4를 영상 입력에 올린다.
+3. `Annotation arm`을 선택한다. 양팔 교대 front 영상은 왼팔과 오른팔을
+   각각 검토하고 별도 annotation JSON으로 저장한다.
+4. 영상과 pose overlay를 보며 cycle 시작·종료·완료 시점을 기록한다.
+5. predicted rep는 탐색 보조 정보일 뿐이며 영상 확인 없이 ground truth로
+   승인하지 않는다.
+
+외부 세션 ID는 팔별 상태 충돌을 막기 위해
+`<testId>-left` 또는 `<testId>-right` 형식으로 만들어진다.
 
 ## 현재 출력
 

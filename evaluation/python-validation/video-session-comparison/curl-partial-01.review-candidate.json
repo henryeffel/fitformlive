@@ -1,0 +1,31 @@
+{
+  "testId": "curl-partial-01",
+  "sourceFile": "curl-partial-01.json",
+  "labelStatus": "machine_generated_review_candidate",
+  "warning": "Not human-reviewed ground truth.",
+  "productionRepTimestampsMs": [
+    15038,
+    17564
+  ],
+  "exploratoryRepTimestampsMs": [],
+  "exploratoryRejectedTimestampsMs": [
+    10094,
+    12399,
+    14859,
+    17401
+  ],
+  "trackingInterruptions": [
+    {
+      "startedAtMs": 19434.89999999851,
+      "endedAtMs": 19483.39999999851,
+      "durationMs": 48.5,
+      "classification": "jitter"
+    },
+    {
+      "startedAtMs": 19510.79999999702,
+      "endedAtMs": null,
+      "durationMs": null,
+      "classification": "open_interruption"
+    }
+  ]
+}

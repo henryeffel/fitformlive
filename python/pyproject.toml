@@ -15,7 +15,10 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["pytest>=8.0"]
-annotation = ["streamlit>=1.37"]
+annotation = [
+  "streamlit>=1.37",
+  "opencv-python-headless>=4.10",
+]
 
 [project.scripts]
 fitform-eval = "fitform_eval.cli:main"

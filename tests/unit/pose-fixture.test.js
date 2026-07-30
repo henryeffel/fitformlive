@@ -21,6 +21,7 @@ function metadata() {
     testId: "curl-normal-01",
     condition: "normal",
     exercise: "right_curl",
+    targetArm: "right",
     attemptedReps: 10,
     completeReps: 10,
     algorithmVersion: { commit: "abc123", dirty: false },
@@ -65,7 +66,13 @@ describe("pose fixture recorder", () => {
       phase: "ready",
     });
 
-    const fixture = finalizeRecorder(recorder, { endedAtMs: 1030 });
+    const fixture = finalizeRecorder(recorder, {
+      endedAtMs: 1030,
+      video: {
+        filename: "curl-normal-01.webm",
+        mimeType: "video/webm",
+      },
+    });
     const reparsed = JSON.parse(JSON.stringify(fixture));
     const validation = validateFixture(reparsed);
 
@@ -76,6 +83,7 @@ describe("pose fixture recorder", () => {
       invalidFrames: 1,
       validJointRate: 0.5,
     });
+    expect(reparsed.targetArm).toBe("right");
     expect(reparsed.frames[0].keypoints[1]).toMatchObject({
       name: "left_eye",
       x: 0.05,
@@ -100,7 +108,13 @@ describe("pose fixture recorder", () => {
       videoWidth: 200,
       videoHeight: 100,
     });
-    const fixture = finalizeRecorder(recorder, { endedAtMs: 1030 });
+    const fixture = finalizeRecorder(recorder, {
+      endedAtMs: 1030,
+      video: {
+        filename: "curl-normal-01.webm",
+        mimeType: "video/webm",
+      },
+    });
 
     fixture.frames[1].keypoints = [];
     const validation = validateFixture(fixture);

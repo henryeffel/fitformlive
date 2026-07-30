@@ -1,0 +1,42 @@
+{
+  "evaluationVersion": "1.0",
+  "sessionId": "curl-fast-02",
+  "annotation": {
+    "path": "data/recordings/annotations/curl-fast-02.annotations.json",
+    "provenance": "codex-assisted video frame review with captured-angle completion boundary",
+    "validReps": 10,
+    "completionPolicy": "first captured processedAngle >= 155deg after reviewed contraction"
+  },
+  "toleranceMs": 500,
+  "results": [
+    {
+      "configurationId": "production-recorded",
+      "predictedRepCount": 10,
+      "truePositive": 10,
+      "falsePositive": 0,
+      "falseNegative": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "meanSignedLatencyMs": 166.03,
+      "medianAbsoluteLatencyMs": 165.95,
+      "p95AbsoluteLatencyMs": 173.84
+    },
+    {
+      "configurationId": "exploratory-full-contraction",
+      "predictedRepCount": 10,
+      "truePositive": 10,
+      "falsePositive": 0,
+      "falseNegative": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "meanSignedLatencyMs": 193.55,
+      "medianAbsoluteLatencyMs": 194.6,
+      "p95AbsoluteLatencyMs": 202.45
+    }
+  ],
+  "interpretation": [
+    "Both configurations preserve all ten reviewed fast repetitions.",
+    "The exploratory full-contraction FSM adds about 28ms mean latency in this session.",
+    "The result separates the earlier fast-01 framing failure from actual speed robustness."
+  ]
+}

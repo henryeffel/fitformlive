@@ -1,0 +1,88 @@
+{
+  "evaluationVersion": "1.0",
+  "algorithmVersion": "external-production-frozen",
+  "inference": {
+    "model": "TensorFlow.js MoveNet SINGLEPOSE_LIGHTNING",
+    "samplingFps": 15,
+    "browserCompatibilityTransform": {
+      "appliedToSamples": [2, 3, 4],
+      "reason": "Source MP4 codec was not supported by Chrome",
+      "outputCodec": "VP8 WebM",
+      "timingPreserved": true,
+      "resolutionPreserved": true,
+      "frameCountPreserved": true
+    }
+  },
+  "samples": [
+    {
+      "testId": "curl-side-sample",
+      "selectedArm": "right",
+      "validJointRate": 0.998,
+      "meanRequiredJointConfidence": 0.696,
+      "minimumEstimatedAngle": 61.36,
+      "maximumEstimatedAngle": 176.40,
+      "estimatedRom": 115.04,
+      "diagnosticLowExcursions": 8,
+      "productionPredictedReps": 0,
+      "exploratoryPredictedReps": 0
+    },
+    {
+      "testId": "curl-side-sample2",
+      "selectedArm": "left",
+      "validJointRate": 0.956,
+      "meanRequiredJointConfidence": 0.635,
+      "minimumEstimatedAngle": 61.37,
+      "maximumEstimatedAngle": 158.02,
+      "estimatedRom": 96.65,
+      "diagnosticLowExcursions": 4,
+      "diagnosticSmoothedMinima": [67.6, 65.4, 67.8, 72.9],
+      "productionPredictedReps": 0,
+      "exploratoryPredictedReps": 0
+    },
+    {
+      "testId": "curl-side-sample3",
+      "selectedArm": "left",
+      "validJointRate": 0.937,
+      "meanRequiredJointConfidence": 0.597,
+      "minimumEstimatedAngle": 90.43,
+      "maximumEstimatedAngle": 158.46,
+      "estimatedRom": 68.03,
+      "diagnosticLowExcursions": 6,
+      "diagnosticSmoothedMinima": [96.5, 105.3, 100.9, 93.1, 96.9, 104.9],
+      "productionPredictedReps": 0,
+      "exploratoryPredictedReps": 0
+    },
+    {
+      "testId": "curl-side-sample4",
+      "selectedArm": "left",
+      "validJointRate": 0.903,
+      "meanRequiredJointConfidence": 0.625,
+      "minimumEstimatedAngle": 84.22,
+      "maximumEstimatedAngle": 163.12,
+      "estimatedRom": 78.90,
+      "diagnosticLowExcursions": 10,
+      "diagnosticSmoothedMinima": [
+        91.3,
+        96.6,
+        91.4,
+        98.2,
+        93.0,
+        89.6,
+        121.7,
+        95.5,
+        95.0,
+        90.0
+      ],
+      "productionPredictedReps": 0,
+      "exploratoryPredictedReps": 0
+    }
+  ],
+  "interpretation": [
+    "All four side-view samples contain repeated elbow-angle excursions but both frozen FSM variants predict zero repetitions.",
+    "Joint validity remains between 90.3% and 99.8%, so total tracking loss does not explain the systematic zero counts.",
+    "Sample2 repeats the original boundary failure near 60 degrees, while samples3 and 4 remain much farther above the absolute contraction threshold.",
+    "The excursion counts are signal-derived diagnostics, not human-approved ground-truth repetition counts.",
+    "The source good/bad-form label and independent cycle review must be confirmed before treating every excursion as a valid full curl.",
+    "These samples strengthen the case for view-sensitive 2D geometry analysis and offline A-E candidate comparison; they do not justify changing production thresholds directly."
+  ]
+}

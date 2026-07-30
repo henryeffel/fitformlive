@@ -126,6 +126,21 @@ def test_overlapping_annotation_is_rejected() -> None:
         upsert_annotation(document, overlap)
 
 
+def test_tracking_failure_may_overlap_a_rep_cycle_as_context() -> None:
+    document = upsert_annotation(empty_annotations("session-01"), valid_cycle())
+    tracking = CycleAnnotation(
+        startMs=1000,
+        endMs=2050,
+        label="tracking_failure",
+        annotator="test",
+    )
+    document = upsert_annotation(document, tracking)
+    assert {item.label for item in document.cycles} == {
+        "valid_rep",
+        "tracking_failure",
+    }
+
+
 def test_annotation_round_trip_is_deterministic(tmp_path: Path) -> None:
     document = upsert_annotation(empty_annotations("session-01"), valid_cycle())
     output = tmp_path / "annotations.json"

@@ -9,7 +9,8 @@
     "fixture:canonicalize": "node scripts/canonicalize-fixtures.js",
     "ablation:run": "node scripts/run-ablation.js",
     "rep:analyze": "node scripts/analyze-rep-events.js",
-    "rep:charts": "node scripts/render-rep-charts.js"
+    "rep:charts": "node scripts/render-rep-charts.js",
+    "video:compare": "node scripts/compare-video-sessions.js"
   },
   "devDependencies": {
     "mermaid": "^11.16.0",

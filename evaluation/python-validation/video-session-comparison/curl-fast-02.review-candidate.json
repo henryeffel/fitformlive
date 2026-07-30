@@ -1,0 +1,69 @@
+{
+  "testId": "curl-fast-02",
+  "sourceFile": "curl-fast-02.json",
+  "labelStatus": "machine_generated_review_candidate",
+  "warning": "Not human-reviewed ground truth.",
+  "productionRepTimestampsMs": [
+    6079,
+    8079,
+    10036,
+    11892,
+    13762,
+    15501,
+    17327,
+    19090,
+    20855,
+    22547
+  ],
+  "exploratoryRepTimestampsMs": [
+    6101,
+    8102,
+    10077,
+    11919,
+    13807,
+    15526,
+    17352,
+    19115,
+    20877,
+    22566
+  ],
+  "exploratoryRejectedTimestampsMs": [],
+  "trackingInterruptions": [
+    {
+      "startedAtMs": 5532.29999999702,
+      "endedAtMs": 5577.79999999702,
+      "durationMs": 45.5,
+      "classification": "jitter"
+    },
+    {
+      "startedAtMs": 7386.69999999553,
+      "endedAtMs": 7412.79999999702,
+      "durationMs": 26.100000001490116,
+      "classification": "jitter"
+    },
+    {
+      "startedAtMs": 10544.39999999851,
+      "endedAtMs": 10583.60000000149,
+      "durationMs": 39.20000000298023,
+      "classification": "jitter"
+    },
+    {
+      "startedAtMs": 15855,
+      "endedAtMs": 15877.89999999851,
+      "durationMs": 22.899999998509884,
+      "classification": "jitter"
+    },
+    {
+      "startedAtMs": 16711.69999999553,
+      "endedAtMs": 16737,
+      "durationMs": 25.30000000447035,
+      "classification": "jitter"
+    },
+    {
+      "startedAtMs": 20364.69999999553,
+      "endedAtMs": 20408.60000000149,
+      "durationMs": 43.900000005960464,
+      "classification": "jitter"
+    }
+  ]
+}

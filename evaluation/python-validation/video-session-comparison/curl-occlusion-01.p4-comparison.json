@@ -1,0 +1,41 @@
+{
+  "evaluationVersion": "1.0",
+  "sessionId": "curl-occlusion-01",
+  "annotation": {
+    "path": "data/recordings/annotations/curl-occlusion-01.annotations.json",
+    "provenance": "codex-assisted video review plus capture tracking events",
+    "validReps": 5,
+    "trackingFailureIntervals": 2,
+    "caveat": "The full contraction of rep 2 is camera-occluded; its valid status relies on capture-operator completeReps=5."
+  },
+  "toleranceMs": 500,
+  "results": [
+    {
+      "configurationId": "production-recorded",
+      "predictedRepCount": 3,
+      "truePositive": 3,
+      "falsePositive": 0,
+      "falseNegative": 2,
+      "precision": 1.0,
+      "recall": 0.6,
+      "predictionsDuringTrackingFailure": 0,
+      "meanSignedLatencyMs": 97.5
+    },
+    {
+      "configurationId": "exploratory-full-contraction",
+      "predictedRepCount": 3,
+      "truePositive": 3,
+      "falsePositive": 0,
+      "falseNegative": 2,
+      "precision": 1.0,
+      "recall": 0.6,
+      "predictionsDuringTrackingFailure": 0,
+      "meanSignedLatencyMs": 112.23
+    }
+  ],
+  "interpretation": [
+    "Both FSMs safely avoid false counts during long tracking failures.",
+    "Both FSMs miss the two repetitions that overlap intentional camera-cover intervals.",
+    "A stricter contraction threshold does not solve missing visual evidence."
+  ]
+}

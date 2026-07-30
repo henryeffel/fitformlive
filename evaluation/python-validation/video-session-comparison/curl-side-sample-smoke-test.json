@@ -1,0 +1,48 @@
+{
+  "evaluationVersion": "1.0",
+  "testId": "curl-side-sample",
+  "source": {
+    "type": "external_dataset_sample",
+    "filename": "curl-side-sample.mp4",
+    "width": 540,
+    "height": 960,
+    "durationMs": 28866.667,
+    "fps": 15
+  },
+  "inference": {
+    "model": "TensorFlow.js MoveNet SINGLEPOSE_LIGHTNING",
+    "sampledFrames": 434,
+    "elapsedMs": 585904.6,
+    "resultPath": "data/recordings/processed/curl-side-sample.external-analysis.json"
+  },
+  "movingArm": {
+    "selectedArm": "right",
+    "classification": "single_moving_arm",
+    "validJointRate": 0.9977,
+    "meanRequiredJointConfidence": 0.696,
+    "minimumEstimatedAngle": 61.36,
+    "maximumEstimatedAngle": 176.39,
+    "estimatedRom": 115.03
+  },
+  "reviewedExcursions": [
+    { "startMs": 333.3, "minimumMs": 1533.3, "minimumAngle": 61.36, "endMs": 3066.7 },
+    { "startMs": 3800.0, "minimumMs": 4733.3, "minimumAngle": 66.04, "endMs": 6266.7 },
+    { "startMs": 7000.0, "minimumMs": 7933.3, "minimumAngle": 66.07, "endMs": 9600.0 },
+    { "startMs": 10533.3, "minimumMs": 11733.3, "minimumAngle": 64.67, "endMs": 12933.3 },
+    { "startMs": 13933.3, "minimumMs": 14800.0, "minimumAngle": 62.83, "endMs": 16466.7 },
+    { "startMs": 17466.7, "minimumMs": 18333.3, "minimumAngle": 63.85, "endMs": 20333.3 },
+    { "startMs": 21266.7, "minimumMs": 22066.7, "minimumAngle": 62.92, "endMs": 24000.0 },
+    { "startMs": 25200.0, "minimumMs": 26266.7, "minimumAngle": 63.37, "endMs": 27866.7 }
+  ],
+  "fsmResults": {
+    "productionPredictedReps": 0,
+    "exploratoryPredictedReps": 0
+  },
+  "interpretation": [
+    "Pose tracking is stable, so zero counts are not caused by tracking loss.",
+    "Eight clear elbow-angle excursions are present in the selected right-arm trace.",
+    "All estimated minima remain above the production 60deg contraction threshold.",
+    "The frozen absolute-angle thresholds do not generalize to this side-view subject.",
+    "This smoke-test sample must not be used to tune and then report final external-test performance."
+  ]
+}

@@ -1,0 +1,283 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>FitForm External MP4 Inference</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        font-family: system-ui, sans-serif;
+        background: #020617;
+        color: #e5e7eb;
+      }
+      body { margin: 0; }
+      main { max-width: 1080px; margin: auto; padding: 32px 20px 64px; }
+      .card {
+        background: #0f172a;
+        border: 1px solid #334155;
+        border-radius: 16px;
+        padding: 18px;
+        margin: 16px 0;
+      }
+      .controls { display: flex; flex-wrap: wrap; gap: 12px; align-items: end; }
+      label { display: grid; gap: 6px; color: #cbd5e1; }
+      button, input {
+        background: #111827;
+        color: #e5e7eb;
+        border: 1px solid #475569;
+        border-radius: 8px;
+        padding: 9px 12px;
+      }
+      button.primary { background: #0284c7; border-color: #38bdf8; }
+      button:disabled { opacity: .45; }
+      video { width: min(360px, 100%); max-height: 540px; background: #000; }
+      progress { width: 100%; height: 18px; }
+      table { width: 100%; border-collapse: collapse; }
+      th, td { padding: 8px; border-bottom: 1px solid #334155; text-align: left; }
+      pre { white-space: pre-wrap; overflow-wrap: anywhere; color: #bae6fd; }
+      .warning { color: #fbbf24; }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.16.0/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/pose-detection"></script>
+    <script src="./js/pose-algorithms.js"></script>
+    <script src="./js/pose-replay.js"></script>
+    <script src="./js/pose-ablation.js"></script>
+    <script src="./js/pose-trace.js"></script>
+    <script src="./js/pose-enhanced-fsm.js"></script>
+    <script src="./js/external-video-analysis.js"></script>
+  </head>
+  <body>
+    <main>
+      <h1>External MP4 · MoveNet inference</h1>
+      <p>
+        Production과 동일한 TensorFlow.js MoveNet Lightning으로 외부 영상을
+        처리합니다. 이 도구는 threshold를 조정하지 않는 외부 검증용입니다.
+      </p>
+
+      <section class="card controls">
+        <label>
+          MP4/WebM
+          <input id="file" type="file" accept="video/mp4,video/webm,video/quicktime" />
+        </label>
+        <label>
+          Sampling FPS
+          <input id="fps" type="number" min="1" max="30" value="15" />
+        </label>
+        <button id="run" class="primary" disabled>Run MoveNet</button>
+        <button id="download" disabled>Download result JSON</button>
+      </section>
+
+      <section class="card">
+        <video id="video" controls muted playsinline></video>
+        <p id="metadata">영상을 선택하세요.</p>
+        <progress id="progress" max="1" value="0"></progress>
+        <p id="status">대기 중</p>
+      </section>
+
+      <section class="card">
+        <h2>Arm analysis</h2>
+        <p class="warning">
+          양팔이 모두 움직이면 한쪽을 임의 선택하지 않고 dual-FSM 필요 상태로 표시합니다.
+        </p>
+        <table>
+          <thead>
+            <tr>
+              <th>Arm</th><th>Valid rate</th><th>ROM</th>
+              <th>Production</th><th>Exploratory</th>
+            </tr>
+          </thead>
+          <tbody id="results"></tbody>
+        </table>
+        <pre id="selection">아직 결과가 없습니다.</pre>
+      </section>
+    </main>
+
+    <script>
+      const fileInput = document.querySelector("#file");
+      const fpsInput = document.querySelector("#fps");
+      const runButton = document.querySelector("#run");
+      const downloadButton = document.querySelector("#download");
+      const video = document.querySelector("#video");
+      const metadata = document.querySelector("#metadata");
+      const progress = document.querySelector("#progress");
+      const status = document.querySelector("#status");
+      const results = document.querySelector("#results");
+      const selection = document.querySelector("#selection");
+      let objectUrl = null;
+      let output = null;
+
+      function once(target, event) {
+        return new Promise((resolve, reject) => {
+          const cleanup = () => {
+            target.removeEventListener(event, resolveEvent);
+            target.removeEventListener("error", rejectEvent);
+          };
+          const resolveEvent = () => { cleanup(); resolve(); };
+          const rejectEvent = () => {
+            cleanup();
+            reject(new Error(`video ${event} failed`));
+          };
+          target.addEventListener(event, resolveEvent, { once: true });
+          target.addEventListener("error", rejectEvent, { once: true });
+        });
+      }
+
+      async function seek(timestampSeconds) {
+        if (Math.abs(video.currentTime - timestampSeconds) < 0.0001) return;
+        const ready = once(video, "seeked");
+        video.currentTime = timestampSeconds;
+        await ready;
+      }
+
+      function normalizedKeypoints(keypoints) {
+        return (keypoints || []).map((item) => ({
+          name: item.name,
+          x: item.x / video.videoWidth,
+          y: item.y / video.videoHeight,
+          score: item.score,
+        }));
+      }
+
+      fileInput.addEventListener("change", async () => {
+        output = null;
+        downloadButton.disabled = true;
+        results.innerHTML = "";
+        selection.textContent = "아직 결과가 없습니다.";
+        if (objectUrl) URL.revokeObjectURL(objectUrl);
+        const file = fileInput.files[0];
+        if (!file) {
+          runButton.disabled = true;
+          return;
+        }
+        objectUrl = URL.createObjectURL(file);
+        video.src = objectUrl;
+        await once(video, "loadedmetadata");
+        metadata.textContent =
+          `${file.name} · ${video.videoWidth}×${video.videoHeight} · ` +
+          `${video.duration.toFixed(2)}s · ${(file.size / 1048576).toFixed(2)}MB`;
+        runButton.disabled = false;
+      });
+
+      runButton.addEventListener("click", async () => {
+        const file = fileInput.files[0];
+        if (!file) return;
+        runButton.disabled = true;
+        downloadButton.disabled = true;
+        progress.value = 0;
+        status.textContent = "MoveNet Lightning 로딩 중…";
+        try {
+          await tf.ready();
+          const detector = await poseDetection.createDetector(
+            poseDetection.SupportedModels.MoveNet,
+            {
+              modelType: poseDetection.movenet.modelType.SINGLEPOSE_LIGHTNING,
+            }
+          );
+          const requestedFps = Number(fpsInput.value);
+          const sampleFps = Math.min(30, Math.max(1, requestedFps));
+          const interval = 1 / sampleFps;
+          const frameCount = Math.floor(video.duration * sampleFps) + 1;
+          const frames = [];
+          const startedAt = performance.now();
+          for (let index = 0; index < frameCount; index += 1) {
+            const timestampSeconds = Math.min(
+              index * interval,
+              Math.max(0, video.duration - 0.001)
+            );
+            await seek(timestampSeconds);
+            const poses = await detector.estimatePoses(video, {
+              maxPoses: 1,
+              flipHorizontal: false,
+            });
+            frames.push({
+              timestampMs: timestampSeconds * 1000,
+              valid: poses.length > 0,
+              keypoints: poses.length
+                ? normalizedKeypoints(poses[0].keypoints)
+                : [],
+            });
+            progress.value = (index + 1) / frameCount;
+            if (index % 10 === 0) {
+              status.textContent =
+                `${index + 1}/${frameCount} frames · ` +
+                `${timestampSeconds.toFixed(1)}s`;
+              await new Promise(requestAnimationFrame);
+            }
+          }
+          detector.dispose();
+          const fixture = {
+            schemaVersion: "external-video-1.0",
+            testId: file.name.replace(/\.[^.]+$/, ""),
+            condition: "external_dataset",
+            model: {
+              family: "MoveNet",
+              variant: "SINGLEPOSE_LIGHTNING",
+              runtime: "TensorFlow.js 4.16.0",
+            },
+            source: {
+              filename: file.name,
+              sizeBytes: file.size,
+              width: video.videoWidth,
+              height: video.videoHeight,
+              durationMs: video.duration * 1000,
+              mirrored: false,
+            },
+            sampling: {
+              requestedFps,
+              effectiveFps: sampleFps,
+              frameCount: frames.length,
+            },
+            configAtCapture: {
+              ...FitFormExternalVideoAnalysis.DEFAULT_CONFIG,
+            },
+            frames,
+          };
+          const analysis =
+            FitFormExternalVideoAnalysis.analyzeExternalFixture(fixture);
+          output = {
+            ...fixture,
+            processing: {
+              elapsedMs: performance.now() - startedAt,
+              generatedAt: new Date().toISOString(),
+            },
+            externalAnalysis: analysis,
+          };
+          results.innerHTML = analysis.arms.map((arm) => `
+            <tr>
+              <td>${arm.arm}</td>
+              <td>${(arm.validJointRate * 100).toFixed(1)}%</td>
+              <td>${arm.angle.rom?.toFixed(1) ?? "n/a"}°</td>
+              <td>${arm.production.predictedReps}</td>
+              <td>${arm.exploratory.predictedReps}</td>
+            </tr>
+          `).join("");
+          selection.textContent = JSON.stringify(analysis.selection, null, 2);
+          status.textContent =
+            `완료 · ${frames.length} frames · ` +
+            `${(output.processing.elapsedMs / 1000).toFixed(1)}s`;
+          downloadButton.disabled = false;
+        } catch (error) {
+          console.error(error);
+          status.textContent = `실패: ${error.message}`;
+        } finally {
+          runButton.disabled = false;
+        }
+      });
+
+      downloadButton.addEventListener("click", () => {
+        if (!output) return;
+        const blob = new Blob(
+          [JSON.stringify(output, null, 2) + "\n"],
+          { type: "application/json" }
+        );
+        const href = URL.createObjectURL(blob);
+        const anchor = document.createElement("a");
+        anchor.href = href;
+        anchor.download = `${output.testId}.external-analysis.json`;
+        anchor.click();
+        URL.revokeObjectURL(href);
+      });
+    </script>
+  </body>
+</html>

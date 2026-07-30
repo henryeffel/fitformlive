@@ -1,0 +1,3 @@
+tests/fixtures/**/*.json text eol=lf
+evaluation/**/*.json text eol=lf
+evaluation/**/*.csv text eol=lf

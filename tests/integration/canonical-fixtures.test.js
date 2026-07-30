@@ -1,4 +1,3 @@
-const crypto = require("node:crypto");
 const fs = require("node:fs");
 const path = require("node:path");
 const { replayFixture } = require("../../web/js/pose-replay.js");
@@ -6,6 +5,7 @@ const { validateFixture } = require("../../web/js/pose-fixture.js");
 const {
   DEFINITIONS,
   canonicalize,
+  sha256,
 } = require("../../scripts/canonicalize-fixtures.js");
 
 const fixtureRoot = path.join(__dirname, "..", "fixtures");
@@ -27,10 +27,7 @@ describe("canonical derived fixture", () => {
         fixtureRoot,
         ...fixture.derivedFrom.path.split("/")
       );
-      const sourceHash = crypto
-        .createHash("sha256")
-        .update(fs.readFileSync(sourcePath))
-        .digest("hex");
+      const sourceHash = sha256(fs.readFileSync(sourcePath));
       const definition = DEFINITIONS.find(
         (candidate) => candidate.output === filename
       );
