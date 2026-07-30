@@ -1564,6 +1564,44 @@ decoder와 bounded recent-frame cache를 함께 사용하면 일반적인 순방
 
 ---
 
+## D-034. JD 맞춤 포트폴리오를 5페이지 PDF와 상세 GitHub로 분리
+
+### 문제
+
+기존 3페이지 초안은 과거 실험 수치와 초기 알고리즘 설명 중심이었고, 7페이지
+구성안은 README 및 의사결정 문서와 중복될 가능성이 컸다. 지원 JD가 빠르게
+확인하는 카메라 시스템 구현, 평가 데이터 구축, 성능 테스트 근거가 첫 검토에서
+바로 드러나야 했다.
+
+### 해결방안
+
+- A4 portrait 5페이지 HTML과 동일한 인쇄용 PDF를 새로 구성했다.
+- 1페이지에 제품 정의, 전체 처리 흐름, 개인 고도화 범위와 frozen holdout 핵심
+  수치를 배치했다.
+- 2페이지는 카메라 기반 실시간 처리와 JavaScript/Python 책임 분리를 다뤘다.
+- 3페이지는 학습용 대규모 데이터셋으로 과장하지 않고 `영상·관절 시계열 평가
+  데이터셋 및 annotation pipeline`으로 명시했다.
+- 4페이지는 partial FP 개선과 지원 범위 밖 strict-side diagnostic만 선택했다.
+- 5페이지는 development와 frozen holdout을 분리하고 평가 원칙·v1 범위·v2
+  가설을 함께 제시했다.
+- 상세 FSM, schema, 개별 실험과 provenance는 GitHub README 및 기술 문서로
+  넘겼다.
+
+### 선택 이유와 검증
+
+첫 페이지는 약 10초, 전체 문서는 약 1분 안에 훑을 수 있도록 정보 계층을
+설계했다. 실제 저장소 분석 이미지와 확정 JSON 수치만 사용했으며 JavaScript
+45개, Python 29개, 총 74개 테스트로 최신화했다. Chrome print renderer로 정확히
+5페이지 PDF를 생성하고 각 페이지를 이미지로 재렌더링해 잘림과 가독성을
+검수했다.
+
+결과물:
+
+- `portfolio/fitformlive-5page.html`
+- `portfolio/fitformlive-5page.pdf`
+
+---
+
 앞으로 다음 조건에 해당하는 변경은 이 문서에 기록한다.
 
 - production 카운트 결과가 바뀌는 threshold 또는 FSM 변경

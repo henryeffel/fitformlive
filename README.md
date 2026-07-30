@@ -360,7 +360,9 @@ candidate review와 cycle annotation을 사용할 수 있습니다.
 - [Python 검증 계획](docs/PYTHON_VALIDATION_PLAN.md)
 - [외부 데이터셋 조사](docs/PUBLIC_EXERCISE_DATASET_RESEARCH_2026-07-30.md)
 - [전체 문제·의사결정 기록](docs/ENGINEERING_DECISIONS_AND_ISSUES.md)
-- [영상 알고리즘 HTML 포트폴리오](portfolio/index.html)
+- [JD 맞춤 5페이지 HTML 포트폴리오](portfolio/fitformlive-5page.html)
+- [JD 맞춤 5페이지 PDF 포트폴리오](portfolio/fitformlive-5page.pdf)
+- [영상 알고리즘 상세 HTML 포트폴리오](portfolio/index.html)
 
 ## 프로젝트 배경
 
