@@ -1531,6 +1531,39 @@ development 데이터로 전환한 뒤, 새로운 holdout을 별도로 확보해
 
 ---
 
+## D-033. Annotation 영상 scrub에서 decoder와 최근 frame을 재사용
+
+### 문제
+
+Annotation UI의 slider가 바뀔 때마다 Streamlit이 스크립트를 다시 실행하면서
+업로드 영상을 새 임시 파일로 만들었다. `decode_video_frame`도 호출마다
+`VideoCapture`를 다시 열었으며, WebM random seek metadata가 불안정하면 frame
+0부터 목표 시점까지 다시 순차 디코딩했다. 긴 영상에서 연속 scrub 비용이 영상
+길이에 비례해 반복될 수 있었다.
+
+### 해결방안
+
+- 같은 업로드는 SHA-256 key와 안정적인 session 임시 경로를 재사용한다.
+- 경로별 열린 `VideoCapture`와 최근 frame을 재사용해 앞으로 이동할 때 현재
+  위치부터 계속 디코딩한다.
+- 가까운 뒤쪽 이동은 최근 frame cache에서 반환하고, cache 범위 밖으로
+  되돌아갈 때만 capture를 다시 열어 seek/fallback을 수행한다.
+- 메모리를 제한하기 위해 최대 3개 영상과 영상당 최근 180 frame만 유지한다.
+- 다른 업로드로 교체하면 이전 capture를 release하고 임시 파일을 삭제한다.
+
+### 선택 이유와 검증
+
+전체 영상을 메모리에 올리는 방식은 긴 영상에서 비용이 커지고, 매번 random
+seek만 사용하는 방식은 Chrome WebM metadata 문제를 해결하지 못한다. 열린
+decoder와 bounded recent-frame cache를 함께 사용하면 일반적인 순방향 scrub을
+상수 횟수의 open으로 처리하면서 메모리 사용량을 제한할 수 있다.
+
+한 capture에서 `100ms → 200ms → 100ms` 요청을 처리하고 마지막 요청이 cache를
+사용하는 단위 테스트를 추가했다. Python 29개와 JavaScript 45개 테스트가 모두
+통과했다.
+
+---
+
 앞으로 다음 조건에 해당하는 변경은 이 문서에 기록한다.
 
 - production 카운트 결과가 바뀌는 threshold 또는 FSM 변경

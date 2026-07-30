@@ -1,7 +1,10 @@
 from __future__ import annotations
 
 from bisect import bisect_left
+from collections import OrderedDict
 from copy import deepcopy
+from dataclasses import dataclass, field
+from threading import RLock
 from typing import Any
 
 KEYPOINT_EDGES = (
@@ -18,6 +21,29 @@ KEYPOINT_EDGES = (
     ("right_hip", "right_knee"),
     ("right_knee", "right_ankle"),
 )
+
+_MAX_OPEN_VIDEO_CAPTURES = 3
+_MAX_CACHED_FRAMES_PER_VIDEO = 180
+_VIDEO_DECODER_LOCK = RLock()
+
+
+@dataclass
+class _VideoDecoderState:
+    capture: Any
+    frames: OrderedDict[float, Any] = field(default_factory=OrderedDict)
+    last_timestamp_ms: float = -1.0
+
+    def remember(self, timestamp_ms: float, frame: Any) -> None:
+        self.frames[timestamp_ms] = frame
+        self.frames.move_to_end(timestamp_ms)
+        while len(self.frames) > _MAX_CACHED_FRAMES_PER_VIDEO:
+            self.frames.popitem(last=False)
+
+    def close(self) -> None:
+        self.capture.release()
+
+
+_VIDEO_DECODERS: OrderedDict[str, _VideoDecoderState] = OrderedDict()
 
 
 def is_video_fixture(payload: dict[str, Any]) -> bool:
@@ -247,46 +273,108 @@ def render_pose_overlay(
     return output
 
 
+def _open_video_capture(video_path: str) -> Any:
+    import cv2
+
+    capture = cv2.VideoCapture(video_path)
+    if not capture.isOpened():
+        raise ValueError("업로드한 영상을 OpenCV로 열 수 없습니다.")
+    return capture
+
+
+def _new_decoder_state(video_path: str) -> _VideoDecoderState:
+    state = _VideoDecoderState(capture=_open_video_capture(video_path))
+    _VIDEO_DECODERS[video_path] = state
+    _VIDEO_DECODERS.move_to_end(video_path)
+    while len(_VIDEO_DECODERS) > _MAX_OPEN_VIDEO_CAPTURES:
+        _, evicted = _VIDEO_DECODERS.popitem(last=False)
+        evicted.close()
+    return state
+
+
+def release_video_frame_cache(video_path: str | None = None) -> None:
+    """Release one cached decoder, or every decoder when no path is supplied."""
+    with _VIDEO_DECODER_LOCK:
+        paths = [video_path] if video_path is not None else list(_VIDEO_DECODERS)
+        for path in paths:
+            state = _VIDEO_DECODERS.pop(path, None)
+            if state is not None:
+                state.close()
+
+
+def _nearest_cached_frame(
+    state: _VideoDecoderState,
+    target_ms: float,
+) -> tuple[Any, float] | None:
+    if not state.frames:
+        return None
+    timestamp = min(state.frames, key=lambda item: abs(item - target_ms))
+    if abs(timestamp - target_ms) > 40.0:
+        return None
+    state.frames.move_to_end(timestamp)
+    return state.frames[timestamp], timestamp
+
+
 def decode_video_frame(video_path: str, timestamp_ms: float) -> tuple[Any, float]:
     import cv2
 
     target_ms = max(0.0, timestamp_ms)
+    with _VIDEO_DECODER_LOCK:
+        state = _VIDEO_DECODERS.get(video_path)
+        if state is None:
+            state = _new_decoder_state(video_path)
+        else:
+            _VIDEO_DECODERS.move_to_end(video_path)
 
-    def open_capture() -> Any:
-        opened_capture = cv2.VideoCapture(video_path)
-        if not opened_capture.isOpened():
-            raise ValueError("업로드한 영상을 OpenCV로 열 수 없습니다.")
-        return opened_capture
+        cached = _nearest_cached_frame(state, target_ms)
+        if cached is not None:
+            return cached
 
-    capture = open_capture()
-    try:
-        capture.set(cv2.CAP_PROP_POS_MSEC, target_ms)
-        ok, frame = capture.read()
-        actual_timestamp_ms = float(capture.get(cv2.CAP_PROP_POS_MSEC))
+        # Nearby forward scrubs continue from the already-open decoder. This is
+        # the common annotation workflow and avoids repeated frame-0 scans.
+        if target_ms >= state.last_timestamp_ms:
+            while True:
+                ok, frame = state.capture.read()
+                if not ok:
+                    break
+                actual_ms = float(state.capture.get(cv2.CAP_PROP_POS_MSEC))
+                state.last_timestamp_ms = actual_ms
+                state.remember(actual_ms, frame)
+                if actual_ms >= target_ms:
+                    return frame, actual_ms
+
+        # A backward jump outside the bounded frame cache needs a fresh seek.
+        state.close()
+        state.capture = _open_video_capture(video_path)
+        state.frames.clear()
+        state.last_timestamp_ms = -1.0
+        state.capture.set(cv2.CAP_PROP_POS_MSEC, target_ms)
+        ok, frame = state.capture.read()
+        actual_ms = float(state.capture.get(cv2.CAP_PROP_POS_MSEC))
         if ok and (
             target_ms == 0.0
-            or abs(actual_timestamp_ms - target_ms) <= 500.0
+            or abs(actual_ms - target_ms) <= 500.0
         ):
-            return frame, actual_timestamp_ms
-    finally:
-        capture.release()
+            state.last_timestamp_ms = actual_ms
+            state.remember(actual_ms, frame)
+            return frame, actual_ms
 
-    # Chrome VP9 WebM은 일부 OpenCV/FFmpeg 빌드에서 FPS와 random seek
-    # metadata를 잘못 제공한다. 이 경우 timestamp를 읽으며 순차 디코딩한다.
-    capture = open_capture()
-    try:
+        # Chrome VP9 WebM은 일부 OpenCV/FFmpeg 빌드에서 random seek metadata를
+        # 잘못 제공한다. 이 경우 같은 열린 capture로 순차 디코딩한다.
+        state.close()
+        state.capture = _open_video_capture(video_path)
         last_frame = None
         last_timestamp_ms = 0.0
         while True:
-            ok, frame = capture.read()
+            ok, frame = state.capture.read()
             if not ok:
                 break
             last_frame = frame
-            last_timestamp_ms = float(capture.get(cv2.CAP_PROP_POS_MSEC))
+            last_timestamp_ms = float(state.capture.get(cv2.CAP_PROP_POS_MSEC))
+            state.last_timestamp_ms = last_timestamp_ms
+            state.remember(last_timestamp_ms, frame)
             if last_timestamp_ms >= target_ms:
                 return frame, last_timestamp_ms
         if last_frame is not None and target_ms - last_timestamp_ms <= 500.0:
             return last_frame, last_timestamp_ms
         raise ValueError(f"{timestamp_ms:.1f}ms 영상 프레임을 읽을 수 없습니다.")
-    finally:
-        capture.release()

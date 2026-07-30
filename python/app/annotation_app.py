@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import importlib
+import hashlib
 import json
 import os
 import sys
@@ -40,9 +40,6 @@ from fitform_eval.review_candidates import (  # noqa: E402
 )
 from fitform_eval import video_sync as video_sync_module  # noqa: E402
 
-# Streamlit may preserve imported project modules while rerunning this script.
-# Reload the local adapter so a newly added schema converter is immediately visible.
-video_sync_module = importlib.reload(video_sync_module)
 decode_video_frame = video_sync_module.decode_video_frame
 external_analysis_arms = video_sync_module.external_analysis_arms
 external_analysis_to_trace_payload = (
@@ -53,6 +50,7 @@ is_external_video_analysis = video_sync_module.is_external_video_analysis
 is_video_fixture = video_sync_module.is_video_fixture
 nearest_trace_frame = video_sync_module.nearest_trace_frame
 render_pose_overlay = video_sync_module.render_pose_overlay
+release_video_frame_cache = video_sync_module.release_video_frame_cache
 
 
 LABELS = [
@@ -332,12 +330,25 @@ if video_upload is not None:
         value=0.0,
         step=10.0,
     )
-    temporary_path: Path | None = None
     try:
         suffix = Path(video_upload.name).suffix or ".webm"
-        with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as temporary:
-            temporary.write(video_upload.getvalue())
-            temporary_path = Path(temporary.name)
+        video_bytes = video_upload.getvalue()
+        upload_key = hashlib.sha256(video_bytes).hexdigest()
+        cached_upload = st.session_state.get("annotation_video_upload")
+        if not cached_upload or cached_upload["key"] != upload_key:
+            if cached_upload:
+                old_path = Path(cached_upload["path"])
+                release_video_frame_cache(str(old_path))
+                old_path.unlink(missing_ok=True)
+            with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as temporary:
+                temporary.write(video_bytes)
+                temporary_path = Path(temporary.name)
+            st.session_state["annotation_video_upload"] = {
+                "key": upload_key,
+                "path": str(temporary_path),
+            }
+        else:
+            temporary_path = Path(cached_upload["path"])
         video_frame, decoded_at_ms = decode_video_frame(
             str(temporary_path),
             target_ms,
@@ -352,9 +363,6 @@ if video_upload is not None:
         )
     except (ValueError, ImportError) as error:
         st.error(f"영상 동기화 실패: {error}")
-    finally:
-        if temporary_path is not None:
-            temporary_path.unlink(missing_ok=True)
 elif video_fixture:
     expected_video = video_fixture["capture"]["video"]["filename"]
     st.info(f"이 세션과 함께 저장한 `{expected_video}` 파일을 업로드해 주세요.")

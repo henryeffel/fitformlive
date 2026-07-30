@@ -2,7 +2,9 @@ from __future__ import annotations
 
 import numpy as np
 
+from fitform_eval import video_sync
 from fitform_eval.video_sync import (
+    decode_video_frame,
     external_analysis_arms,
     external_analysis_to_trace_payload,
     fixture_to_trace_payload,
@@ -77,6 +79,59 @@ def test_pose_overlay_draws_on_video_frame() -> None:
     overlay = render_pose_overlay(frame, trace_frame)
     assert overlay.shape == frame.shape
     assert int(overlay.sum()) > 0
+
+
+def test_video_decoder_reuses_open_capture_for_forward_scrubs(
+    monkeypatch,
+) -> None:
+    class FakeCapture:
+        def __init__(self) -> None:
+            self.timestamps = iter((0.0, 100.0, 200.0, 300.0))
+            self.current_timestamp = 0.0
+            self.read_count = 0
+            self.released = False
+
+        def read(self):
+            try:
+                self.current_timestamp = next(self.timestamps)
+            except StopIteration:
+                return False, None
+            self.read_count += 1
+            return True, np.full((2, 2, 3), self.read_count, dtype=np.uint8)
+
+        def get(self, _property):
+            return self.current_timestamp
+
+        def set(self, _property, _value):
+            return True
+
+        def release(self) -> None:
+            self.released = True
+
+    captures: list[FakeCapture] = []
+
+    def open_capture(_path: str) -> FakeCapture:
+        capture = FakeCapture()
+        captures.append(capture)
+        return capture
+
+    video_sync.release_video_frame_cache()
+    monkeypatch.setattr(video_sync, "_open_video_capture", open_capture)
+
+    _, first_timestamp = decode_video_frame("cached-video.webm", 100.0)
+    _, second_timestamp = decode_video_frame("cached-video.webm", 200.0)
+    _, cached_timestamp = decode_video_frame("cached-video.webm", 100.0)
+
+    assert (first_timestamp, second_timestamp, cached_timestamp) == (
+        100.0,
+        200.0,
+        100.0,
+    )
+    assert len(captures) == 1
+    assert captures[0].read_count == 3
+
+    video_sync.release_video_frame_cache()
+    assert captures[0].released
 
 
 def external_fixture(*, selected_arm: str | None = "right") -> dict:

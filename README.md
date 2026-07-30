@@ -63,7 +63,7 @@ Microsoft AI School 8기 팀 프로젝트로 시작했으며, 이후 실시간 �
 | Frozen holdout | GT 25, TP 17, FP 0, FN 8 |
 | Holdout count-level metric | Precision 1.000, Recall 0.680, F1 0.810 |
 | Replay parity | 브라우저 기록과 capture-parity replay 일치 |
-| 자동 검증 | JavaScript 45개, Python 28개 테스트 통과 |
+| 자동 검증 | JavaScript 45개, Python 29개 테스트 통과 |
 
 개발용 diagonal 영상 4개와 설정 동결 후 추가한 **새 사용자 holdout 영상
 3개**를 분리해 평가했습니다. Holdout은 모든 영상에서 추론 전 해부학적
@@ -288,7 +288,7 @@ python -m pip install -e ".[annotation]"
 python -m pytest -q
 ```
 
-현재 자동 검증은 JavaScript 45개와 Python 28개입니다.
+현재 자동 검증은 JavaScript 45개와 Python 29개입니다.
 
 ## Quick Start
 
