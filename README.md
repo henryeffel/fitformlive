@@ -366,15 +366,6 @@ candidate review와 cycle annotation을 사용할 수 있습니다.
 
 이 프로젝트는 Microsoft AI School 8기 1차 팀 프로젝트로 시작했습니다.
 
-원 프로젝트 참여자:
-
-- [김서현](https://github.com/bauhaus-k)
-- [이동현](https://github.com/oliverlee9292)
-- [고영현](https://github.com/henryeffel)
-- [이재현](https://github.com/medori9999)
-- [박진희](https://github.com/15nayana1021)
-- [이누리](https://github.com/Leenurii)
-
 ---
 
 <p align="center">
